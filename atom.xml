@@ -4,7 +4,7 @@
   <title><![CDATA[研究中心]]></title>
   <link href="http://zhangchuan.github.com/atom.xml" rel="self"/>
   <link href="http://zhangchuan.github.com/"/>
-  <updated>2012-01-09T15:15:49+08:00</updated>
+  <updated>2012-01-09T17:20:46+08:00</updated>
   <id>http://zhangchuan.github.com/</id>
   <author>
     <name><![CDATA[Cloud.Zhang]]></name>
@@ -847,14 +847,14 @@ _   底線
 
 <p>Octopress is a framework designed by Brandon Mathis for Jekyll, the blog aware static site generator powering Github Pages.</p>
 
-<h4>优点</h4>
+<h3>优点</h3>
 
 <p>用文件方式储存数据，无需数据库
 以静态方式发布，可直接挂在github等地方
 用markdown格式写博客
 可以轻松的配置和发布</p>
 
-<h4>安装</h4>
+<h3>安装</h3>
 
 <pre><code>$ git clone git://github.com/imathis/octopress.git octopress
 $ mv octopress blog
@@ -865,15 +865,15 @@ $ bundler install
 $ rake install
 </code></pre>
 
-<h4>GitHub</h4>
+<h3>配置GitHub</h3>
 
 <pre><code>$ rake setup_github_pages
 &gt;git@github.com:zhangchuan/zhangchuan.github.com.git
 </code></pre>
 
-<h4>常用命令</h4>
+<h3>常用命令</h3>
 
-<h5>添加文章</h5>
+<h4>添加文章</h4>
 
 <pre><code>$ rake new_post["title"]
 $ rake generate       #发布文件到public目录
@@ -881,20 +881,20 @@ $ rake watch          #监控source和sass目录的变动
 $ rake preview        #启动服务器并监控变动，通过http://localhost:4000预览
 </code></pre>
 
-<h5>发布</h5>
+<h4>发布</h4>
 
 <pre><code>$ rake generate
 $ rake deploy
 </code></pre>
 
-<h5>保存源代码</h5>
+<h4>保存源代码</h4>
 
 <pre><code>$ git add .
 $ git commit -m 'blog'
 $ git push origin source
 </code></pre>
 
-<h4>自定义样式</h4>
+<h3>自定义样式</h3>
 
 <pre><code>$ vi sass/custom/_styles.scss
 // 博客标题
