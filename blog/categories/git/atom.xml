@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: git | 研究中心]]></title>
+  <link href="http://zhangchuan.github.com/blog/categories/git/atom.xml" rel="self"/>
+  <link href="http://zhangchuan.github.com/"/>
+  <updated>2012-01-09T17:44:12+08:00</updated>
+  <id>http://zhangchuan.github.com/</id>
+  <author>
+    <name><![CDATA[Cloud.Zhang]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[git 命令快速参考]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/01/09/172719-git/"/>
+    <updated>2012-01-09T17:27:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/01/09/172719-git</id>
+    <content type="html"><![CDATA[<h2>1.创建一个新的版本库</h2>
+
+
+<p>从一个压缩包中创建：</p>
+
+<pre><code>$ tar xzf project.tar.gz
+$ cd project
+$ git init #Initialized empty Git repository in .git/
+$ git add .
+$ git commit
+</code></pre>
+
+<p>从远程版本库创建：</p>
+
+<pre><code>$ git clone git://example.com/pub/project.git
+$ cd project
+</code></pre>
+
+<h2>2.管理分支</h2>
+
+
+<pre><code>$ git branch         # list all local branches in this repo
+$ git checkout test  # switch working directory to branch "test"
+$ git branch new     # create branch "new" starting at current HEAD
+$ git branch -d new  # delete branch "new"
+</code></pre>
+
+<p>创建一个不以当前的 HEAD 为起点的分支，用：</p>
+
+<pre><code>$ git branch new test    # branch named "test"
+$ git branch new v2.6.15 # tag named v2.6.15
+$ git branch new HEAD^   # commit before the most recent
+$ git branch new HEAD^^  # commit before that
+$ git branch new test~10 # ten commits before tip of branch "test"
+</code></pre>
+
+<p>创建并同时切换至新的分支：</p>
+
+<pre><code>$ git checkout -b new v2.6.15
+</code></pre>
+
+<p>更新和检验从远程版本库中克隆过来的分支：</p>
+
+<pre><code>$ git fetch             # update
+$ git branch -r         # list
+origin/master
+origin/next
+...
+$ git checkout -b masterwork origin/master
+</code></pre>
+
+<p>从不同的版本库中抓取分支，并给予一个在你的版本库中新的分支名称：</p>
+
+<pre><code>$ git fetch git://example.com/project.git theirbranch:mybranch
+$ git fetch git://example.com/project.git v2.6.15:mybranch
+</code></pre>
+
+<p>给你要定期地协同工作的版本库制作一个列表：</p>
+
+<pre><code>$ git remote add example git://example.com/project.git
+$ git remote                    # list remote repositories
+</code></pre>
+
+<p>example
+origin</p>
+
+<pre><code>$ git remote show example       # get details
+* remote example
+URL: git://example.com/project.git
+Tracked remote branches
+master
+next
+...
+$ git fetch example             # update branches from example
+$ git branch -r                 # list all remote branches
+</code></pre>
+
+<h2>3.勘查历史</h2>
+
+
+<pre><code>$ gitk                      # visualize and browse history
+$ git log                   # list all commits
+$ git log src/              # ...modifying src/
+$ git log v2.6.15..v2.6.16  # ...in v2.6.16, not in v2.6.15
+$ git log master..test      # ...in branch test, not in branch master
+$ git log test..master      # ...in branch master, but not in test
+$ git log test...master     # ...in one branch, not in both
+$ git log -S'foo()'         # ...where difference contain "foo()"
+$ git log --since="2 weeks ago"
+$ git log -p                # show patches as well
+$ git show                  # most recent commit
+$ git diff v2.6.15..v2.6.16 # diff between two tagged versions
+$ git diff v2.6.15..HEAD    # diff with current head
+$ git grep "foo()"          # search working directory for "foo()"
+$ git grep v2.6.15 "foo()"  # search old tree for "foo()"
+$ git show v2.6.15:a.txt    # look at old version of a.txt
+</code></pre>
+
+<p>查找撤退点：</p>
+
+<pre><code>$ git bisect start
+$ git bisect bad                # current version is bad
+$ git bisect good v2.6.13-rc2   # last known good revision
+Bisecting: 675 revisions left to test after this
+                            # test here, then:
+$ git bisect good               # if this revision is good, or
+$ git bisect bad                # if this revision is bad.
+                            # repeat until done.
+</code></pre>
+
+<h2>4.制作变更</h2>
+
+
+<p>配置 git</p>
+
+<pre><code>vi ~/.gitconfig
+[user]
+    name = Phoenix
+    email = phoenixtoday@gmail.com
+[alias]
+co = checkout
+ci = commit -a
+st = status
+br = branch
+oneline = log --pretty=oneline --since='2 days ago'
+onelog = log -p -1
+[color]
+status = auto
+branch = auto
+ui = auto
+</code></pre>
+
+<p>选择这下次提交的时候要包含那些文件，接着制作交付：</p>
+
+<pre><code>$ git add a.txt    # updated file
+$ git add b.txt    # new file
+$ git rm c.txt     # old file
+$ git commit
+</code></pre>
+
+<p>或者是准备提交和创建交付一步完成：</p>
+
+<pre><code>$ git commit d.txt # use latest content only of d.txt
+$ git commit -a    # use latest content of all tracked files
+</code></pre>
+
+<h2>5.合并</h2>
+
+
+<pre><code>$ git merge test   # merge branch "test" into the current branch
+$ git pull git://example.com/project.git master
+              # fetch and merge in remote branch
+$ git pull . test  # equivalent to git merge test
+</code></pre>
+
+<h2>6.共享你的变更</h2>
+
+
+<p>引入或者导出补丁：</p>
+
+<pre><code>$ git format-patch origin..HEAD # format a patch for each commit
+                            # in HEAD but not in origin
+$ git am mbox # import patches from the mailbox "mbox"
+</code></pre>
+
+<p>抓取一个不同的 git 版本库的分支，并合并进当前分支：</p>
+
+<pre><code>$ git pull git://example.com/project.git theirbranch
+</code></pre>
+
+<p>在合并至当前分支之前，将远程分支的变更保存为本地的分支：</p>
+
+<pre><code>$ git pull git://example.com/project.git theirbranch:mybranch
+</code></pre>
+
+<p>创建了本地分支的交付之后，用这些交付更新远程分支。</p>
+
+<pre><code>$ git push ssh://example.com/project.git mybranch:theirbranch
+</code></pre>
+
+<p>当本地和远程分支都是叫 "test" 时：</p>
+
+<pre><code>$ git push ssh://example.com/project.git test
+</code></pre>
+
+<p>对于经常通讯的远程版本库，有快捷命令的版本：</p>
+
+<pre><code>$ git remote add example ssh://example.com/project.git
+$ git push example test
+</code></pre>
+
+<h2>7.版本库的维护</h2>
+
+
+<p>检查损坏：</p>
+
+<pre><code>$ git fsck
+</code></pre>
+
+<p>重新打包，删除无用的杂物：</p>
+
+<pre><code>$ git gc
+</code></pre>
+
+<h2>8.其它</h2>
+
+
+<p>忽略某些文件及目录</p>
+
+<pre><code>$ vi .gitignore
+</code></pre>
+
+<p>可以使用通配符，目录最后不要加斜杠。</p>
+
+<p>丢弃当前所有未提交内容</p>
+
+<pre><code>$ git reset --hard HEAD
+</code></pre>
+
+<p>有未提交内容时快速切换到另一分支</p>
+
+<pre><code>$ git stash save "work in progress for foo feature"
+</code></pre>
+
+<p>切换到另一分支，并修改、提交…
+切换回原来分支</p>
+
+<pre><code>$ git stash apply
+</code></pre>
+]]></content>
+  </entry>
+  
+</feed>
