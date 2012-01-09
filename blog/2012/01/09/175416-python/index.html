@@ -5,11 +5,13 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>octopress 像黑客一样写博客 - 研究中心</title>
+  <title>python 参考手册 1 - 研究中心</title>
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="Octopress 简介 Octopress is a framework designed by Brandon Mathis for Jekyll, the blog aware static site generator powering Github Pages. 优点 用文件方式储存数据 &hellip;">
+  <meta name="description" content="1.1 运行Python $ Python
+&gt;&gt;&gt; print "Hello World"
+&gt;&gt;&gt; print("Hello World") #python 3 桌面计算器, _用于保存最后一次运算结果,并只在交互式环境中才有效 &gt;&gt;&gt; &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +20,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://zhangchuan.github.com/blog/2012/01/08/031317-octopress">
+  <link rel="canonical" href="http://zhangchuan.github.com/blog/2012/01/09/175416-python">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -63,7 +65,7 @@
   
   <header>
     
-      <h1 class="entry-title">Octopress 像黑客一样写博客</h1>
+      <h1 class="entry-title">Python 参考手册 1</h1>
     
     
       <p class="meta">
@@ -79,107 +81,43 @@
   
 
 
-<time datetime="2012-01-08T03:13:00+08:00" pubdate data-updated="true">Jan 8<span>th</span>, 2012</time>
+<time datetime="2012-01-09T17:54:00+08:00" pubdate data-updated="true">Jan 9<span>th</span>, 2012</time>
         
       </p>
     
   </header>
 
 
-<div class="entry-content"><h1>Octopress 简介</h1>
+<div class="entry-content"><h1>1.1 运行Python</h1>
 
-<p>Octopress is a framework designed by Brandon Mathis for Jekyll, the blog aware static site generator powering Github Pages.</p>
-
-<h2>优点</h2>
-
-<p>用文件方式储存数据，无需数据库
-以静态方式发布，可直接挂在github等地方
-用markdown格式写博客
-可以轻松的配置和发布</p>
-
-<h2>安装</h2>
-
-<pre><code>$ git clone git://github.com/imathis/octopress.git octopress
-$ mv octopress blog
-$ cd blog
-$ sudo gem install rake --version=0.9.2
-$ sudo gem install bundler
-$ bundler install
-$ rake install
+<pre><code>$ Python
+&gt;&gt;&gt; print "Hello World"
+&gt;&gt;&gt; print("Hello World") #python 3
 </code></pre>
 
-<h2>配置GitHub</h2>
+<p>桌面计算器, _用于保存最后一次运算结果,并只在交互式环境中才有效</p>
 
-<pre><code>$ rake setup_github_pages
-&gt;git@github.com:zhangchuan/zhangchuan.github.com.git
+<pre><code>&gt;&gt;&gt; 6000 + 4523.50 + 134.12
+&gt;&gt;&gt; _ + 8192.32
 </code></pre>
 
-<h2>常用命令</h2>
+<p>创建程序, #表示整个一行都是注释</p>
 
-<h3>添加文章</h3>
-
-<pre><code>$ rake new_post["title"]
-$ rake generate       #发布文件到public目录
-$ rake watch          #监控source和sass目录的变动
-$ rake preview        #启动服务器并监控变动，通过http://localhost:4000预览
+<pre><code>$ helloworld.py
+print "Hello World"
 </code></pre>
 
-<h3>发布</h3>
+<p>执行程序</p>
 
-<pre><code>$ rake generate
-$ rake deploy
+<pre><code>$ python helloworld.py
 </code></pre>
 
-<h3>保存源代码</h3>
+<p>退出程序, 输入EOF. UNIX(Ctrl+D),Windows(Ctrl+Z).通过程序抛出SystemExit异常</p>
 
-<pre><code>$ git add .
-$ git commit -m 'blog'
-$ git push origin source
+<pre><code>&gt;&gt;&gt; raise SystemExit
 </code></pre>
 
-<h2>自定义样式</h2>
-
-<pre><code>$ vi sass/custom/_styles.scss
-h1 { font-size: 1.2em; }
-h2 { font-size: 1.1em; }
-h3 { font-size: 1.0em; }
-h4 { font-size: .9em; }
-h5 { font-size: .8em; }
-code { font-size: 0.8em; }
-
-p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6, code {
-    margin-bottom: 1.2em;
-}
-
-article {
-    font-size: 0.8em;
-    line-height: 1.2em;
-}
-
-body &gt; header h1 { font-size: 1.2em; }
-body &gt; header h2 { font-size: 0.8em; }
-body &gt; footer p:last-child {
-    font-size: 0.6em;
-    margin-bottom: 0;
-}
-
-#content .blog-index article h1 {
-    font-size: 1.2em;
-}
-#blog-archives h1 h2 a time {
-    font-size: 0.8em;
-    margin-top: 0.2em;
-    margin-bottom: 0.2em;
-}
-
-// 边栏
-aside.sidebar section h1 {
-    font-size: 1.2em;
-}
-aside.sidebar a {
-    font-size: 0.9em;
-}
-</code></pre>
+<h1>1.2 变量和算术表达式</h1>
 </div>
 
 
@@ -202,12 +140,12 @@ aside.sidebar a {
   
 
 
-<time datetime="2012-01-08T03:13:00+08:00" pubdate data-updated="true">Jan 8<span>th</span>, 2012</time>
+<time datetime="2012-01-09T17:54:00+08:00" pubdate data-updated="true">Jan 9<span>th</span>, 2012</time>
       
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/blog/'>blog</a>
+    <a class='category' href='/blog/categories/python/'>python</a>
   
 </span>
 
@@ -223,8 +161,8 @@ aside.sidebar a {
     
     <p class="meta">
       
+        <a class="basic-alignment left" href="/blog/2012/01/09/172719-git/" title="Previous Post: git 命令快速参考">&laquo; git 命令快速参考</a>
       
-        <a class="basic-alignment right" href="/blog/2012/01/08/183821-markdown/" title="next Post: markdown 语法说明">markdown 语法说明 &raquo;</a>
       
     </p>
   </footer>

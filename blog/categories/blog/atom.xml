@@ -4,7 +4,7 @@
   <title><![CDATA[Category: blog | 研究中心]]></title>
   <link href="http://zhangchuan.github.com/blog/categories/blog/atom.xml" rel="self"/>
   <link href="http://zhangchuan.github.com/"/>
-  <updated>2012-01-09T17:44:12+08:00</updated>
+  <updated>2012-01-09T18:29:27+08:00</updated>
   <id>http://zhangchuan.github.com/</id>
   <author>
     <name><![CDATA[Cloud.Zhang]]></name>
@@ -847,14 +847,14 @@ _   底線
 
 <p>Octopress is a framework designed by Brandon Mathis for Jekyll, the blog aware static site generator powering Github Pages.</p>
 
-<h3>优点</h3>
+<h2>优点</h2>
 
 <p>用文件方式储存数据，无需数据库
 以静态方式发布，可直接挂在github等地方
 用markdown格式写博客
 可以轻松的配置和发布</p>
 
-<h3>安装</h3>
+<h2>安装</h2>
 
 <pre><code>$ git clone git://github.com/imathis/octopress.git octopress
 $ mv octopress blog
@@ -865,15 +865,15 @@ $ bundler install
 $ rake install
 </code></pre>
 
-<h3>配置GitHub</h3>
+<h2>配置GitHub</h2>
 
 <pre><code>$ rake setup_github_pages
 &gt;git@github.com:zhangchuan/zhangchuan.github.com.git
 </code></pre>
 
-<h3>常用命令</h3>
+<h2>常用命令</h2>
 
-<h4>添加文章</h4>
+<h3>添加文章</h3>
 
 <pre><code>$ rake new_post["title"]
 $ rake generate       #发布文件到public目录
@@ -881,46 +881,61 @@ $ rake watch          #监控source和sass目录的变动
 $ rake preview        #启动服务器并监控变动，通过http://localhost:4000预览
 </code></pre>
 
-<h4>发布</h4>
+<h3>发布</h3>
 
 <pre><code>$ rake generate
 $ rake deploy
 </code></pre>
 
-<h4>保存源代码</h4>
+<h3>保存源代码</h3>
 
 <pre><code>$ git add .
 $ git commit -m 'blog'
 $ git push origin source
 </code></pre>
 
-<h3>自定义样式</h3>
+<h2>自定义样式</h2>
 
 <pre><code>$ vi sass/custom/_styles.scss
-// 博客标题
-body &gt; header h1 { font-size: 1.2em; }
-body &gt; header h2 { font-size: 0.8em; }
-// 文章标题
-.entry-title { font-size: 1.2em; }
-.entry-content { font-size: 1.0em; }
-
-article {
-    font-size: 0.8em;
-    line-height: 1.2em;
-}
-// 边栏
-aside { font-size: 0.8em; }
-// 时间
-time { 
-    font-size: 0.8em;
-}
-
 h1 { font-size: 1.2em; }
 h2 { font-size: 1.1em; }
 h3 { font-size: 1.0em; }
 h4 { font-size: .9em; }
 h5 { font-size: .8em; }
 code { font-size: 0.8em; }
+
+p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6, code {
+    margin-bottom: 1.2em;
+}
+
+article {
+    font-size: 0.8em;
+    line-height: 1.2em;
+}
+
+body &gt; header h1 { font-size: 1.2em; }
+body &gt; header h2 { font-size: 0.8em; }
+body &gt; footer p:last-child {
+    font-size: 0.6em;
+    margin-bottom: 0;
+}
+
+#content .blog-index article h1 {
+    font-size: 1.2em;
+}
+#blog-archives h1 h2 a time {
+    font-size: 0.8em;
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+}
+
+// 边栏
+aside.sidebar section h1 {
+    font-size: 1.2em;
+}
+aside.sidebar a {
+    font-size: 0.9em;
+}
 </code></pre>
 ]]></content>
   </entry>

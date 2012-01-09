@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: python | 研究中心]]></title>
+  <link href="http://zhangchuan.github.com/blog/categories/python/atom.xml" rel="self"/>
+  <link href="http://zhangchuan.github.com/"/>
+  <updated>2012-01-09T18:29:27+08:00</updated>
+  <id>http://zhangchuan.github.com/</id>
+  <author>
+    <name><![CDATA[Cloud.Zhang]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[python 参考手册 1]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/01/09/175416-python/"/>
+    <updated>2012-01-09T17:54:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/01/09/175416-python</id>
+    <content type="html"><![CDATA[<h1>1.1 运行Python</h1>
+
+<pre><code>$ Python
+&gt;&gt;&gt; print "Hello World"
+&gt;&gt;&gt; print("Hello World") #python 3
+</code></pre>
+
+<p>桌面计算器, _用于保存最后一次运算结果,并只在交互式环境中才有效</p>
+
+<pre><code>&gt;&gt;&gt; 6000 + 4523.50 + 134.12
+&gt;&gt;&gt; _ + 8192.32
+</code></pre>
+
+<p>创建程序, #表示整个一行都是注释</p>
+
+<pre><code>$ helloworld.py
+print "Hello World"
+</code></pre>
+
+<p>执行程序</p>
+
+<pre><code>$ python helloworld.py
+</code></pre>
+
+<p>退出程序, 输入EOF. UNIX(Ctrl+D),Windows(Ctrl+Z).通过程序抛出SystemExit异常</p>
+
+<pre><code>&gt;&gt;&gt; raise SystemExit
+</code></pre>
+
+<h1>1.2 变量和算术表达式</h1>
+]]></content>
+  </entry>
+  
+</feed>
