@@ -9,9 +9,21 @@
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="1.1 运行Python $ Python
-&gt;&gt;&gt; print "Hello World"
-&gt;&gt;&gt; print("Hello World") #python 3 桌面计算器, _用于保存最后一次运算结果,并只在交互式环境中才有效 &gt;&gt;&gt; &hellip;">
+  <meta name="description" content="第一章 Python 简介 1.1 运行Python
+1.2 变量和算术表达式
+1.3 条件语句
+1.4 文件输入和输出
+1.5 字符串
+1.6 列表
+1.7 元组
+1.8 集合
+1.9 字典
+1.10 迭代与循环
+1.11 函数
+1.12 生成器
+1.13 协程
+1.14 对象与类
+1.15 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -68,7 +80,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/01/09/175416-python/">Python 参考手册 1</a></h1>
+      <h1 class="entry-title"><a href="/blog/2012/01/09/175416-python/">Python 参考手册 第一章</a></h1>
     
     
       <p class="meta">
@@ -91,9 +103,33 @@
   </header>
 
 
-  <div class="entry-content"><h1>1.1 运行Python</h1>
+  <div class="entry-content"><h1>第一章 Python 简介</h1>
 
-<pre><code>$ Python
+<ul>
+<li><a href="#1.1">1.1 运行Python</a></li>
+<li><a href="#1.2">1.2 变量和算术表达式</a></li>
+<li><a href="#1.3">1.3 条件语句</a></li>
+<li><a href="#1.4">1.4 文件输入和输出</a></li>
+<li><a href="#1.5">1.5 字符串</a></li>
+<li><a href="#1.6">1.6 列表</a></li>
+<li><a href="#1.7">1.7 元组</a></li>
+<li><a href="#1.8">1.8 集合</a></li>
+<li><a href="#1.9">1.9 字典</a></li>
+<li><a href="#1.10">1.10 迭代与循环</a></li>
+<li><a href="#1.11">1.11 函数</a></li>
+<li><a href="#1.12">1.12 生成器</a></li>
+<li><a href="#1.13">1.13 协程</a></li>
+<li><a href="#1.14">1.14 对象与类</a></li>
+<li><a href="#1.15">1.15 异常</a></li>
+<li><a href="#1.16">1.16 模块</a></li>
+<li><a href="#1.17">1.17 获得帮助</a></li>
+</ul>
+
+
+<h1 id=1.1>1.1 运行Python</h1>
+
+
+<pre><code>$ python
 &gt;&gt;&gt; print "Hello World"
 &gt;&gt;&gt; print("Hello World") #python 3
 </code></pre>
@@ -120,10 +156,311 @@ print "Hello World"
 <pre><code>&gt;&gt;&gt; raise SystemExit
 </code></pre>
 
-<h1>1.2 变量和算术表达式</h1>
+<h1 id=1.2>1.2 变量和算术表达式</h1>
 
-<pre><code>principal = 1000 # 初始金额
+
+<p><strong>程序清单1-1 简单的复利计算</strong></p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">principal</span> <span class="o">=</span> <span class="mi">1000</span>    <span class="c"># 初始金额</span>
+</span><span class='line'><span class="n">rate</span> <span class="o">=</span> <span class="mf">0.05</span>         <span class="c"># 利率</span>
+</span><span class='line'><span class="n">numyears</span> <span class="o">=</span> <span class="mi">5</span>        <span class="c"># 年数</span>
+</span><span class='line'><span class="n">year</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'><span class="k">while</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="n">numyears</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">principal</span> <span class="o">=</span> <span class="n">principal</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">rate</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">print</span> <span class="n">year</span><span class="p">,</span> <span class="n">principal</span> <span class="c"># 注意在Python3中是print(year, principal)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Python是一种动态类型语言,变量名无类型,但在执行过程中可以引用任意类型的数据</p>
+
+<pre><code># principal名称引用的值的类型由integer动态变为了float
+principal = principal * (1 + rate)
 </code></pre>
+
+<p>换行代表一条语句的结束,也可在同一行上使用分号隔开多条语句</p>
+
+<pre><code>principal = 1000; rate = 0.05; numyears = 5;
+</code></pre>
+
+<p>while语句对条件表达式进行判断,True执行循环主体,False退出循环.建议每个缩进层次用4个空格.</p>
+
+<p>字符串格式化运算符%</p>
+
+<pre><code># 将principal精度限制为2位
+print "%3d %0.2f" % (year, principal)
+print("%3d %0.2f" % (year, principal))  #Python 3
+</code></pre>
+
+<p>整数 &#8220;%d&#8221;, 字符串 &#8220;%s&#8221;, 浮点数 &#8220;%f&#8221;</p>
+
+<p>更新的字符串格式方法</p>
+
+<pre><code>print format(year, "3d"), format(principal, "0.2f")
+print(format(year, "3d"), format(principal, "0.2f"))  #Python 3
+</code></pre>
+
+<p>一次格式化多个字符串</p>
+
+<pre><code>print "{0:3d} {1:0.2f}".format(year, principal)
+print("{0:3d} {1:0.2f}".format(year, principal))    #Python 3    
+</code></pre>
+
+<h1 id=1.3>1.3 条件语句</h1>
+
+
+<pre><code>if a &lt; b:
+    print "Computer says Yes"
+else:
+    print "Computer says No"
+# if和elase主体用缩进表示,else子句可选.
+</code></pre>
+
+<p>用pass语句用于创建空子句</p>
+
+<pre><code>if a &lt; b:
+    pass    # Do nothing
+else:
+    print "Computer says No"
+</code></pre>
+
+<p>使用or, and和not关键字可以创建布尔类型表达式</p>
+
+<pre><code>if product == "game" and type == "pirate memory" \
+                     and not (age &lt; 4 or age &gt; 8):
+    print "I'll take it!"
+</code></pre>
+
+<p>elif语句, 处理多个测试</p>
+
+<pre><code>if suffix == ".htm":
+    content = "text/html"
+elif suffix == ".jpg":
+    content = "image/jpeg"
+elif suffix == ".png":
+    content = "image/png"
+else:
+    raise RuntimeError("Unknown content type")
+</code></pre>
+
+<p>in运算符用于检查某个值是否包含在另一个对象, 返回True/False</p>
+
+<pre><code>if 'spam' in s:
+    has_spam = True
+else:
+    has_spam = False
+# 可缩写为 has_spam = 'spam' in s
+</code></pre>
+
+<h1 id=1.4>1.4 文件输入和输出</h1>
+
+
+<p>打开文件并逐行读取内容</p>
+
+<pre><code>f = open("foo.txt")     #返回一个文件对象
+line = f.readline()     #调用文件的readline()方法
+while line:
+    print line,         #后面跟','将忽略换行符
+    # print(line, end='')   #Python 3
+    line = f.readline()
+f.close()
+</code></pre>
+
+<p>open()函数返回一个新的文件对象, readline()方法读取一行内容,包括结尾的换行符, 读至结尾返回空字符串</p>
+
+<pre><code>for line in open("foo.txt"):
+    print line,
+</code></pre>
+
+<p>将程序输出到文件中,print >> 文件</p>
+
+<pre><code>f = open("out", "w")    #打开文件以便写入
+while year &lt;= numyears:
+    principal = principal * (1 + rate)
+    print &gt;&gt;f, "%3d %0.2f" % (year, principal)
+    year += 1
+f.close()
+</code></pre>
+
+<p>>>语法只能用于Python 2中, Python 3:</p>
+
+<pre><code>print("%3d %0.2f" % (year, principal), file=f)
+</code></pre>
+
+<p>文件对象支持使用write()方法写入原始数据</p>
+
+<pre><code>f.write("%d %0.2f" % (year, principal))
+</code></pre>
+
+<p>输入流从读取sys.stdin文件,输出流写入sys.stdout文件</p>
+
+<pre><code>import sys
+sys.stdout.write("Enter your name :")
+name = sys.stdin.readline()
+#Python 2可简化为
+name = raw_input("Enter your name :")
+#Python 3 raw_input函数叫做input()
+</code></pre>
+
+<h1 id=1.5>1.5 字符串</h1>
+
+
+<p>将字符串放在单引号,双引号,三引号中创建字符串</p>
+
+<pre><code>a = "Hello World"
+b = 'Python is groovy'
+c = """Computer says 'No'"""
+</code></pre>
+
+<p>引号必须对应匹配,单引号和双引号的字符串必须在一个逻辑行.三引号可放于多个文本行</p>
+
+<pre><code>print '''Content-type: text/html
+
+&lt;h1&gt; Hello World &lt;/h1&gt;
+Click &lt;a href="http://www.python.org"&gt;here&lt;/a&gt;.
+'''
+</code></pre>
+
+<p>字符串存储在以0开始, 使用整数索引的字符序列中. 要提取其中一个字符, 可以使用索引运算符s[i]</p>
+
+<pre><code>a = "Hello World"
+b = a[4]    # b = 'o'
+</code></pre>
+
+<p>使用切片运算符s[i:j]提取子字符串. 省略i, 起始开始. 省略j, 结束为至</p>
+
+<pre><code>c = a[:5]   # c = "Hello"
+d = a[6:]   # d = "World"  ## d = a[5:] d = " World"
+e = a[3:8]  # e = "lo Wo"
+</code></pre>
+
+<p>+运算符连接字符串</p>
+
+<pre><code>g = a + " This is a test"
+</code></pre>
+
+<p>Python不会把字符串的值转换成数值</p>
+
+<pre><code>x = "37"
+y = "42"
+z = x + y   # z = "3742" (字符串连接)
+</code></pre>
+
+<p>int(), float() 将字符串值转换为数值</p>
+
+<pre><code>z = int(x) + int(y) # z = 79 (Integer +)
+</code></pre>
+
+<p>str(), repr(), format() 将非字符串值转换为字符串形式</p>
+
+<pre><code>s = "The value of x is " + str(x)
+s = "The value of x is " + repr(x)
+s = "The value of x is " + format(x,"4d")
+</code></pre>
+
+<p>str()输出与print相同, repr()表示输出对象在程序中的值</p>
+
+<pre><code>&gt;&gt;&gt; x = 3.4
+&gt;&gt;&gt; str(x)
+&gt;&gt;&gt; repr(x)     # 计算机无法精确表示十进制小数,
+&gt;&gt;&gt; format(x, "0.5f")
+</code></pre>
+
+<h1 id=1.6>1.6 列表</h1>
+
+
+<p>将任意对象放在方括号中创建列表</p>
+
+<pre><code>name = [ "Dave", "Mark", "Ann", "Phil" ]
+</code></pre>
+
+<p>列表从0开始整数索引,索引运算符可访问并修改列表的项</p>
+
+<pre><code>a = names[2]        # 返回列表的第3项"Ann"
+name[0] = "Jeff"    # 将第1项改为"Jeff"
+</code></pre>
+
+<p>append(), 将新项追加到列表末尾</p>
+
+<pre><code>names.append("Paula")
+</code></pre>
+
+<p>insert(), 将一项插入到列表</p>
+
+<pre><code>names.insert(2, "Thomas")
+</code></pre>
+
+<p>切片运算符, 提取子列表并对其赋值</p>
+
+<pre><code>b = names[0:2]      # 返回[ "Jeff", "Mark" ]
+c = names[2:]       # 返回[ "Thomas", "Ann", "Phil", "Paula" ]
+names[1] = 'Jeff'   # 将names中第第2项替换为'Jeff'
+names[0:2] = ['Dave', 'Mark', 'Jeff']   #将列表的头两项替换为右边的列表
+</code></pre>
+
+<p>+运算符连接列表</p>
+
+<pre><code>a = [1,2,3] + [4,5] # 结果是[1,2,3,4,5]
+</code></pre>
+
+<p>创建空列表</p>
+
+<pre><code>names = []      # 一个空列表
+names = list()  # 一个空列表
+</code></pre>
+
+<p>列表可以包括任意种类的Python对象,包括其他列表</p>
+
+<pre><code>a = [1,"Dave",3.14, ["Mark", 7, 9, [100,101]], 10]
+</code></pre>
+
+<p>嵌套列表需要多次索引运算进行访问</p>
+
+<pre><code>a[1]        # 返回"Dave"
+a[3][2]     # 返回9
+a[3][3][1]  # 返回101
+</code></pre>
+
+<p><strong>程序清单1-2 列表的高级特性</strong></p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">sys</span>              <span class="c"># 加载sys模块</span>
+</span><span class='line'><span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span>   <span class="c"># 检查命令行参数的数量</span>
+</span><span class='line'>    <span class="k">print</span> <span class="s">&quot;Please supply a filename&quot;</span>
+</span><span class='line'>    <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'><span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>   <span class="c"># 命令行上的文件名</span>
+</span><span class='line'><span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>   <span class="c"># 将所有行读取到一个列表中</span>
+</span><span class='line'><span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># 将所有输入值从字符串转换为浮点数</span>
+</span><span class='line'><span class="n">fvalues</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># 打印最小值和最大值</span>
+</span><span class='line'><span class="k">print</span> <span class="s">&quot;The minimum value is &quot;</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">fvalues</span><span class="p">)</span>
+</span><span class='line'><span class="k">print</span> <span class="s">&quot;The maximum value is &quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">fvalues</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
 </div>
   
   
@@ -1386,14 +1723,14 @@ aside.sidebar a {
   
     <section>
   <h1>About Me</h1>
-  <p>A little something about me.</p>
+  <img src="/images/newton.gif">
 </section>
 <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2012/01/09/175416-python/">python 参考手册 1</a>
+        <a href="/blog/2012/01/09/175416-python/">python 参考手册 第一章</a>
       </li>
     
       <li class="post">
@@ -1413,7 +1750,7 @@ aside.sidebar a {
 
 <section>
 <h1>Categories</h1>
-<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 160.0%'>Blog(2)</a>  <a href='/blog/categories/git' style='font-size: 130.0%'>Git(1)</a>  <a href='/blog/categories/python' style='font-size: 130.0%'>Python(1)</a> </span>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 160.0%'>Blog(2)</a>  <a href='/blog/categories/git' style='font-size: 130.0%'>Git(1)</a>  <a href='/blog/categories/python' style='font-size: 130.0%'>Python(1)</a>  <a href='/blog/categories/read' style='font-size: 130.0%'>Read(1)</a> </span>
 </section>
 
 
