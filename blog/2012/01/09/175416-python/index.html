@@ -457,7 +457,479 @@ a[3][3][1]  # 返回101
 </span></code></pre></td></tr></table></div></figure>
 
 
+<p>转换值的代码可简化为</p>
 
+<pre><code>fvalues = [float(line) for line in open(sys.argv[1])]
+</code></pre>
+
+<h1 id=1.7>1.7 元组</h1>
+
+
+<p>将任意对象放在圆括号中创建列表</p>
+
+<pre><code>stock = ('GOOG', 100, 490.10)
+address = ('www.python.org', 80)
+person = (first_name, last_name, phone)
+</code></pre>
+
+<p>可以省略圆括号</p>
+
+<pre><code>stock = 'GOOG', 100, 490.10
+address = 'www.python.org', 80
+person = first_name, last_name, phone
+</code></pre>
+
+<p>0个和1个元素的元组</p>
+
+<pre><code>a = ()      # 0-元组(空元组)
+b = (item,) # 1-元组(注意随后的逗号)
+c = (item,) # 1-元组(注意随后的逗号)
+</code></pre>
+
+<p>将元祖解包为一组变量</p>
+
+<pre><code>name, shares, price = stock
+host, port = address
+first_name, last_name, phone = person
+</code></pre>
+
+<p>创建元组后不能对其修改(替换,删除,插入), 列表可以,但如果程序创建了大量小列表(项&lt;12),会造成内存浪费</p>
+
+<p>字符串split()方法按指定的分割符将一个字符串划分为一个字段列表</p>
+
+<pre><code># 文件中各行的格式为"name, shares, price"
+filename = "portfolio.csv"
+portfolio = []
+for line in open(filename):
+    fields = line.split(",")        # 将每行划分为一个列表
+    name = fields[0]                # 提取并转换每个字段
+    shares = int(fields[1])
+    price = float(fields[2])
+    stock = (name, shares, price)   # 创建一个元祖(name, shares, price)
+    portfolio.append(stock)         # 将记录追加到列表中
+&gt;&gt;&gt; portfolio[0]
+&gt;&gt;&gt; portfolio[1]
+&gt;&gt;&gt; portfolio[1][1]
+&gt;&gt;&gt; portfolio[1][2]
+# 更简单的方法
+total = 0.0
+for name, shares, price in portfolio:
+    total += shares * price
+</code></pre>
+
+<h1 id=1.8>1.8 集合</h1>
+
+
+<p>使用set函数创建集合</p>
+
+<pre><code>s = set([3,5,9,10])     # 创建一个数值集合
+t = set("Hello")        # 创建一个唯一字符的集合
+</code></pre>
+
+<p>集合是无序的</p>
+
+<pre><code>&gt;&gt;&gt; t
+set(['H', 'e', 'l', 'o'])   # 注意只出现了一个'l'
+a = t | s       # t和s的并集
+b = t &amp; s       # t和s的交集
+c = t - s       # 求差集(项在t中,但不在s中)
+d = t ^ s       # 对称基集(项在t或s中, 但不会同时出现在二者中)
+</code></pre>
+
+<p>add(), update()在集合中添加新项</p>
+
+<pre><code>t.add('x')              # 添加一项
+s.update([10,37,42])    # 在s中添加多项
+</code></pre>
+
+<p>remove() 删除一项</p>
+
+<pre><code>t.remove('H')
+</code></pre>
+
+<h1 id=1.9>1.9 字典</h1>
+
+
+<p>将关联数组或散列表放入大括号中{}创建字典</p>
+
+<pre><code>stock = {
+    "name"  : "GOOG",
+    "shares": 100,
+    "price" : 490.10    
+}
+</code></pre>
+
+<p>访问字典成员</p>
+
+<pre><code>name = stock["name"]
+value = stock["shares"] * stock["price"]
+</code></pre>
+
+<p>插入修改对象</p>
+
+<pre><code>stock["shares"] = 75
+stock["date"]   = "June 7, 2007" 
+</code></pre>
+
+<p>可变对象不可用作关键字
+字典可作为快速查找序数据的一个容器</p>
+
+<pre><code># 股票价格
+price = {
+    "GOOG" : 490.10,
+    "AAPL" : 123.50,
+    "IBM"  : 91.50,
+    "MSFT" : 52.13
+}
+</code></pre>
+
+<p>创建空字典</p>
+
+<pre><code>prices = {}     # 一个空字典
+prices = dict{} # 一个空字典
+</code></pre>
+
+<p>in运算符测试是否为字典成员</p>
+
+<pre><code>if "SCOX" in prices:
+    p = prices["SCOX"]
+else:
+    p = 0.0
+# 更简洁的方法
+p = price.get("SCOX", 0.0)
+</code></pre>
+
+<p>获得字典关键字列表</p>
+
+<pre><code>syms = list(prints) # syms = ["AAPL", "MSFT", "IBM", "GOOG"]
+</code></pre>
+
+<p>del语句删除字典元素</p>
+
+<pre><code>del prices["MSFT"]
+</code></pre>
+
+<h1 id=1.10>1.10 迭代与循环</h1>
+
+
+<p>每次迭代将列表[1,2,3,4,&#8230;&#8230;,9]中的下一个值赋给变量n.</p>
+
+<pre><code>for n in [1,2,3,4,5,6,7,8,9]:
+    print "2 to the %d power is %d" % (n, 2**n)
+# 更简洁的方法
+for n in range(1,10):
+    print "2 to the %d power is %d" % (n, 2**n)
+</code></pre>
+
+<p>range(i,j,[,步进值]) i到j-1, i省略默认为0</p>
+
+<pre><code>a = range(5)        # a = 0,1,2,3,4
+a = range(1,8)      # a = 1,2,3,4,5,6,7
+c = range(1,14,3)   # a = 0,3,6,9,12
+d = range(8,1,-1)   # a = 8,7,6,5,4,3,2
+</code></pre>
+
+<p>xrange()用于处理极大范围的整数值.Python3中已更名为range()</p>
+
+<p>for语句可迭代多种对象,包括字符串, 列表, 字典和文件</p>
+
+<pre><code>a = "Hello World"
+# 打印出a中的每个字符
+for c in a:
+    print c
+
+b = ["Dave", "Mark", "Ann", "Phil"]
+# 打印出一个列表的成员
+for name in b:
+    print name
+c = { 'GOOG':490.10, 'IBM':91.50, 'AAPL':123.15 }
+# 打印出一个字典的所有成员
+for key in c:
+    print key, c[key]
+
+# 打印一个文件中的所有行
+f = open("foo.txt")
+for line in f:
+    print line,
+</code></pre>
+
+<h1 id=1.11>1.11 函数</h1>
+
+
+<p>使用def语句创建函数</p>
+
+<pre><code>def remainder(a,b):
+    q = a // b      # //是截断除法运算符
+    r = a - q*b
+    return r 
+</code></pre>
+
+<p>调用函数</p>
+
+<pre><code>result = remainder(37,15)
+</code></pre>
+
+<p>让函数返回多个值</p>
+
+<pre><code>def divide(a,b):
+    q = q // b      # 如果a和b是整数, q就是整数
+    r = a - q*b
+    return (q,r)
+</code></pre>
+
+<p>讲结果放到单独的变量中</p>
+
+<pre><code>quotient, remainder = divide(1456,33)
+</code></pre>
+
+<p>给函数参数提供默认值, 调用此函数时可省略</p>
+
+<pre><code>def connect(hostname, port, timeout=300):
+    # 函数体
+connect('www.python.org', 80)
+</code></pre>
+
+<p>使用关键字参数调用函数</p>
+
+<pre><code>connect(port=80, hostname="www.python.org")
+</code></pre>
+
+<p>变量定义在函数中,作用域只在函数体内,要修改全局变量的值, 可用global语句</p>
+
+<pre><code>count = 0
+...
+def foo():
+    global count
+    count += 1      # 更改全局变量count
+</code></pre>
+
+<h1 id=1.12>1.12 生成器</h1>
+
+
+<p>yield语句可让函数生成一个结果序列</p>
+
+<pre><code>def countdown(n):
+    print "Counting down!"
+    while n &gt; 0:
+        yield n     # 生成一个值(n)
+        n -= 1
+</code></pre>
+
+<p>生成器创建一个对象, 连续调用next()方法生成结果序列(Python3中是<strong>next</strong>())</p>
+
+<pre><code>&gt;&gt;&gt; c = countdown(5)
+&gt;&gt;&gt; c.next()
+&gt;&gt;&gt; c.next()
+&gt;&gt;&gt; c.next()
+&gt;&gt;&gt;
+# 通常使用for 循环调用
+&gt;&gt;&gt; for i in countdown(5):
+    print i,
+</code></pre>
+
+<p>模拟UNIX tail -f命令</p>
+
+<pre><code>import time
+def tail(f):
+    f.seek(0,2)     # 移动到EOF
+    while True:
+        line = f.readline() #尝试读取一个新的文件行
+        if not line:
+            time.sleep(0.1)
+            continue
+        yield line
+</code></pre>
+
+<p>在多行中查找特定字符串</p>
+
+<pre><code>def grep(lines, searchtext):
+    for line in lines:
+        if searchtext in line:  yield line
+
+# UNIX "tail -f | grep python"命令的python实现
+wwwlog = tail(open("access-log"))
+pylines = grep(wwwlog, "python")
+for line in pylines:
+    print line,
+</code></pre>
+
+<h1 id=1.13>1.13 协程</h1>
+
+
+<p>以表达式(yield)形式创建协程</p>
+
+<pre><code>def print_matches(matchtext):
+    print "Looking for", matchtext
+    while True:
+        line = (yield)      # 获得一行文本
+        if matchtext in line:
+            print line
+</code></pre>
+
+<p>向前执行第一条(yield)语句, 然后用send()发送数据</p>
+
+<pre><code>&gt;&gt;&gt; matcher = print_matches("python")
+&gt;&gt;&gt; matcher.next()      # 向前执行到第一条(yield)语句
+&gt;&gt;&gt; matcher.send("Hello World")
+&gt;&gt;&gt; matcher.send("python is cool")
+&gt;&gt;&gt; matcher.send("yow!")
+&gt;&gt;&gt; matcher.close()     # 匹配器函数调用结束
+</code></pre>
+
+<p>共同使用生成器和协程的例子</p>
+
+<pre><code># 一组匹配器协程
+matchers = [
+    print_matches("python"),
+    print_matches("guido"),
+    print_matches("jython")
+]
+# 通过调用next()准备所有的匹配器
+for m in matchers: m.next()
+# 为所有匹配器提供一个活动的日志文件, 为此
+# 必须有一台活动的Web服务器将数据写入日志
+wwwlog = tail(open("access-log"))
+for line in wwwlog:
+    for m in matchers:
+        m.send(line)    # 将数据发送到每个匹配器协程中
+</code></pre>
+
+<h1 id=1.14>1.14 对象与类</h1>
+
+
+<p>程序中所有值都是对象. 对象由内部数据和各种方法组成</p>
+
+<pre><code>items = [37,42]     # 创建一个列表对象
+items.append(73)    # 调用append()方法
+</code></pre>
+
+<p>列出对象可用的方法</p>
+
+<pre><code>&gt;&gt;&gt; items = [37,42]
+&gt;&gt;&gt; dir(items)
+</code></pre>
+
+<p>以双下划线开始和结束的是特殊方法</p>
+
+<pre><code>&gt;&gt;&gt; items.__add__([73,101])
+</code></pre>
+
+<p>class语句用于定义新的对象类型. object是所有Python类型的根类型, def语句定义方法, 方法的self参数作为第一个参数, 指向对象本身. <strong>init</strong>用于初始化对象</p>
+
+<pre><code>class Stack(object):
+    def __init__(self):     # 初始化栈
+        self.stack = []
+    def push(self, object):
+        self.stack.append(object)
+    def pop(self):
+        return self.stack.pop()
+    def length(self):
+        return len(self.stack)
+</code></pre>
+
+<p>使用类</p>
+
+<pre><code>s = Stack()     # 创建一个栈
+s.push("Dave")  # 在栈中放入一些内容
+s.push(42)
+s.push([3,4,5])
+x = s.pop()     # x的值为[3,4,5]
+y = s.pop()     # y的值为42
+del s           # 删除s
+</code></pre>
+
+<p>继承list</p>
+
+<pre><code>class Stack(list):
+    # 为栈接口添加push()方法
+    # 注意: 列表已提供一个pop()方法
+    def push(self, object):
+        self.append(object)
+</code></pre>
+
+<p>静态方法</p>
+
+<pre><code>class EventHanlder(object):
+    @staticmethod
+    def dispatcherThread():
+        while (1):
+            # 等待请求
+EventHandler.dispatcherTread()  # 像函数一样调用方法
+</code></pre>
+
+<h1 id=1.15>1.15 异常</h1>
+
+
+<p>如果程序出现错误会引发异常，可以使用try和except语句捕获并处理异常</p>
+
+<pre><code>try:
+    f = open("file.txt","r")
+except IOError as e:
+    print e
+# 如果出现IOError, 引发错误的详细信息将保存在对象e中
+</code></pre>
+
+<p>raise语句用于手工引发异常</p>
+
+<pre><code>raise RuntimeError("Computer says no")
+</code></pre>
+
+<p>管理系统资源，</p>
+
+<pre><code>import threading
+message_lock = threading.Lock()
+...
+with message_lock:
+    message.add(newmessage)
+# with语句执行会自动获取message_lock对象, 离开with代码块后锁定会自动释放
+</code></pre>
+
+<h1 id=1.16>1.16 模块</h1>
+
+
+<p>模块文件的后缀必须是.py</p>
+
+<pre><code># file : div.py
+def divide(a, b):
+    q = a/b     # 如果a和b是整数, 则q也是整数
+    r = a - q*b
+    return (q,r)
+# 在其他程序中import该模块
+import div
+a, b = div.divide(2305, 29)
+# import语句创建新的命名空间，并在新的命名空间执行.py相关的语句.
+</code></pre>
+
+<p>使用不同的名称导入模块</p>
+
+<pre><code>import div as foo
+a ,b = foo.divide(2305, 29)     # 不再使用div前缀
+</code></pre>
+
+<p>把模块所有内容加载到当前命名空间</p>
+
+<pre><code>from div import *
+</code></pre>
+
+<p>dir函数可列出模块内容</p>
+
+<pre><code>&gt;&gt;&gt; import string
+&gt;&gt;&gt; dir(string)
+</code></pre>
+
+<h1 id=1.17>1.17 获得帮助</h1>
+
+
+<p>help()获得内置模块及Python相关信息</p>
+
+<p>help(&#8216;模块名&#8217;)获得具体模块信息</p>
+
+<p><strong>doc</strong>属性, 获得函数用途的文档说明</p>
+
+<pre><code>&gt;&gt;&gt; print issubclass.__doc__
+</code></pre>
+
+<p>pydoc命令返回python模块文档</p>
 </div>
 
 
@@ -504,6 +976,8 @@ a[3][3][1]  # 返回101
         <a class="basic-alignment left" href="/blog/2012/01/09/172719-git/" title="Previous Post: git 命令快速参考">&laquo; git 命令快速参考</a>
       
       
+        <a class="basic-alignment right" href="/blog/2012/01/10/181350-munin/" title="next Post: munin ">munin  &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -519,6 +993,10 @@ a[3][3][1]  # 返回101
 <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/01/10/181350-munin/">munin </a>
+      </li>
     
       <li class="post">
         <a href="/blog/2012/01/09/175416-python/">python 参考手册 第一章</a>
@@ -541,7 +1019,7 @@ a[3][3][1]  # 返回101
 
 <section>
 <h1>Categories</h1>
-<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 160.0%'>Blog(2)</a>  <a href='/blog/categories/git' style='font-size: 130.0%'>Git(1)</a>  <a href='/blog/categories/python' style='font-size: 130.0%'>Python(1)</a>  <a href='/blog/categories/read' style='font-size: 130.0%'>Read(1)</a> </span>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 160.0%'>Blog(2)</a>  <a href='/blog/categories/git' style='font-size: 130.0%'>Git(1)</a>  <a href='/blog/categories/monitor' style='font-size: 130.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 130.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 130.0%'>Python(1)</a>  <a href='/blog/categories/read' style='font-size: 130.0%'>Read(1)</a> </span>
 </section>
 
 
