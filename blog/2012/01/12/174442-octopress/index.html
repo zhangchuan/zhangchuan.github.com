@@ -5,11 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Category: read - 研究中心</title>
+  <title>octopress tips - 研究中心</title>
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="Category: read">
+  <meta name="description" content="Theming &amp; Customization source/_includes/custom Landing Page vs. Blog Index $ mv source/index.html source/blog/index.html
+$ rake new_page[index. &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +19,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://zhangchuan.github.comblog/categories/read">
+  <link rel="canonical" href="http://zhangchuan.github.com/blog/2012/01/12/174442-octopress">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -59,49 +60,103 @@
   <div id="main">
     <div id="content">
       <div>
-<article role="article">
+<article class="hentry" role="article">
   
   <header>
-    <h1 class="entry-title">Category: Read</h1>
+    
+      <h1 class="entry-title">Octopress Tips</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-12T17:44:00+08:00" pubdate data-updated="true">Jan 12<span>th</span>, 2012</time>
+        
+      </p>
     
   </header>
-  
-  <div id="blog-archives" class="category">
 
 
+<div class="entry-content"><h1>Theming &amp; Customization</h1>
 
-  
-  <h2>2012</h2>
+<h2>source/_includes/custom</h2>
 
-<article>
-  
-<h1><a href="/blog/2012/01/12/143202-redis/">redis cookbook</a></h1>
-<time datetime="2012-01-12T14:32:00+08:00" pubdate><span class='month'>Jan</span> <span class='day'>12</span> <span class='year'>2012</span></time>
+<h2>Landing Page vs. Blog Index</h2>
 
-<footer>
-  <span class="categories">posted in <a class='category' href='/blog/categories/database/'>database</a>, <a class='category' href='/blog/categories/read/'>read</a>, <a class='category' href='/blog/categories/redis/'>redis</a></span>
-</footer>
+<pre><code>$ mv source/index.html source/blog/index.html
+$ rake new_page[index.html]
+# add
+blog_index_dir = 'source/blog'
+</code></pre>
 
+<h2>Changing the <HEAD></h2>
 
-</article>
+<p>source/_includes/custom/head.html</p>
 
+<pre><code>&lt;!--Fonts from Google"s Web font directory at http://google.com/webfonts --&gt;
+&lt;link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"&gt;
+&lt;link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"&gt;
+</code></pre>
 
-
-<article>
-  
-<h1><a href="/blog/2012/01/09/175416-python/">python 参考手册 第一章</a></h1>
-<time datetime="2012-01-09T17:54:00+08:00" pubdate><span class='month'>Jan</span> <span class='day'>09</span> <span class='year'>2012</span></time>
-
-<footer>
-  <span class="categories">posted in <a class='category' href='/blog/categories/python/'>python</a>, <a class='category' href='/blog/categories/read/'>read</a></span>
-</footer>
-
-
-</article>
-
+<p>source/_includes/custom/asides/about.html</p>
 </div>
 
+
+  <footer>
+    <p class="meta">
+      
   
+
+<span class="byline author vcard">Posted by <span class="fn">Cloud.Zhang</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-12T17:44:00+08:00" pubdate data-updated="true">Jan 12<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/blog/'>blog</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/01/12/143202-redis/" title="Previous Post: redis cookbook">&laquo; redis cookbook</a>
+      
+      
+    </p>
+  </footer>
 </article>
 
 </div>

@@ -4,7 +4,7 @@
   <title><![CDATA[研究中心]]></title>
   <link href="http://zhangchuan.github.com/atom.xml" rel="self"/>
   <link href="http://zhangchuan.github.com/"/>
-  <updated>2012-01-12T17:41:12+08:00</updated>
+  <updated>2012-01-12T17:51:01+08:00</updated>
   <id>http://zhangchuan.github.com/</id>
   <author>
     <name><![CDATA[Cloud.Zhang]]></name>
@@ -12,6 +12,36 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[octopress tips]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/01/12/174442-octopress/"/>
+    <updated>2012-01-12T17:44:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/01/12/174442-octopress</id>
+    <content type="html"><![CDATA[<h1>Theming &amp; Customization</h1>
+
+<h2>source/_includes/custom</h2>
+
+<h2>Landing Page vs. Blog Index</h2>
+
+<pre><code>$ mv source/index.html source/blog/index.html
+$ rake new_page[index.html]
+# add
+blog_index_dir = 'source/blog'
+</code></pre>
+
+<h2>Changing the <HEAD></h2>
+
+<p>source/_includes/custom/head.html</p>
+
+<pre><code>&lt;!--Fonts from Google"s Web font directory at http://google.com/webfonts --&gt;
+&lt;link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"&gt;
+&lt;link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"&gt;
+</code></pre>
+
+<p>source/_includes/custom/asides/about.html</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[redis cookbook]]></title>
