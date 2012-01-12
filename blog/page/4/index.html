@@ -1,24 +1,109 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: read | 研究中心]]></title>
-  <link href="http://zhangchuan.github.com/blog/categories/read/atom.xml" rel="self"/>
-  <link href="http://zhangchuan.github.com/"/>
-  <updated>2012-01-12T17:39:29+08:00</updated>
-  <id>http://zhangchuan.github.com/</id>
-  <author>
-    <name><![CDATA[Cloud.Zhang]]></name>
-    
-  </author>
-  <generator uri="http://octopress.org/">Octopress</generator>
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>研究中心</title>
+  <meta name="author" content="Cloud.Zhang">
 
   
-  <entry>
-    <title type="html"><![CDATA[python 参考手册 第一章]]></title>
-    <link href="http://zhangchuan.github.com/blog/2012/01/09/175416-python/"/>
-    <updated>2012-01-09T17:54:00+08:00</updated>
-    <id>http://zhangchuan.github.com/blog/2012/01/09/175416-python</id>
-    <content type="html"><![CDATA[<h1>第一章 Python 简介</h1>
+  <meta name="description" content="第一章 Python 简介 1.1 运行Python
+1.2 变量和算术表达式
+1.3 条件语句
+1.4 文件输入和输出
+1.5 字符串
+1.6 列表
+1.7 元组
+1.8 集合
+1.9 字典
+1.10 迭代与循环
+1.11 函数
+1.12 生成器
+1.13 协程
+1.14 对象与类
+1.15 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://zhangchuan.github.com/blog/page/4">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="研究中心" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:zhangchuan.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2012/01/09/175416-python/">Python 参考手册 第一章</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-09T17:54:00+08:00" pubdate data-updated="true">Jan 9<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h1>第一章 Python 简介</h1>
 
 <ul>
 <li><a href="#1.1">1.1 运行Python</a></li>
@@ -74,20 +159,26 @@ print "Hello World"
 <h1 id=1.2>1.2 变量和算术表达式</h1>
 
 
-<p><strong>程序清单1-1 简单的复利计算</strong>
-{% codeblock lang:python %}
-principal = 1000    # 初始金额
-rate = 0.05         # 利率
-numyears = 5        # 年数
-year = 1
-while year &lt;= numyears:</p>
+<p><strong>程序清单1-1 简单的复利计算</strong></p>
 
-<pre><code>principal = principal * (1 + rate)
-print year, principal # 注意在Python3中是print(year, principal)
-</code></pre>
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">principal</span> <span class="o">=</span> <span class="mi">1000</span>    <span class="c"># 初始金额</span>
+</span><span class='line'><span class="n">rate</span> <span class="o">=</span> <span class="mf">0.05</span>         <span class="c"># 利率</span>
+</span><span class='line'><span class="n">numyears</span> <span class="o">=</span> <span class="mi">5</span>        <span class="c"># 年数</span>
+</span><span class='line'><span class="n">year</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'><span class="k">while</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="n">numyears</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">principal</span> <span class="o">=</span> <span class="n">principal</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">rate</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">print</span> <span class="n">year</span><span class="p">,</span> <span class="n">principal</span> <span class="c"># 注意在Python3中是print(year, principal)</span>
+</span></code></pre></td></tr></table></div></figure>
 
-<p>{% endcodeblock %}
-Python是一种动态类型语言,变量名无类型,但在执行过程中可以引用任意类型的数据</p>
+
+<p>Python是一种动态类型语言,变量名无类型,但在执行过程中可以引用任意类型的数据</p>
 
 <pre><code># principal名称引用的值的类型由integer动态变为了float
 principal = principal * (1 + rate)
@@ -107,7 +198,7 @@ print "%3d %0.2f" % (year, principal)
 print("%3d %0.2f" % (year, principal))  #Python 3
 </code></pre>
 
-<p>整数 "%d", 字符串 "%s", 浮点数 "%f"</p>
+<p>整数 &#8220;%d&#8221;, 字符串 &#8220;%s&#8221;, 浮点数 &#8220;%f&#8221;</p>
 
 <p>更新的字符串格式方法</p>
 
@@ -336,28 +427,38 @@ a[3][2]     # 返回9
 a[3][3][1]  # 返回101
 </code></pre>
 
-<p><strong>程序清单1-2 列表的高级特性</strong>
-{% codeblock lang:python %}
-import sys              # 加载sys模块
-if len(sys.argv) != 2   # 检查命令行参数的数量</p>
+<p><strong>程序清单1-2 列表的高级特性</strong></p>
 
-<pre><code>print "Please supply a filename"
-raise SystemExit(1)
-</code></pre>
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">sys</span>              <span class="c"># 加载sys模块</span>
+</span><span class='line'><span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span>   <span class="c"># 检查命令行参数的数量</span>
+</span><span class='line'>    <span class="k">print</span> <span class="s">&quot;Please supply a filename&quot;</span>
+</span><span class='line'>    <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'><span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>   <span class="c"># 命令行上的文件名</span>
+</span><span class='line'><span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>   <span class="c"># 将所有行读取到一个列表中</span>
+</span><span class='line'><span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># 将所有输入值从字符串转换为浮点数</span>
+</span><span class='line'><span class="n">fvalues</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># 打印最小值和最大值</span>
+</span><span class='line'><span class="k">print</span> <span class="s">&quot;The minimum value is &quot;</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">fvalues</span><span class="p">)</span>
+</span><span class='line'><span class="k">print</span> <span class="s">&quot;The maximum value is &quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">fvalues</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
 
-<p>f = open(sys.argv[1])   # 命令行上的文件名
-lines = f.readlines()   # 将所有行读取到一个列表中
-f.close()</p>
-
-<h1>将所有输入值从字符串转换为浮点数</h1>
-
-<p>fvalues = [float(line) for line in lines]</p>
-
-<h1>打印最小值和最大值</h1>
-
-<p>print "The minimum value is ", min(fvalues)
-print "The maximum value is ", max(fvalues)
-{% endcodeblock %}</p>
 
 <p>转换值的代码可简化为</p>
 
@@ -514,7 +615,7 @@ p = price.get("SCOX", 0.0)
 <h1 id=1.10>1.10 迭代与循环</h1>
 
 
-<p>每次迭代将列表[1,2,3,4,......,9]中的下一个值赋给变量n.</p>
+<p>每次迭代将列表[1,2,3,4,&#8230;&#8230;,9]中的下一个值赋给变量n.</p>
 
 <pre><code>for n in [1,2,3,4,5,6,7,8,9]:
     print "2 to the %d power is %d" % (n, 2**n)
@@ -824,7 +925,7 @@ a ,b = foo.divide(2305, 29)     # 不再使用div前缀
 
 <p>help()获得内置模块及Python相关信息</p>
 
-<p>help('模块名')获得具体模块信息</p>
+<p>help(&#8216;模块名&#8217;)获得具体模块信息</p>
 
 <p><strong>doc</strong>属性, 获得函数用途的文档说明</p>
 
@@ -832,7 +933,104 @@ a ,b = foo.divide(2305, 29)     # 不再使用div前缀
 </code></pre>
 
 <p>pydoc命令返回python模块文档</p>
-]]></content>
-  </entry>
+</div>
   
-</feed>
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/5/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/3/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>About Me</h1>
+  <img src="/images/newton.gif">
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/01/12/143202-redis/">redis cookbook</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/11/100854-redis/">redis.conf 配置参数</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/10/181350-munin/">munin </a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/09/175416-python/">python 参考手册 第一章</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/09/172719-git/">git 命令快速参考</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/08/183821-markdown/">markdown 语法说明</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/08/031317-octopress/">octopress 像黑客一样写博客</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<h1>Categories</h1>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 160.0%'>Blog(2)</a>  <a href='/blog/categories/git' style='font-size: 130.0%'>Git(1)</a>  <a href='/blog/categories/monitor' style='font-size: 130.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 130.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 130.0%'>Python(1)</a>  <a href='/blog/categories/read' style='font-size: 130.0%'>Read(1)</a>  <a href='/blog/categories/redis' style='font-size: 130.0%'>Redis(1)</a> </span>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p align="right" style="width: 75%">
+  Copyright &copy; 2012 - Cloud.Zhang
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
