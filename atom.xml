@@ -4,7 +4,7 @@
   <title><![CDATA[研究中心]]></title>
   <link href="http://zhangchuan.github.com/atom.xml" rel="self"/>
   <link href="http://zhangchuan.github.com/"/>
-  <updated>2012-01-12T17:51:01+08:00</updated>
+  <updated>2012-01-12T17:53:04+08:00</updated>
   <id>http://zhangchuan.github.com/</id>
   <author>
     <name><![CDATA[Cloud.Zhang]]></name>
@@ -30,7 +30,7 @@ $ rake new_page[index.html]
 blog_index_dir = 'source/blog'
 </code></pre>
 
-<h2>Changing the <HEAD></h2>
+<h2>Changing the &lt;HEAD></h2>
 
 <p>source/_includes/custom/head.html</p>
 

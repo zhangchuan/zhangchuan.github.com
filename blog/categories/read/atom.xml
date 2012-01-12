@@ -4,7 +4,7 @@
   <title><![CDATA[Category: read | 研究中心]]></title>
   <link href="http://zhangchuan.github.com/blog/categories/read/atom.xml" rel="self"/>
   <link href="http://zhangchuan.github.com/"/>
-  <updated>2012-01-12T17:51:01+08:00</updated>
+  <updated>2012-01-12T17:53:07+08:00</updated>
   <id>http://zhangchuan.github.com/</id>
   <author>
     <name><![CDATA[Cloud.Zhang]]></name>
@@ -317,29 +317,18 @@ print "Hello World"
 
 
 <p><strong>程序清单1-1 简单的复利计算</strong>
-<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">principal</span> <span class="o">=</span> <span class="mi">1000</span>    <span class="c"># 初始金额</span>
-</span><span class='line'><span class="n">rate</span> <span class="o">=</span> <span class="mf">0.05</span>         <span class="c"># 利率</span>
-</span><span class='line'><span class="n">numyears</span> <span class="o">=</span> <span class="mi">5</span>        <span class="c"># 年数</span>
-</span><span class='line'><span class="n">year</span> <span class="o">=</span> <span class="mi">1</span>
-</span><span class='line'><span class="k">while</span> <span class="n">year</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="o">=</span> <span class="n">numyears</span><span class="p">:</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">principal</span> <span class="o">=</span> <span class="n">principal</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">rate</span><span class="p">)</span>
-</span><span class='line'><span class="k">print</span> <span class="n">year</span><span class="p">,</span> <span class="n">principal</span> <span class="c"># 注意在Python3中是print(year, principal)</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
+{% codeblock lang:python %}
+principal = 1000    # 初始金额
+rate = 0.05         # 利率
+numyears = 5        # 年数
+year = 1
+while year &lt;= numyears:</p>
+
+<pre><code>principal = principal * (1 + rate)
+print year, principal # 注意在Python3中是print(year, principal)
+</code></pre>
+
+<p>{% endcodeblock %}
 Python是一种动态类型语言,变量名无类型,但在执行过程中可以引用任意类型的数据</p>
 
 <pre><code># principal名称引用的值的类型由integer动态变为了float
@@ -590,45 +579,27 @@ a[3][3][1]  # 返回101
 </code></pre>
 
 <p><strong>程序清单1-2 列表的高级特性</strong>
-<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">sys</span>              <span class="c"># 加载sys模块</span>
-</span><span class='line'><span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span>   <span class="c"># 检查命令行参数的数量&lt;/p&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">print</span> <span class="s">&quot;Please supply a filename&quot;</span>
-</span><span class='line'><span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>   <span class="c"># 命令行上的文件名</span>
-</span><span class='line'><span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>   <span class="c"># 将所有行读取到一个列表中</span>
-</span><span class='line'><span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="err">将所有输入值从字符串转换为浮点数</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">fvalues</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">]</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="err">打印最小值和最大值</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">print</span> <span class="s">&quot;The minimum value is &quot;</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">fvalues</span><span class="p">)</span>
-</span><span class='line'><span class="k">print</span> <span class="s">&quot;The maximum value is &quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">fvalues</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+{% codeblock lang:python %}
+import sys              # 加载sys模块
+if len(sys.argv) != 2   # 检查命令行参数的数量</p>
+
+<pre><code>print "Please supply a filename"
+raise SystemExit(1)
+</code></pre>
+
+<p>f = open(sys.argv[1])   # 命令行上的文件名
+lines = f.readlines()   # 将所有行读取到一个列表中
+f.close()</p>
+
+<h1>将所有输入值从字符串转换为浮点数</h1>
+
+<p>fvalues = [float(line) for line in lines]</p>
+
+<h1>打印最小值和最大值</h1>
+
+<p>print "The minimum value is ", min(fvalues)
+print "The maximum value is ", max(fvalues)
+{% endcodeblock %}</p>
 
 <p>转换值的代码可简化为</p>
 
