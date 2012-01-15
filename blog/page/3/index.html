@@ -9,8 +9,11 @@
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="
-">
+  <meta name="description" content="CHAPTER 2 Clients Using Redis from the Command Line $ redis-cli -h
+$ redis-cli -h serverip
+$ redis-cli -p 6380
+$ redis-cli INFO
+$ cat command_list. &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -67,7 +70,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/01/11/100854-redis/">redis.conf 配置参数</a></h1>
+      <h1 class="entry-title"><a href="/blog/2012/01/12/143202-redis/">Redis Cookbook</a></h1>
     
     
       <p class="meta">
@@ -83,14 +86,243 @@
   
 
 
-<time datetime="2012-01-11T10:08:00+08:00" pubdate data-updated="true">Jan 11<span>th</span>, 2012</time>
+<time datetime="2012-01-12T14:32:00+08:00" pubdate data-updated="true">Jan 12<span>th</span>, 2012</time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content">
+  <div class="entry-content"><h1>CHAPTER 2 Clients</h1>
+
+<p><strong>Using Redis from the Command Line</strong></p>
+
+<pre><code>$ redis-cli -h
+$ redis-cli -h serverip
+$ redis-cli -p 6380
+$ redis-cli INFO
+$ cat command_list.txt | redis-cli &gt; command_output.txt
+</code></pre>
+
+<p><strong>Using Redis from Python with redis-py</strong></p>
+
+<pre><code>$ pip install redis-py
+$ easy_install redis
+
+&gt;&gt;&gt; import redis
+&gt;&gt;&gt; redis = redis.Redis(host='localhost', port=6379, db=0)
+&gt;&gt;&gt; redis.smembers('circle:jdoe:soccer')
+set(['users:toby', 'users:adam', 'users:apollo', 'users:mike'])
+&gt;&gt;&gt; redis.sadd('circle:jdoe:soccer', 'users:fred')
+True
+&gt;&gt;&gt; redis.smembers('circle:jdoe:soccer')
+set(['users:toby', 'users:adam', 'users:apollo', 'users:mike', 'users:fred'])  
+
+$ pip install hiredis
+$ easy_install hiredis
+</code></pre>
+
+<h1>CHAPTER 3 Leveraging Redis</h1>
+
+<p><strong>Using Redis as a Key/Value Store</strong>
+Storing application usage counters</p>
+
+<pre><code># vists:pageid:totals
+$ SET visits:1:totals 21389
+$ SET visits:2:totals 1367894
+$ INCR visits:635:totals    # visits:635:totals + 1
+$ GET visits:635:totals
+</code></pre>
+
+<p>Storing object data in hashes</p>
+
+<pre><code>redis&gt; hset users:jdoe name "John Doe"
+(integer) 1
+redis&gt; hset users:jdoe email "jdoe@test.com"
+(integer) 1
+redis&gt; hset users:jdoe phone "+1555313940"
+(integer) 1
+redis&gt; hincrby users:jdoe visits 1
+(integer) 1
+
+redis&gt; hget users:jdoe email
+"jdoe@test.com"
+redis&gt; hgetall users:jdoe
+1) "name"
+2) "John Doe"
+3) "email"
+4) "jdoe@test.com"
+5) "phone"
+6) "+1555313940"
+7) "visits"
+8) "1"
+
+
+redis&gt; hkeys users:jdoe
+1) "name"
+2) "email"
+3) "phone"
+4) "visits"
+redis&gt; hvals users:jdoe
+1) "John Doe"
+2) "jdoe@test.com"
+3) "+1555313940"
+4) "1"
+</code></pre>
+
+<p><strong>Storing user “Circles” using sets</strong></p>
+
+<pre><code>redis&gt; sadd circle:jdoe:family users:anna
+(integer) 1
+redis&gt; sadd circle:jdoe:family users:richard
+(integer) 1
+redis&gt; sadd circle:jdoe:family users:mike
+(integer) 1
+redis&gt; sadd circle:jdoe:soccer users:mike
+(integer) 1
+redis&gt; sadd circle:jdoe:soccer users:adam
+(integer) 1
+redis&gt; sadd circle:jdoe:soccer users:toby
+(integer) 1
+redis&gt; sadd circle:jdoe:soccer users:apollo
+(integer) 1
+
+redis&gt; smembers circle:jdoe:family
+1) "users:richard"
+2) "users:mike"
+3) "users:anna"
+redis&gt; hgetall users:mike
+(...)
+
+redis&gt; sinter circle:jdoe:family circle:jdoe:soccer
+1) "users:mike"
+redis&gt; sunion circle:jdoe:family circle:jdoe:soccer
+1) "users:anna"
+2) "users:mike"
+3) "users:apollo"
+4) "users:adam"
+5) "users:richard"
+6) "users:toby"
+</code></pre>
+
+<p><strong>Quick Reference for Key Operations</strong></p>
+
+<ul>
+<li><strong>SET key value</strong></li>
+<li>Sets the key to hold the given value. Existing data is overwritten (even if of a different data type).</li>
+<li><strong>GET key</strong></li>
+<li>Returns the content held by the key. Works only with string values.</li>
+<li><strong>INCR key</strong></li>
+<li>Increments the integer stored at key by 1.</li>
+<li><strong>INCRBY key value</strong></li>
+<li>Performs the same operation as INCR, but incrementing by value instead.</li>
+<li><strong>DECR key</strong></li>
+<li>Decrements the integer stored at key by 1.</li>
+<li><strong>DECRBY key value</strong></li>
+<li>Performs the same operation as DECR, but decrementing by value instead.</li>
+<li><strong>Inspecting Your Data</strong></li>
+<li>   redis> KEYS *</li>
+<li>   redis> TYPE keyname</li>
+</ul>
+
+
+<p><strong>Quick Reference for Debugging</strong></p>
+
+<ul>
+<li><strong>KEYS pattern</strong></li>
+<li>Lists all the keys in the current database that match the given pattern.</li>
+<li><strong>TYPE key-name</strong></li>
+<li>Tells the type of the key. Possible types are: string, list, hash, set, zset, and none.</li>
+<li><strong>MONITOR</strong></li>
+<li>Outputs the commands received by the Redis server in real time.</li>
+<li><strong>Implementing OAuth on Top of Redis</strong></li>
+<li>  redis> HMSET /consumers/key:dpf43f3p2l4k3l03 secret kd94hf93k423kf44 created_at 201103060000</li>
+<li><pre><code>     redirect_url http://www.example.com/oauth_redirect name test_application
+</code></pre></li>
+</ul>
+
+
+<p><strong>Quick Reference for Adding Values to Sets</strong></p>
+
+<ul>
+<li><strong>HSET hash-name key value</strong></li>
+<li>Sets a value on a hash with the given key. As with other Redis commands, if the hash doesn’t exist, it’s created.</li>
+<li><strong>HMSET hash-name key1 value1 [key2 value2 &#8230;]</strong></li>
+<li>Allows you to set several values in a hash with a single command.
+
+<pre><code>redis&gt; HGETALL /consumers/key:dpf43f3p2l4k3l03
+redis&gt; SADD /nonces/key:dpf43f3p2l4k3l03/timestamp:20110306182600 dji430splmx33448
+redis&gt; EXPIRE /nonces/key:dpf43f3p2l4k3l03/timestamp:20110306182600 1800
+redis&gt; HSET /request_tokens/key:dpf43f3p2l4k3l03 hh5s93j4hdidpola hdhd0244k9j7ao03
+</code></pre></li>
+</ul>
+
+
+<p><strong>Quick Reference for Authorization Algorithm</strong></p>
+
+<ul>
+<li><strong>HGETALL hash-name</strong></li>
+<li>Returns all the key/value pairs in the given hash.</li>
+<li><strong>SADD set-name element</strong></li>
+<li>Adds the element to the given set unless it’s already a member. The return value is 1 if the element is added and 0 if it was already a member.</li>
+<li><strong>EXPIRE key seconds</strong></li>
+<li>Sets an expiration timeout on a key, after which it will be deleted. This can be used on any type of key (strings, hashes, lists, sets or sorted sets) and is one of the most powerful Redis features.</li>
+<li><strong>EXPIREAT key timestamp</strong></li>
+<li>Performs the same operation as EXPIRE, except you can specify a UNIX timestamp (seconds since midnight, January 1, 1970) instead of the number of elapsed seconds.</li>
+<li><strong>TTL key</strong></li>
+<li>Tells you the remaining time to live of a key with an expiration timeout.</li>
+<li><strong>PERSIST key</strong></li>
+<li>Removes the expiration timeout on the given key.</li>
+<li>Redirections and consent
+
+<pre><code>redis&gt; SET /authorizations/request_token:hh5s93j4hdidpola 16
+redis&gt; HGET /consumers/key:dpf43f3p2l4k3l03 redirect_url
+redis&gt; HGETALL /consumers/key:dpf43f3p2l4k3l03
+redis&gt; HGET /request_tokens/key:dpf43f3p2l4k3l03 hh5s93j4hdidpola
+redis&gt; GET /authorizations/request_token:hh5s93j4hdidpola
+redis&gt; SADD /nonces/key:dpf43f3p2l4k3l03/timestamp:20110306182700 kllo9940pd9333jh
+redis&gt; EXPIRE /nonces/key:dpf43f3p2l4k3l03/timestamp:20110306182600 1800
+redis&gt; HMSET /access_tokens/consumer_key:dpf43f3p2l4k3l03/access_token:nnch734d00sl2jdk
+       secret pfkkdhi9sl3r4s00 user_id 16 created_at 20110306182600
+redis&gt; HDEL /request_tokens/key:dpf43f3p2l4k3l03 hh5s93j4hdidpola
+redis&gt; DEL /authorizations/request_token:hh5s93j4hdidpola
+redis&gt; HSET /users/user_id:16/applications dpf43f3p2l4k3l03 nnch734d00sl2jdk
+redis&gt; HDEL /users/user_id:16/applications dpf43f3p2l4k3l03
+redis&gt; DEL /access_tokens/consumer_key:dpf43f3p2l4k3l03/access_token:nnch734d00sl2jdk
+redis&gt; EXPIRE /access_tokens/consumer_key:dpf43f3p2l4k3l03/access_token:nnch734d00sl2jdk 86400
+</code></pre></li>
+</ul>
+
+
+<p><strong>Quick Reference for Hash Operations</strong></p>
+
+<ul>
+<li><strong>HGET hash-name key</strong></li>
+<li>Returns the value at key in the given hash.</li>
+<li><strong>HDEL hash-name key</strong></li>
+<li>Deletes a key/value pair in the given hash.</li>
+</ul>
+
+
+<h1>CHAPTER 4 Redis Administration and Maintenance</h1>
+
+<p><strong>Starting a Redis Slave</strong></p>
+
+<pre><code>redis&gt; slaveof master-ip-or-hostname masterport
+redis&gt; masterauth master-password
+redis&gt; SLAVEOF master-ip-or-hostname [masterport]
+redis&gt; CONFIG SET masterauth password
+</code></pre>
+
+<p><strong>Handling a Dataset Larger Than Memory</strong></p>
+
+<pre><code>vm-enabled yes
+vm-swap-file
+vm-max-memory
+vm-pages
+vm-page-size
+vm-max-threads
+</code></pre>
 </div>
   
   
@@ -117,6 +349,10 @@
 <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/01/15/093205-python/">python 参考手册 第二章</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2012/01/12/174442-octopress/">octopress tips</a>
@@ -155,7 +391,7 @@
 
 <section>
 <h1>Categories</h1>
-<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 160.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 140.0%'>Database(2)</a>  <a href='/blog/categories/git' style='font-size: 120.0%'>Git(1)</a>  <a href='/blog/categories/monitor' style='font-size: 120.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 120.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 120.0%'>Python(1)</a>  <a href='/blog/categories/read' style='font-size: 140.0%'>Read(2)</a>  <a href='/blog/categories/redis' style='font-size: 140.0%'>Redis(2)</a> </span>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 160.0%'>Blog(4)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(2)</a>  <a href='/blog/categories/git' style='font-size: 115.0%'>Git(1)</a>  <a href='/blog/categories/monitor' style='font-size: 115.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 115.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 115.0%'>Python(1)</a>  <a href='/blog/categories/read' style='font-size: 130.0%'>Read(2)</a>  <a href='/blog/categories/redis' style='font-size: 130.0%'>Redis(2)</a> </span>
 </section>
 
 

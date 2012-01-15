@@ -9,8 +9,7 @@
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="
-">
+  <meta name="description" content="Octopress 简介 Octopress is a framework designed by Brandon Mathis for Jekyll, the blog aware static site generator powering Github Pages. 优点 用文件方式储存数据 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://zhangchuan.github.com/blog/page/4">
+  <link rel="canonical" href="http://zhangchuan.github.com/blog/page/9">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -67,7 +66,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/01/11/100854-redis/">redis.conf 配置参数</a></h1>
+      <h1 class="entry-title"><a href="/blog/2012/01/08/031317-octopress/">Octopress 像黑客一样写博客</a></h1>
     
     
       <p class="meta">
@@ -83,14 +82,107 @@
   
 
 
-<time datetime="2012-01-11T10:08:00+08:00" pubdate data-updated="true">Jan 11<span>th</span>, 2012</time>
+<time datetime="2012-01-08T03:13:00+08:00" pubdate data-updated="true">Jan 8<span>th</span>, 2012</time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content">
+  <div class="entry-content"><h1>Octopress 简介</h1>
+
+<p>Octopress is a framework designed by Brandon Mathis for Jekyll, the blog aware static site generator powering Github Pages.</p>
+
+<h2>优点</h2>
+
+<p>用文件方式储存数据，无需数据库
+以静态方式发布，可直接挂在github等地方
+用markdown格式写博客
+可以轻松的配置和发布</p>
+
+<h2>安装</h2>
+
+<pre><code>$ git clone git://github.com/imathis/octopress.git octopress
+$ mv octopress blog
+$ cd blog
+$ sudo gem install rake --version=0.9.2
+$ sudo gem install bundler
+$ bundler install
+$ rake install
+</code></pre>
+
+<h2>配置GitHub</h2>
+
+<pre><code>$ rake setup_github_pages
+&gt;git@github.com:zhangchuan/zhangchuan.github.com.git
+</code></pre>
+
+<h2>常用命令</h2>
+
+<h3>添加文章</h3>
+
+<pre><code>$ rake new_post["title"]
+$ rake generate       #发布文件到public目录
+$ rake watch          #监控source和sass目录的变动
+$ rake preview        #启动服务器并监控变动，通过http://localhost:4000预览
+</code></pre>
+
+<h3>发布</h3>
+
+<pre><code>$ rake generate
+$ rake deploy
+</code></pre>
+
+<h3>保存源代码</h3>
+
+<pre><code>$ git add .
+$ git commit -m 'blog'
+$ git push origin source
+</code></pre>
+
+<h2>自定义样式</h2>
+
+<pre><code>$ vi sass/custom/_styles.scss
+h1 { font-size: 1.2em; }
+h2 { font-size: 1.1em; }
+h3 { font-size: 1.0em; }
+h4 { font-size: .9em; }
+h5 { font-size: .8em; }
+code { font-size: 0.8em; }
+
+p, blockquote, ul, ol, h1, h2, h3, h4, h5, h6, code {
+    margin-bottom: 1.2em;
+}
+
+article {
+    font-size: 0.8em;
+    line-height: 1.2em;
+}
+
+body &gt; header h1 { font-size: 1.2em; }
+body &gt; header h2 { font-size: 0.8em; }
+body &gt; footer p:last-child {
+    font-size: 0.6em;
+    margin-bottom: 0;
+}
+
+#content .blog-index article h1 {
+    font-size: 1.2em;
+}
+#blog-archives h1 h2 a time {
+    font-size: 0.8em;
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+}
+
+// 边栏
+aside.sidebar section h1 {
+    font-size: 1.2em;
+}
+aside.sidebar a {
+    font-size: 0.9em;
+}
+</code></pre>
 </div>
   
   
@@ -100,11 +192,9 @@
   
   <div class="pagination">
     
-      <a class="prev" href="/blog/page/5/">&larr; Older</a>
-    
     <a href="/blog/archives">Blog Archives</a>
     
-    <a class="next" href="/blog/page/3/">Newer &rarr;</a>
+    <a class="next" href="/blog/page/8/">Newer &rarr;</a>
     
   </div>
 </div>
