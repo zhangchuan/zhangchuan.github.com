@@ -9,10 +9,8 @@
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="第一章 Python 简介 2.1 行结构和缩进
-1.2 变量和算术表达式
-1.3 条件语句
-1.4 文件输入和输出 2.1 行结构和缩进 每条语句以换行符结束。可用续航符()分行。 a = math.cos(3 * (x - n) + \ math.sin(3 * (y - n)) 包含在圆括号 &hellip;">
+  <meta name="description" content="读取管道内容 print sys.stdin.read()
+">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,7 +67,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/01/15/093205-python/">Python 参考手册 第二章</a></h1>
+      <h1 class="entry-title"><a href="/blog/2012/02/10/163323-python/">Python Tips</a></h1>
     
     
       <p class="meta">
@@ -85,63 +83,16 @@
   
 
 
-<time datetime="2012-01-15T09:32:00+08:00" pubdate data-updated="true">Jan 15<span>th</span>, 2012</time>
+<time datetime="2012-02-10T16:33:00+08:00" pubdate data-updated="true">Feb 10<span>th</span>, 2012</time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h1>第一章 Python 简介</h1>
+  <div class="entry-content"><h1>读取管道内容</h1>
 
-<ul>
-<li><a href="#2.1">2.1 行结构和缩进</a></li>
-<li><a href="#2.2">1.2 变量和算术表达式</a></li>
-<li><a href="#2.3">1.3 条件语句</a></li>
-<li><a href="#2.4">1.4 文件输入和输出</a></li>
-</ul>
-
-
-<h1 id=2.1>2.1 行结构和缩进</h1>
-
-
-<ul>
-<li>每条语句以换行符结束。可用续航符()分行。
-
-<pre><code>a = math.cos(3 * (x - n) + \
-  math.sin(3 * (y - n))
-</code></pre></li>
-<li>包含在圆括号，方括号，大括号，三引号的程序部分可以跨多行。</li>
-<li>缩进用于表示不同的代码块，应用空格缩经，且整个代码的缩进必须保持一致。
-
-<pre><code>if a:
-    statement1    # 缩进一致，正确
-    statement2
-else:
-    statement3
-      statement4  # 缩进不一致，错误
-</code></pre></li>
-<li>函数体，条件语句，循环或类较短，可放在一行。
-
-<pre><code>if a: statement1
-else: statement2
-</code></pre></li>
-<li>表示一个空的函数体或代码块。
-
-<pre><code>if a:
-    pass
-else:
-    statements
-</code></pre></li>
-<li>分号(;)可用于分割放在一行的多条语句。</li>
-<li>\#表示次行的内容是注释。</li>
-</ul>
-
-
-<h1 id=2.2>2.2 标识符和保留字</h1>
-
-
-
+<h1>print sys.stdin.read()</h1>
 </div>
   
   
@@ -168,7 +119,31 @@ else:
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2012/01/15/093205-python/">python 参考手册 第二章</a>
+        <a href="/blog/2012/02/10/163323-python/">Python Tips</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/19/095304-python/">python 参考手册 第21章</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/18/175036-python/">python hiredis模块</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/16/162542-python/">python lxml模块</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/15/155751-redis/">Redis的七种武器及其适合的应用场景</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/15/143703-python/">python 参考手册 第3章</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/15/093205-python/">python 参考手册 第2章</a>
       </li>
     
       <li class="post">
@@ -183,32 +158,12 @@ else:
         <a href="/blog/2012/01/11/100854-redis/">redis.conf 配置参数</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/01/10/181350-munin/">munin </a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/09/175416-python/">python 参考手册 第一章</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/09/172719-git/">git 命令快速参考</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/08/183821-markdown/">markdown 语法说明</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/08/031317-octopress/">octopress 像黑客一样写博客</a>
-      </li>
-    
   </ul>
 </section>
 
 <section>
 <h1>Categories</h1>
-<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 160.0%'>Blog(4)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(2)</a>  <a href='/blog/categories/git' style='font-size: 115.0%'>Git(1)</a>  <a href='/blog/categories/monitor' style='font-size: 115.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 115.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 115.0%'>Python(1)</a>  <a href='/blog/categories/read' style='font-size: 130.0%'>Read(2)</a>  <a href='/blog/categories/redis' style='font-size: 130.0%'>Redis(2)</a> </span>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 130.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 140.0%'>Database(4)</a>  <a href='/blog/categories/git' style='font-size: 110.0%'>Git(1)</a>  <a href='/blog/categories/monitor' style='font-size: 110.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 110.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 110.0%'>Python(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(6)</a>  <a href='/blog/categories/read' style='font-size: 150.0%'>Read(5)</a>  <a href='/blog/categories/redis' style='font-size: 140.0%'>Redis(4)</a> </span>
 </section>
 
 

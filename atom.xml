@@ -4,7 +4,7 @@
   <title><![CDATA[研究中心]]></title>
   <link href="http://zhangchuan.github.com/atom.xml" rel="self"/>
   <link href="http://zhangchuan.github.com/"/>
-  <updated>2012-01-15T09:54:37+08:00</updated>
+  <updated>2012-02-10T16:35:47+08:00</updated>
   <id>http://zhangchuan.github.com/</id>
   <author>
     <name><![CDATA[Cloud.Zhang]]></name>
@@ -14,17 +14,768 @@
 
   
   <entry>
-    <title type="html"><![CDATA[python 参考手册 第二章]]></title>
+    <title type="html"><![CDATA[Python Tips]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/02/10/163323-python/"/>
+    <updated>2012-02-10T16:33:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/02/10/163323-python</id>
+    <content type="html"><![CDATA[<h1>读取管道内容</h1>
+
+<h1>print sys.stdin.read()</h1>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[python 参考手册 第21章]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/01/19/095304-python/"/>
+    <updated>2012-01-19T09:53:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/01/19/095304-python</id>
+    <content type="html"><![CDATA[<h1>第21章 网络编程和套接字</h1>
+
+<ul>
+<li><a href="#21.1">21.1 网络编程基础</a></li>
+<li><a href="#21.2">21.2 asynchat模块</a></li>
+</ul>
+
+
+<h1 id=21.1>21.1 网络编程基础</h1>
+
+
+<ul>
+<li>python网络编程模块支持TCP和UDP两种Internet协议。</li>
+<li>TCP协议是面向连接的可靠协议。</li>
+<li>UDP是以数据包为基础的协议。</li>
+<li>套接字类似文件的对象，使程序能够接受传入连接，进行传出连接，发送和接受数据。</li>
+<li>接受连接的机器(服务器)必须将套接字绑定到已知端口，提供服务。(0-1023是保留端口)</li>
+<li>使用socket模块编写TCP协议。
+
+<pre><code># 时间服务器程序
+from socket import *
+import time
+
+s = socket(AF_INET, SOCK_STREAM)  # 创建TCP套接字
+s.bind(('', 8888))                # 绑定到端口8888
+s.listen(5)                       # 监听，但只能挂起5个以下的连接
+
+While True:
+    client,addr = s.accept()      # 连接
+    print("Got a connection from %s" % str(addr))
+    timestr = time.ctime(time.time()) + "\r\n"
+    client.send(timestr.encode('ascii'))
+    client.close()
+
+# 客户端程序:
+from socket import *
+s = socket(AF_INET, SOCK_STREAM)  # 创建TCP套接字
+s.connect(('localhost', 8888)     # 连接到服务器
+tm = s.recv(1024)                 # 最多接收1024个字节
+s.close()
+print("The time is %s" % tm.decode('ascii'))
+</code></pre></li>
+<li>网络协议经常以文本方式传输数据，要进行编码，解码处理。python3 默认使用Unicode编码。</li>
+</ul>
+
+
+<h1 id=21.2>21.2 asynchat 模块</h1>
+
+
+<ul>
+<li>简化了异步网络应用程序的实现过程。包装了asyncore的低级I/O功能和一个高级编程接口。</li>
+<li>使用该模块，必须定义继承自async_chat的类。并定义两个方法：collect_incoming_data()和found_terminator()。</li>
+<li>asynchat模块总是和asyncore模块一起使用。
+
+<pre><code># 使用asynchat的异步HTTP服务器
+import asynchat, asyncore, socket
+import os
+import mimetypes
+try:
+    from http.client import responses     # python3
+except ImportError:
+    from httplib import responses         # python2
+# 该类插入到asyncore模块，仅处理接受的事件
+class async_http(asyncore.dispatcher):
+    def __init__(self, port):
+        asyncore.dispatcher.__init__(self)
+        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.bind(('', port))
+        self.listen(5)
+    def handle_accept(self):
+        client.addr = self.accept()
+        return async_http_handler(client)
+
+# 处理异步HTTP请求的类
+class async_http_handler(asynchat.async_chat):
+    def __init__(self, conn=None):
+        asynchat.asycn_chat_.__init__(self.conn)
+        self.data = []
+        self.got_header = False
+        self.set_terminator(b"\r\n\r\n")
+
+    # 获取传入数据并添加到数据缓冲区
+    def collect_incoming_data(self, data):
+        if not self.got_header:
+            self.data.append(data)
+
+    # 到达终止符(空白行)
+    def found_terminator(self):
+        self.got_header = True
+        header_data = b"".join(self.data)
+        # 将报头数据(二进制)解码为文本以便进一步处理
+        header_text = header_data.decode('latin-1')
+        header_lines = header_text.splitlines()
+        request = header_lines[0].split()
+        op = request[0]
+        url = request[1][1:]
+        self.process_request(op, url)
+
+    # 将文本加入到传出流，但首先要解码
+    def push_text(self, text):
+        self.push(text.encode('latin-1'))
+
+    # 处理请求
+    def process_request(self, op, url):
+        if op == "GET":
+            if not os.path.exists(url):
+                self.send_error(404, "File %s not found\r\n")
+            else:
+                type, encoding = mimetypes.guess_type(url)
+                size = os.path.getsize(url)
+                self.path_text("HTTP/1.0 200 OK\r\n")
+                self.push_text("Content-length: %s\r\n" % size) 
+                self.push_text("Content-type: %s\r\n" % type)
+                self.push_text("\r\n")
+                self.push_with_producer(file_producer(url))
+        else:
+            self.send_error(501, "%s method not implemented" % op)
+
+    # 错误处理  
+    def send_error(self, code, message):
+        self.push_text("HTTP/1.0 %s %s\r\n" % (code, responses[code]))
+        self.push_text("Content-type: text/plain\r\n")
+        self.push_text("\r\n")
+        self.push_text(message)
+
+class file_producer(object):
+    def __init__(self, filename, buffer_size=512):
+        self.f = open(filename, "rb")
+        self.buffer_size = buffer_size
+    def more(self):
+        data = self.f.read(self.buffer_size)
+        if not data:
+            self.f.close()
+        return data
+a = async_http(8080)
+asyncore.loop()
+# 要测试该实例，需要提供一个URL，并且该URL必须对应运行服务器那个目录中的文件。
+</code></pre></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[python hiredis模块]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/01/18/175036-python/"/>
+    <updated>2012-01-18T17:50:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/01/18/175036-python</id>
+    <content type="html"><![CDATA[<p><a href="https://github.com/pietern/hiredis-py">官方手册</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[python lxml模块]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/01/16/162542-python/"/>
+    <updated>2012-01-16T16:25:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/01/16/162542-python</id>
+    <content type="html"><![CDATA[<p><strong>内置方法</strong></p>
+
+<p><strong>[&#8216;CheckboxGroup&#8217;, &#8216;CheckboxValues&#8217;, &#8216;DictMixin&#8217;, &#8216;Element&#8217;, &#8216;FieldsDict&#8217;, &#8216;FormElement&#8217;, &#8216;HTMLParser&#8217;, &#8216;HtmlComment&#8217;, &#8216;HtmlElement&#8217;, &#8216;HtmlElementClassLookup&#8217;, &#8216;HtmlEntity&#8217;, &#8216;HtmlMixin&#8217;, &#8216;HtmlProcessingInstruction&#8217;, &#8216;InputElement&#8217;, &#8216;InputGetter&#8217;, &#8216;InputMixin&#8217;, &#8216;LabelElement&#8217;, &#8216;MultipleSelectOptions&#8217;, &#8216;RadioGroup&#8217;, &#8216;SelectElement&#8217;, &#8216;SetMixin&#8217;, &#8216;TextareaElement&#8217;, &#8216;XHTMLParser&#8217;, &#8216;XHTML_NAMESPACE&#8217;, &#8217;<em>MethodFunc&#8217;, &#8217;<strong>all</strong>&#8217;, &#8217;<strong>builtins</strong>&#8217;, &#8217;<strong>bytes_replace_meta_content_type&#8217;, &#8217;</strong>doc<strong>&#8217;, &#8217;</strong>file<strong>&#8217;, &#8217;</strong>fix_docstring&#8217;, &#8217;<strong>name</strong>&#8217;, &#8217;<strong>package</strong>&#8217;, &#8217;<strong>path</strong>&#8217;, &#8216;__str_replace_meta_content_type&#8217;, &#8217;</em>archive_re&#8217;, &#8217;<em>class_xpath&#8217;, &#8217;</em>collect_string_content&#8217;, &#8217;<em>contains_block_level_tag&#8217;, &#8217;</em>css_import_re&#8217;, &#8217;<em>css_url_re&#8217;, &#8217;</em>element_name&#8217;, &#8217;<em>forms_xpath&#8217;, &#8217;</em>id_xpath&#8217;, &#8217;<em>label_xpath&#8217;, &#8217;</em>nons&#8217;, &#8217;<em>options_xpath&#8217;, &#8217;</em>rel_links_xpath&#8217;, &#8217;<em>setmixin&#8217;, &#8217;</em>transform_result&#8217;, &#8216;_unquote_match&#8217;, &#8216;basestring&#8217;, &#8216;bytes&#8217;, &#8216;copy&#8217;, &#8216;cssselect&#8217;,&#8217;defs&#8217;, &#8216;document_fromstring&#8217;, &#8216;etree&#8217;, &#8216;find_class&#8217;, &#8216;find_rel_links&#8217;, &#8216;fragment_fromstring&#8217;, &#8216;fragments_fromstring&#8217;, &#8216;fromstring&#8217;, &#8216;html_parser&#8217;, &#8216;html_to_xhtml&#8217;, &#8216;iterlinks&#8217;, &#8216;make_links_absolute&#8217;, &#8216;open_http_urllib&#8217;, &#8216;open_in_browser&#8217;, &#8216;parse&#8217;, &#8216;re&#8217;, &#8216;resolve_base_href&#8217;, &#8216;rewrite_links&#8217;, &#8216;submit_form&#8217;, &#8216;threading&#8217;, &#8216;tostring&#8217;, &#8216;unicode&#8217;, &#8216;urljoin&#8217;, &#8216;xhtml_parser&#8217;, &#8216;xhtml_to_html&#8217;]</strong></p>
+
+<ul>
+<li><p><strong>实例应用</strong>:</p></li>
+<li><p>简单爬虫程序</p></li>
+<li>注意点：</li>
+<li>1. 从性能考虑应用xpath替换正则匹配。</li>
+<li>2. 多线程，双队列，其中一个队列负责发送页面链接。另一个队列负责解析链接。</li>
+<li>3. 线程应设置合理延迟，能降低被封的可能性。</li>
+<li>4. 存储池，</li>
+<li>5. 前端管理，Django</li>
+</ul>
+
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">LxmlType</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;lxml&#39;</span>
+</span><span class='line'>    <span class="n">description</span> <span class="o">=</span> <span class="s">&#39;lxml.html&#39;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>        <span class="kn">from</span> <span class="nn">lxml.html</span> <span class="kn">import</span> <span class="n">parse</span><span class="p">,</span> <span class="n">tostring</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">parse</span> <span class="o">=</span> <span class="n">parse</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">tostring</span> <span class="o">=</span> <span class="n">tostring</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">parse_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li><strong>XPath语法摘记</strong></li>
+<li>路径表达式
+
+<pre><code>nodename    选取此节点的所有子节点。
+/           从根节点选取。
+//          从匹配选择的当前节点选择文档中的节点，而不考虑它们的位置。
+.           选取当前节点。
+..          选取当前节点的父节点。
+@           选取属性。
+bookstore   选取 bookstore 元素的所有子节点。
+/bookstore        选取根元素 bookstore。
+                  注释：假如路径起始于正斜杠( / )，则此路径始终代表到某元素的绝对路径！
+bookstore/book    选取属于 bookstore 的子元素的所有 book 元素。
+//book            选取所有 book 子元素，而不管它们在文档中的位置。
+bookstore//book   选择属于 bookstore 元素的后代的所有 book 元素，而不管它们位于 bookstore 之下的什么位置。
+//@lang           选取名为lang 的所有属性。
+/bookstore/book[1]                    选取属于 bookstore 子元素的第一个 book 元素。
+/bookstore/book[last()]               选取属于 bookstore 子元素的最后一个 book 元素。
+/bookstore/book[last()-1]             选取属于 bookstore 子元素的倒数第二个 book 元素。
+/bookstore/book[position()&lt;3]         选取最前面的两个属于 bookstore 元素的子元素的 book 元素。
+//title[@lang]                        选取所有拥有名为 lang 的属性的 title 元素。
+//title[@lang='eng']                  选取所有 title 元素，且这些元素拥有值为 eng 的 lang 属性。
+/bookstore/book[price&gt;35.00]          选取 bookstore 元素的所有 book 元素，且其中的 price 元素的值须大于 35.00。
+/bookstore/book[price&gt;35.00]/title    选取 bookstore 元素中的 book 元素的所有 title 元素，且其中的 price 元素的值须                                             大于 35.00。
+*             匹配任何元素节点。
+@*            匹配任何属性节点。
+node()        匹配任何类型的节点。
+/bookstore/*  选取 bookstore 元素的所有子元素。
+//*           选取文档中的所有元素。
+//title[@*]   选取所有带有属性的 title 元素。
+//book/title | //book/price           选取 book 元素的所有 title 和 price 元素。
+//title | //price                     选取文档中的所有 title 和 price 元素。
+/bookstore/book/title | //price       选取属于 bookstore 元素的 book 元素的所有 title 元素，以及文档中所有的 price 元素。
+</code></pre></li>
+<li>XPath 轴
+
+<pre><code>ancestor              选取当前节点的所有先辈（父、祖父等）。
+ancestor-or-self      选取当前节点的所有先辈（父、祖父等）以及当前节点本身。
+attribute             选取当前节点的所有属性。
+child                 选取当前节点的所有子元素。
+descendant            选取当前节点的所有后代元素（子、孙等）。
+descendant-or-self    选取当前节点的所有后代元素（子、孙等）以及当前节点本身。
+following             选取文档中当前节点的结束标签之后的所有节点。
+namespace             选取当前节点的所有命名空间节点。
+parent                选取当前节点的父节点。
+preceding             选取文档中当前节点的开始标签之前的所有节点。
+preceding-sibling     选取当前节点之前的所有同级节点。
+self                  选取当前节点。
+</code></pre></li>
+</ul>
+
+
+<h1>参考资料:</h1>
+
+<ul>
+<li><h3><a href="http://simple-is-better.com/news/406">Python HTML 解析器性能评测</a></h3></li>
+<li><h3><a href="http://www.w3school.com.cn/xpath/xpath_syntax.asp">XPath语法</a></h3></li>
+<li><h3><a href="http://lxml.de/FAQ.html">lxml FAQ</a></h3></li>
+<li><h3><a href="http://codespeak.net/pipermail/lxml-dev/2009-February/004386.html">LXML utf-8 problem</a></h3></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Redis的七种武器及其适合的应用场景]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/01/15/155751-redis/"/>
+    <updated>2012-01-15T15:57:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/01/15/155751-redis</id>
+    <content type="html"><![CDATA[<ul>
+<li><p>2012年01月11日 00:05 来源：nosqlfan 作者：NoSQLfan 编辑：王玉圆</p></li>
+<li><p><strong>【IT168 技术】长生剑、孔雀翎、碧玉刀、多情环、离别钩、霸王枪、拳头是古龙笔下的七种武器，而本文打算将Redis的几种使用方式 Strings、Hashs、Lists、Sets、Sorted Sets、Pub/Sub、Transactions 也比作七种武器，为大家讲解Redis的七种特性，并列举其适合的应用场景。</strong></p></li>
+<li><strong>武器一：Strings</strong></li>
+<li>Strings 数据结构是简单的key-value类型，value其实不仅是String，也可以是数字。使用Strings类型，你可以完全实现目前 Memcached 的功能，并且效率更高。还可以享受Redis的定时持久化，操作日志及 Replication等功能。除了提供与 Memcached 一样的get、set、incr、decr 等操作外，Redis还提供了下面一些操作：</li>
+<li>·获取字符串长度</li>
+<li>·往字符串append内容</li>
+<li>·设置和获取字符串的某一段内容</li>
+<li>·设置及获取字符串的某一位(bit)</li>
+<li><p>·批量设置一系列字符串的内容</p></li>
+<li><p><strong>武器二：Hashs</strong></p></li>
+<li><p>在Memcached中，我们经常将一些结构化的信息打包成hashmap，在客户端序列化后存储为一个字符串的值，比如用户的昵称、年龄、性别、积分等，这时候在需要修改其中某一项时，通常需要将所有值取出反序列化后，修改某一项的值，再序列化存储回去。这样不仅增大了开销，也不适用于一些可能并发操作的场合(比如两个并发的操作都需要修改积分)。而Redis的Hash结构可以使你像在数据库中Update一个属性一样只修改某一项属性值。</p></li>
+<li><p><strong>武器三：Lists</strong></p></li>
+<li><p>Lists 就是链表，相信略有数据结构知识的人都应该能理解其结构。使用Lists结构，我们可以轻松地实现最新消息排行等功能。Lists的另一个应用就是消息队列，可以利用Lists的PUSH操作，将任务存在Lists中，然后工作线程再用POP操作将任务取出进行执行。Redis还提供了操作Lists中某一段的api，你可以直接查询，删除Lists中某一段的元素。</p></li>
+<li><p><strong>武器四：Sets</strong></p></li>
+<li><p>Sets 就是一个集合，集合的概念就是一堆不重复值的组合。利用Redis提供的Sets数据结构，可以存储一些集合性的数据，比如在微博应用中，可以将一个用户所有的关注人存在一个集合中，将其所有粉丝存在一个集合。Redis还为集合提供了求交集、并集、差集等操作，可以非常方便的实现如共同关注、共同喜好、二度好友等功能，对上面的所有集合操作，你还可以使用不同的命令选择将结果返回给客户端还是存集到一个新的集合中。</p></li>
+<li><p><strong>武器五：Sorted Sets</strong></p></li>
+<li><p>和Sets相比，Sorted Sets增加了一个权重参数score，使得集合中的元素能够按score进行有序排列，比如一个存储全班同学成绩的Sorted Sets，其集合value可以是同学的学号，而score就可以是其考试得分，这样在数据插入集合的时候，就已经进行了天然的排序。另外还可以用Sorted Sets来做带权重的队列，比如普通消息的score为1，重要消息的score为2，然后工作线程可以选择按score的倒序来获取工作任务。让重要的任务优先执行。</p></li>
+<li><p><strong>武器六：Pub/Sub</strong></p></li>
+<li><p>Pub/Sub 从字面上理解就是发布(Publish)与订阅(Subscribe)，在Redis中，你可以设定对某一个key值进行消息发布及消息订阅，当一个key值上进行了消息发布后，所有订阅它的客户端都会收到相应的消息。这一功能最明显的用法就是用作实时消息系统，比如普通的即时聊天，群聊等功能。</p></li>
+<li><p><strong>武器七：Transactions</strong></p></li>
+<li>谁说NoSQL都不支持事务，虽然Redis的Transactions提供的并不是严格的ACID的事务(比如一串用EXEC提交执行的命令，在执行中服务器宕机，那么会有一部分命令执行了，剩下的没执行)，但是这个Transactions还是提供了基本的命令打包执行的功能(在服务器不出问题的情况下，可以保证一连串的命令是顺序在一起执行的，中间有会有其它客户端命令插进来执行)。Redis还提供了一个Watch功能，你可以对一个key进行Watch，然后再执行Transactions，在这过程中，如果这个Watched的值进行了修改，那么这个Transactions会发现并拒绝执行。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[python 参考手册 第3章]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/01/15/143703-python/"/>
+    <updated>2012-01-15T14:37:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/01/15/143703-python</id>
+    <content type="html"><![CDATA[<h1>第3章 类型与对象</h1>
+
+<ul>
+<li><a href="#3.1">3.1 术语</a></li>
+<li><a href="#3.2">3.2 对象的身份与类型</a></li>
+<li><a href="#3.3">3.3 引用计数与垃圾收集</a></li>
+<li><a href="#3.4">3.4 引用与复制</a></li>
+<li><a href="#3.5">3.5 第一类对象</a></li>
+<li><a href="#3.6">3.6 表示数据的内置类型</a></li>
+<li><a href="#3.7">3.7 表示程序结构的内置类型</a></li>
+<li><a href="#3.8">3.8 解释器内部使用的内置类型</a></li>
+<li><a href="#3.9">3.9 对象行为与特殊方法</a></li>
+</ul>
+
+
+<h1 id=3.1>3.1 术语</h1>
+
+
+<ul>
+<li>程序中所有存储的数据都是对象：身份，类型，和值。</li>
+<li>对象身份是指向对象值所处位置的指针。例如a=42, 用值42创建一个整数对象，a是引用这个位置的具体名称。</li>
+<li>数据属性和方法，属性是对象相关的值，方法是在对象上执行的某些函数，使用(.)访问。
+
+<pre><code>a = 3 + 4j    # 创建以改革复数
+r = a.real    # 获得实部(属性之一)
+b = [1, 2, 3] # 创建一个列表
+b.append(7)   # 使用append方法添加一个新元素
+</code></pre></li>
+</ul>
+
+
+<h1 id=3.2>3.2 对象的身份与类型</h1>
+
+
+<ul>
+<li>内置函数id()返回对象身份，返回值为整数。</li>
+<li>is运算符用于比较两个对象的身份。</li>
+<li>内置函数type()返回对象类型。
+
+<pre><code># 比较两个对象
+def compare(a,b):
+    if a is b:
+        # a和b是同一个对象
+        statements
+    if a == b:
+        # a和b具有相同的值
+        statements
+    if type(a) is type(b):
+        # a和b具有相同类型
+        statements
+</code></pre></li>
+<li>对象本身也是一个对像，称作对象的类。所有类型对象都有一个指定名称，例如list, dict和file
+
+<pre><code>if type(s) is list:
+    s.append(item)
+if type(d) is dict:
+    s.update(t)
+</code></pre></li>
+<li>检查类型的最佳方式：isinstance(object, type)
+
+<pre><code>if isinstance(s, list):
+    s.append(item)
+if isinstance(d, dict):
+    d.update(t)
+</code></pre></li>
+</ul>
+
+
+<h1 id=3.3>3.3 引用计数和垃圾收集</h1>
+
+
+<ul>
+<li>所有对象都有引用计数，在给对象分配一个新的名称，或放入一个新的容器时，该对象的引用计数都会增加。
+
+<pre><code># 至始至终只有一个包含37的对象，其他操作只是创建类该对象的引用。
+a = 37        # 创建一个值为37的对象
+b = a         # 增加37的引用计数
+c = []
+c.append(b)   # 增加37的引用计数
+</code></pre></li>
+<li>使用del语句或者引用操作作用域或者被重新赋值，对象的引用计数会减少。
+
+<pre><code>del a         # 减少37的引用计数
+b = 42        # 减少37的引用计数
+c[0] = 2.0    # 减少37的引用计数
+</code></pre></li>
+<li>使用sys.getrefcount()函数可获得对象的当前引用计数。
+
+<pre><code>&gt;&gt;&gt; a = 37
+&gt;&gt;&gt; import sys
+&gt;&gt;&gt; sys.gerefcount(a)
+</code></pre></li>
+<li>当一个对象引用计数归零时，它讲被垃圾回收机制处理掉。
+
+<pre><code>a = {}
+b = {}
+a['b'] = b    # a包含b的引用
+b['a'] = a    # b包含a的引用
+del a
+del b
+</code></pre></li>
+</ul>
+
+
+<h1 id=3.4>3.4 引用和赋值</h1>
+
+
+<ul>
+<li>a = b 这样的赋值，会创建一个对b的新引用。对于可变对象，赋值实际是创建了b的一个副本。
+
+<pre><code>&gt;&gt;&gt; a = [1, 2, 3, 4]
+&gt;&gt;&gt; b = a     # b是对a的引用
+&gt;&gt;&gt; b is a
+True
+&gt;&gt;&gt; b[2] = -100   # 修改b中的一个元素
+&gt;&gt;&gt; a
+[1, 2, -100, 4]
+&gt;&gt;&gt;
+</code></pre></li>
+<li>浅复制和深复制。
+
+<pre><code># 浅复制是创建一个新对象，但它包含的是对原始对象中的包含项的引用。
+&gt;&gt;&gt; a = [1, 2, [3,4]]
+&gt;&gt;&gt; b = list(a)           # 创建a的一个浅复制
+&gt;&gt;&gt; b is a
+False
+&gt;&gt;&gt; b.append(100)         # 给b追加一个元素
+&gt;&gt;&gt; b
+[1, 2, [3,4], 100]
+&gt;&gt;&gt; a                     # 注意a没有变化
+[1, 2, [3,4]]
+&gt;&gt;&gt; b[2][0] = -100        # 修改b的一个元素
+[1, 2, [-100,4], 100]
+&gt;&gt;&gt; a                     # 注意a中的变化
+[1, 2, [-100,4]]
+
+# 深复制将创建一个新对象，并且递归复制它包含的所有对象。使用标准库中的copy.deepcopy()函数。
+&gt;&gt;&gt; import copy
+&gt;&gt;&gt; a = [1, 2, [3,4]]
+&gt;&gt;&gt; b = copy.deepcopy(a)
+&gt;&gt;&gt; b[2][0] = -100
+&gt;&gt;&gt; b
+[1, 2, [-100,4]]
+&gt;&gt;&gt; a             # 注意a没变化
+[1, 2, [3,4]]
+</code></pre></li>
+</ul>
+
+
+<h1 id=3.5>3.5 第一类对象</h1>
+
+
+<ul>
+<li>能够使用标识符命名的所有对象都可以当作数据处理。
+
+<pre><code>items = {
+    'number' : 42
+    'text'   : "Hello World"
+}
+# 一些不平常的项
+items["func"] = abs       # 添加abs()函数
+import math
+items["mod"] = math       # 添加一个模块
+items["error"] = ValueError   # 添加一个异常类型
+nums = [1, 2, 3, 4]
+items["append"] = nums.append # 添加另一个对象的一个方法
+#
+&gt;&gt;&gt; items["func"](-45)        # 执行abs(-45)
+45
+&gt;&gt;&gt; items["mod"].sqrt(4)      # 执行match.sqrt(4)
+2.0
+&gt;&gt;&gt; try:
+...     x = int("a lot")
+... expect items["error"] as e:   # e等同于except ValueError
+...     print("Couldn't convert")
+...
+Couldn't convert
+&gt;&gt;&gt; items["append"](100)      # 执行nums.append(100)
+&gt;&gt;&gt; nums
+[1, 2, 3, 4, 100]
+&gt;&gt;&gt;
+# 通过正确的类型把文本GOOG, 100, 490.10转换为一个字段列表。
+&gt;&gt;&gt; line = "GOOG, 100, 490.10"
+&gt;&gt;&gt; field_types = [str, int, float]
+&gt;&gt;&gt; raw_fields = line.split(',')
+&gt;&gt;&gt; fields = [ty(val) for ty,val in zip(field_types, raw_fields)]
+&gt;&gt;&gt; fields
+['GOOG', 100, 490.1,]
+</code></pre></li>
+</ul>
+
+
+<h1 id=3.6>3.6 表示数据的内置类型</h1>
+
+
+<ul>
+<li>表3-1 表示数据的内置类型
+
+<h2>3.6.1 None类型</h2></li>
+<li>None类型表示一个null对象。在程序中表示为None，如果一个函数没有显式返回值，则返回该对象。布尔值为False。
+
+<h2>3.6.2 数字类型</h2></li>
+<li>布尔性，整数，长整数，浮点数，复数。除了布尔值所有数字对象都是有符号的。</li>
+<li>布尔值包括True和False两个值，分别映射为1和0。</li>
+<li>整数表示范围在-2147483648和2147483647之间。长整数没有范围限制，取决于内存。在对整数值进行显式类型检查时，如果x是长整性，isinstance(x, int)将返回False。</li>
+<li>浮点数是本机双精度(64bit)的表示。精度范围是-308到308的指数。</li>
+<li>复数使用一对浮点数表示，实部与虚部分别用real和imag方法访问。方法conjugate()用于计算复数的共轭数。
+
+<h2>3.6.3 序列类型</h2></li>
+<li>序列表示索引为非负数的有序对象集合，包括字符串，列表和元组。所有序列都支持迭代。</li>
+<li>1. 所有序列的通用操作</li>
+<li>索引运算符[]可以访问序列的元素。s[i]访问序列s的元素i，</li>
+<li>len()函数可以返回任意序列的长度。</li>
+<li>max(),min()函数返回序列的最小值和最大值。</li>
+<li>sun()函数对序列中各项求和，只仅限于数字对象。</li>
+<li>2. 列表</li>
+<li>list()函数可将任意可迭代类型转换为列表。</li>
+<li>append方法用于将一个新元素追加到列表结尾。</li>
+<li>index方式用于搜索列表中首次出现的元素。</li>
+<li>remove方法用于删除列表中首次出现的元素。</li>
+<li>extend方法用于将序列点元素追加到列表中。</li>
+<li>sort方法用于对列表中的元素排序。</li>
+<li>reverse方法用于对列表中的元素逆排序。</li>
+<li>3. 字符串</li>
+<li>两种字符串类型：字节字符串(8bit)，Unicode字符串(16bit)。</li>
+<li>所有方法操作不会修改原始字符串。</li>
+<li>4. xrange对象</li>
+<li>不支持切片操作。python3更名为range()。
+
+<h2>3.6.4 映射类型</h2></li>
+<li>映射对象是无序的。</li>
+<li>字典是唯一内置的映射类型。</li>
+<li>任何不可变对象可作为字典键值。
+
+<h2>3.6.5 集合类型</h2></li>
+<li>set是可变集合，frozenset是不可变集合。
+
+<pre><code>s = set([1,5,10,15])
+f = frozenset(['a',37,'hello'])
+</code></pre></li>
+<li>difference方法，求差集。</li>
+<li>intersection方法，求交集。</li>
+<li>symmetric_difference，求对称查集。</li>
+</ul>
+
+
+<h1 id=3.7>3.7 表示程序结构的内置类型</h1>
+
+
+<ul>
+<li>3.7.1 可调用类型</li>
+<li>可调用类型表示支持函数操作的对象。包括</li>
+<li>1 用户定义的函数
+
+<pre><code>def foo(x,y):
+    return x + y
+bar = lambda x,y: x + y
+dir(foo)
+</code></pre></li>
+<li>2 方法</li>
+<li>实例方法，类方法，静态方法。
+
+<pre><code>class Foo(object):
+    def instance_method(self, arg):
+        statements
+    @classmethod
+    def class_method(cls, arg):
+        statements
+    @staticmethod
+    def static_method(arg):
+        statements
+</code></pre></li>
+<li>实例方法是操作指定类的实例的方法。实例作为第一个参数传递给方法，self</li>
+<li>类方法是把类本身当作一个对象进行操作，在第一个参数class中将类对象传递给类方法。</li>
+<li>静态方法就是打包在类中的函数。
+
+<pre><code>f = Foo()                 # 创建一个实例
+meth = f.instance_method  # 查找方法，注意这里没有()
+meth(37)`                 # 现在调用方法
+
+umeth = Foo.instance_method   # 查找Foo上的方法instance_method
+umeth(f,37)                   # 调用它，但要显式地提供self参数
+</code></pre></li>
+<li>3 内置函数与方法</li>
+<li>4 可调用的类和实例</li>
+<li>类对象和实例也可以当作可调用对象进行操作。</li>
+<li>3.7.2 类，类型和实例</li>
+<li>定义类时，类定义通常会生成一个type类型对象。
+
+<pre><code>&gt;&gt;&gt; class Foo(object):
+...     pass
+&gt;&gt;&gt; type(Foo)
+</code></pre></li>
+<li>创建一个对象实例时，实例的类型就是定义它的类。
+
+<pre><code>&gt;&gt;&gt; f = Foo()
+&gt;&gt;&gt; type(f)
+&lt;class '__main__.Foo'&gt;
+</code></pre></li>
+<li>3.7.3 模块</li>
+<li>模块对象是一个容器，可保存使用import语句加载的对象。</li>
+<li>模块定义了一个使用字典实现的命名空间。</li>
+</ul>
+
+
+<h1 id=3.8>3.8 解释器内部使用的内置类型</h1>
+
+
+<ul>
+<li>包括跟踪对象，代码对象，帧对象，生成器对象，切片对象，Ellipsis。</li>
+<li>3.8.1 代码对象</li>
+<li>由内置compile()函数返回。</li>
+<li>3.8.2 帧对象</li>
+<li>表示执行帧，多出现在跟踪对象中。</li>
+<li>3.8.3 跟踪对象</li>
+<li>出现异常会创建跟踪对象，使用sys.exc_info()函数获取栈跟踪信息。</li>
+<li>3.8.4 生成器对象</li>
+<li>调用生成器函数会产生生成器对象。yield会定义一个生成器函数。</li>
+<li>切片对象</li>
+<li>表示在扩展切片语法中指定的切片。内置slice()函数也会创建切片对象。</li>
+<li>3.8.6 Ellipsis对象</li>
+<li>用于表示索引查找[]中省略号是否存在。
+
+<pre><code>class Example(object):
+    def __getitem__(self, index):
+        print(index)
+e = Example()
+e[3, ..., 4]      # 调用e.__getitem__((3, Ellipsis, 4))
+</code></pre></li>
+</ul>
+
+
+<h1 id=3.9>3.9 对象行为与特殊方法</h1>
+
+
+<ul>
+<li>3.9.1 对象的创建与销毁</li>
+<li><strong>new</strong>()类方法可以创建实例。<strong>init</strong>()方法初始化对象属性，<strong>del</strong>()方法减少对象引用计数。
+
+<pre><code>x = A.__new__(A, args)
+is isinstance(x, A): x.__init__(args)
+</code></pre></li>
+<li>3.9.2 对象字符表示</li>
+<li><strong>repr</strong>()方法返回一个表达式字符串
+
+<pre><code>a = [2,3,4,5]     # 创建一个列表
+s = repr(a)       # s = '[2,3,4,5]'
+b = eval(s)       # 将s变为一个列表
+</code></pre></li>
+<li><strong>str</strong>()方法调用str()函数打印结果。</li>
+<li><strong>format</strong>()方法调用format()函数或字符串format()的方法。
+
+<pre><code>format(x, "spec")         # 调用x.__format__("spec")
+"x is (0:spec)".format(x) # 调用x.__format__("spec")
+</code></pre></li>
+<li>3.9.3 对象比较排序</li>
+<li><strong>bool</strong>()方法用于真值测试。</li>
+<li><strong>len</strong>()方法用于确定对象的真值。</li>
+<li><strong>hash</strong>()方法作用于字符键对象。</li>
+<li>3.9.4 类型检查</li>
+<li>isinstance()与issubclass()函数。</li>
+<li>3.9.5 属性访问</li>
+<li>调用<strong>getattribute</strong>()方法。如果找到属性，就返回，否则调用<strong>getattr</strong>()方法，引发AttributeError异常。</li>
+<li>3.9.6 属性包装与描述符</li>
+<li>3.9.7 序列与映射方法
+
+<pre><code>a = [1,2,3,4,5,6]
+len(a)                # a.__len__()
+x = a[2]              # x = a.__getitem__(2)
+a[1] = 7              # a.__setitem__(1,7)
+del a[2]              # a.__delitem__(2)
+5 in a                # a.__contains__(5)
+a = [1,2,3,4,5,6]
+x = a[1:5]            # x = a.__getitem__(slice(1,5,None))
+a[1:3] = (10,11,12)   # a.__setitem__(slice(1,3,None), (10,11,12))
+del a[1:4]            # a.__delitem__(slice(1,4,None))
+a = m[0:100:10]       # 带步进的切片(步进值=10)
+b = m[1:10, 3:20]     # 多维切片
+c = m[0:100:10, 50:75:5]  # 带步进的多维切片
+m[0:5, 5:10] = n      # 扩展切片分配
+del m[:10, 15:]       # 扩展切片删除
+a = m[..., 10:20]     # 使用Ellipsis对象访问扩展切片
+m[10:20, ...] = n
+a = m[0:10, 0:100:5, ...]
+# 调用__getitem__()方法如下
+a = m.__getitem__((slice(0,10,None), slice(0,100,5), Ellipsis))
+</code></pre></li>
+<li>3.9.8 迭代</li>
+<li>如果对象支迭代，必然提供obj.<strong>iter</strong>()方法。
+
+<pre><code># for x in s 等同于
+_iter = s.__iter__()
+while True:
+    try:
+        x = _iter.next() (#__iter.__next__() python3)
+</code></pre></li>
+<li>3.9.9 数学操作</li>
+<li>3.9.10 可调用接口
+
+<pre><code>class DistanceFrom(object):
+    def __init__(self, origin):
+        self.origin = origin
+    def __call__(self, x):
+        return abs(x - self.origin)
+nums = [1, 37, 42, 101, 13, 9, -20]
+nums.sort(key=DistanceFrom(10))   # 按照与10的距离进行排序
+</code></pre></li>
+<li>3.9.11 上下文协议</li>
+<li>语法
+
+<pre><code>with context [ as var]:
+    statements
+</code></pre></li>
+<li>执行with语句时，会调用<strong>enter</strong>()方法，可将返回值放入as var指定变量中。离开with语句快，会调用<strong>exit</strong>()方法。</li>
+<li>对象检查与dir()</li>
+<li>dir()通常用于检查对象。实现<strong>dir</strong>(self)方法后，dir()就可返回名称列表。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[python 参考手册 第2章]]></title>
     <link href="http://zhangchuan.github.com/blog/2012/01/15/093205-python/"/>
     <updated>2012-01-15T09:32:00+08:00</updated>
     <id>http://zhangchuan.github.com/blog/2012/01/15/093205-python</id>
-    <content type="html"><![CDATA[<h1>第一章 Python 简介</h1>
+    <content type="html"><![CDATA[<h1>第2章 词汇和语法约定</h1>
 
 <ul>
 <li><a href="#2.1">2.1 行结构和缩进</a></li>
-<li><a href="#2.2">1.2 变量和算术表达式</a></li>
-<li><a href="#2.3">1.3 条件语句</a></li>
-<li><a href="#2.4">1.4 文件输入和输出</a></li>
+<li><a href="#2.2">2.2 标识符和保留字</a></li>
+<li><a href="#2.3">2.3 数字字面变量</a></li>
+<li><a href="#2.4">2.4 字符串字面量</a></li>
+<li><a href="#2.5">2.5 容器</a></li>
+<li><a href="#2.6">2.6 运算符，分割符啊哈及特殊符号</a></li>
+<li><a href="#2.7">2.7 文档字符串</a></li>
+<li><a href="#2.8">2.8 装饰器</a></li>
+<li><a href="#2.9">2.9 源代码编码</a></li>
 </ul>
 
 
@@ -67,6 +818,110 @@ else:
 <h1 id=2.2>2.2 标识符和保留字</h1>
 
 
+<ul>
+<li>标识符可包含字母，数字，下划线，必须以非数字字符开始且区分大小写。</li>
+<li>保留字不能作为标识符。
+
+<pre><code>and         del        from     nonlocal    try
+as          elif       global   not         while
+assert      else       if       or          with
+class       exec       in       print
+continue    finally    is       raise
+def         for        lamba    return
+</code></pre></li>
+</ul>
+
+
+<h1 id=2.3>2.3 数字字面变量</h1>
+
+
+<ul>
+<li>布尔值：True和False，整数值对应1和0。</li>
+<li>整数：  分为十进制，八进制(0)，十六进制(0x)，二进制(0b)。</li>
+<li>浮点数：整数后跟小数位。</li>
+<li>复数：  整数/浮点数(实数)后加上j或J(虚数)。
+&lt;h1.id=2.4>2.4 字符串字面量</h1></li>
+<li>将文本放入单引号，双引号，三引号中构成字符串字面量。</li>
+<li>反斜杠()用于转义特殊字符。</li>
+<li>表2-1 标准的字符转义码</li>
+<li>在字符串面量前加上前缀&#8221;u&#8221;构成Unicode字符串字面量。
+
+<pre><code>s = u"Jalape\u00floo" #python3 不必加u前缀
+</code></pre></li>
+<li>在字符串面量前加上前缀&#8221;r&#8221;构成原始字符串。r必须在u之后。</li>
+</ul>
+
+
+<h1 id=2.5>2.5 容器</h1>
+
+
+<ul>
+<li>[列表] (元组) {字典}
+
+<pre><code>a = [ 1, 3.4, 'hello' ]   # 一个列表
+b = ( 10, 20, 30 )        # 一个元组
+c = { 'a':3, 'b':42 }     # 一个字典
+</code></pre></li>
+</ul>
+
+
+<h1 id=2.6>2.6 运算符，分隔符及特殊符号</h1>
+
+
+<pre><code>  +    -    *    **    /    //    %    &lt;&lt;    &gt;&gt;    &amp;    |
+  ^    ~    &lt;    &gt;     &lt;=   &gt;=    ==   !=    &lt;&gt;    +=
+  -=   *=   /=   //=   %=   **=   &amp;=   |=    ^=    &gt;&gt;=  &lt;==
+</code></pre>
+
+<h1 id=2.7>2.7 文档字符串</h1>
+
+
+<ul>
+<li>模块，类或函数的第一条语句是字符串。
+
+<pre><code>def fact(n):
+    "This function computes a factorial"
+    if (n &lt;=1): return 1
+    else: return n * fact(n-1)
+</code></pre></li>
+<li>通过对象<strong>doc</strong>属性访问文档字符串
+
+<pre><code>&gt;&gt;&gt; print fact.__doc__
+</code></pre></li>
+</ul>
+
+
+<h1 id=2.8>2.8 装饰器</h1>
+
+
+<ul>
+<li>装饰器用@表示，必须在单独的行并位于函数，方法类之前。
+
+<pre><code>@staticmethod
+def bar():
+    pass
+</code></pre></li>
+<li>使用多个装饰器
+
+<pre><code>@foo
+@bar
+def spam():
+    pass
+</code></pre></li>
+</ul>
+
+
+<h1 id=2.9>2.9 源代码编码</h1>
+
+
+<ul>
+<li>python源程序使用7位ASCII码标准，在注释语句时，可使用Unicode编码，但其他元素只能使用ASCII字符。
+
+<pre><code>#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+s = "Jalapefio"
+</code></pre></li>
+</ul>
 
 ]]></content>
   </entry>
@@ -108,7 +963,16 @@ blog_index_dir = 'source/blog'
     <link href="http://zhangchuan.github.com/blog/2012/01/12/143202-redis/"/>
     <updated>2012-01-12T14:32:00+08:00</updated>
     <id>http://zhangchuan.github.com/blog/2012/01/12/143202-redis</id>
-    <content type="html"><![CDATA[<h1>CHAPTER 2 Clients</h1>
+    <content type="html"><![CDATA[<ul>
+<li><a href="#1">1. An Introduction to Redis</a></li>
+<li><a href="#2">2. Clients</a></li>
+<li><a href="#3">3. Leveraging Redis</a></li>
+<li><a href="#4">4. Redis Administration and Maintenance</a></li>
+</ul>
+
+
+<h1 id=2>CHAPTER 2 Clients</h1>
+
 
 <p><strong>Using Redis from the Command Line</strong></p>
 
@@ -137,7 +1001,8 @@ $ pip install hiredis
 $ easy_install hiredis
 </code></pre>
 
-<h1>CHAPTER 3 Leveraging Redis</h1>
+<h1 id=3>CHAPTER 3 Leveraging Redis</h1>
+
 
 <p><strong>Using Redis as a Key/Value Store</strong>
 Storing application usage counters</p>
@@ -319,7 +1184,8 @@ redis&gt; EXPIRE /access_tokens/consumer_key:dpf43f3p2l4k3l03/access_token:nnch7
 </ul>
 
 
-<h1>CHAPTER 4 Redis Administration and Maintenance</h1>
+<h1 id=4>CHAPTER 4 Redis Administration and Maintenance</h1>
+
 
 <p><strong>Starting a Redis Slave</strong></p>
 
@@ -351,7 +1217,7 @@ vm-max-threads
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[munin ]]></title>
+    <title type="html"><![CDATA[munin 配置参数]]></title>
     <link href="http://zhangchuan.github.com/blog/2012/01/10/181350-munin/"/>
     <updated>2012-01-10T18:13:00+08:00</updated>
     <id>http://zhangchuan.github.com/blog/2012/01/10/181350-munin</id>
@@ -362,11 +1228,11 @@ vm-max-threads
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[python 参考手册 第一章]]></title>
+    <title type="html"><![CDATA[python 参考手册 第1章]]></title>
     <link href="http://zhangchuan.github.com/blog/2012/01/09/175416-python/"/>
     <updated>2012-01-09T17:54:00+08:00</updated>
     <id>http://zhangchuan.github.com/blog/2012/01/09/175416-python</id>
-    <content type="html"><![CDATA[<h1>第一章 Python 简介</h1>
+    <content type="html"><![CDATA[<h1>第2章 Python 简介</h1>
 
 <ul>
 <li><a href="#1.1">1.1 运行Python</a></li>

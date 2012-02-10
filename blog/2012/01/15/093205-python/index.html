@@ -5,14 +5,19 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>python 参考手册 第二章 - 研究中心</title>
+  <title>python 参考手册 第2章 - 研究中心</title>
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="第一章 Python 简介 2.1 行结构和缩进
-1.2 变量和算术表达式
-1.3 条件语句
-1.4 文件输入和输出 2.1 行结构和缩进 每条语句以换行符结束。可用续航符()分行。 a = math.cos(3 * (x - n) + \ math.sin(3 * (y - n)) 包含在圆括号 &hellip;">
+  <meta name="description" content="第2章 词汇和语法约定 2.1 行结构和缩进
+2.2 标识符和保留字
+2.3 数字字面变量
+2.4 字符串字面量
+2.5 容器
+2.6 运算符，分割符啊哈及特殊符号
+2.7 文档字符串
+2.8 装饰器
+2.9 源代码编码 2.1 行结构和缩进 每条语句以换行符结束。可用续航符()分行。 a = &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,7 +71,7 @@
   
   <header>
     
-      <h1 class="entry-title">Python 参考手册 第二章</h1>
+      <h1 class="entry-title">Python 参考手册 第2章</h1>
     
     
       <p class="meta">
@@ -89,13 +94,18 @@
   </header>
 
 
-<div class="entry-content"><h1>第一章 Python 简介</h1>
+<div class="entry-content"><h1>第2章 词汇和语法约定</h1>
 
 <ul>
 <li><a href="#2.1">2.1 行结构和缩进</a></li>
-<li><a href="#2.2">1.2 变量和算术表达式</a></li>
-<li><a href="#2.3">1.3 条件语句</a></li>
-<li><a href="#2.4">1.4 文件输入和输出</a></li>
+<li><a href="#2.2">2.2 标识符和保留字</a></li>
+<li><a href="#2.3">2.3 数字字面变量</a></li>
+<li><a href="#2.4">2.4 字符串字面量</a></li>
+<li><a href="#2.5">2.5 容器</a></li>
+<li><a href="#2.6">2.6 运算符，分割符啊哈及特殊符号</a></li>
+<li><a href="#2.7">2.7 文档字符串</a></li>
+<li><a href="#2.8">2.8 装饰器</a></li>
+<li><a href="#2.9">2.9 源代码编码</a></li>
 </ul>
 
 
@@ -138,6 +148,110 @@ else:
 <h1 id=2.2>2.2 标识符和保留字</h1>
 
 
+<ul>
+<li>标识符可包含字母，数字，下划线，必须以非数字字符开始且区分大小写。</li>
+<li>保留字不能作为标识符。
+
+<pre><code>and         del        from     nonlocal    try
+as          elif       global   not         while
+assert      else       if       or          with
+class       exec       in       print
+continue    finally    is       raise
+def         for        lamba    return
+</code></pre></li>
+</ul>
+
+
+<h1 id=2.3>2.3 数字字面变量</h1>
+
+
+<ul>
+<li>布尔值：True和False，整数值对应1和0。</li>
+<li>整数：  分为十进制，八进制(0)，十六进制(0x)，二进制(0b)。</li>
+<li>浮点数：整数后跟小数位。</li>
+<li>复数：  整数/浮点数(实数)后加上j或J(虚数)。
+&lt;h1.id=2.4>2.4 字符串字面量</h1></li>
+<li>将文本放入单引号，双引号，三引号中构成字符串字面量。</li>
+<li>反斜杠()用于转义特殊字符。</li>
+<li>表2-1 标准的字符转义码</li>
+<li>在字符串面量前加上前缀&#8221;u&#8221;构成Unicode字符串字面量。
+
+<pre><code>s = u"Jalape\u00floo" #python3 不必加u前缀
+</code></pre></li>
+<li>在字符串面量前加上前缀&#8221;r&#8221;构成原始字符串。r必须在u之后。</li>
+</ul>
+
+
+<h1 id=2.5>2.5 容器</h1>
+
+
+<ul>
+<li>[列表] (元组) {字典}
+
+<pre><code>a = [ 1, 3.4, 'hello' ]   # 一个列表
+b = ( 10, 20, 30 )        # 一个元组
+c = { 'a':3, 'b':42 }     # 一个字典
+</code></pre></li>
+</ul>
+
+
+<h1 id=2.6>2.6 运算符，分隔符及特殊符号</h1>
+
+
+<pre><code>  +    -    *    **    /    //    %    &lt;&lt;    &gt;&gt;    &amp;    |
+  ^    ~    &lt;    &gt;     &lt;=   &gt;=    ==   !=    &lt;&gt;    +=
+  -=   *=   /=   //=   %=   **=   &amp;=   |=    ^=    &gt;&gt;=  &lt;==
+</code></pre>
+
+<h1 id=2.7>2.7 文档字符串</h1>
+
+
+<ul>
+<li>模块，类或函数的第一条语句是字符串。
+
+<pre><code>def fact(n):
+    "This function computes a factorial"
+    if (n &lt;=1): return 1
+    else: return n * fact(n-1)
+</code></pre></li>
+<li>通过对象<strong>doc</strong>属性访问文档字符串
+
+<pre><code>&gt;&gt;&gt; print fact.__doc__
+</code></pre></li>
+</ul>
+
+
+<h1 id=2.8>2.8 装饰器</h1>
+
+
+<ul>
+<li>装饰器用@表示，必须在单独的行并位于函数，方法类之前。
+
+<pre><code>@staticmethod
+def bar():
+    pass
+</code></pre></li>
+<li>使用多个装饰器
+
+<pre><code>@foo
+@bar
+def spam():
+    pass
+</code></pre></li>
+</ul>
+
+
+<h1 id=2.9>2.9 源代码编码</h1>
+
+
+<ul>
+<li>python源程序使用7位ASCII码标准，在注释语句时，可使用Unicode编码，但其他元素只能使用ASCII字符。
+
+<pre><code>#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+s = "Jalapefio"
+</code></pre></li>
+</ul>
 
 </div>
 
@@ -166,7 +280,7 @@ else:
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/blog/'>blog</a>
+    <a class='category' href='/blog/categories/python/'>python</a>, <a class='category' href='/blog/categories/read/'>read</a>
   
 </span>
 
@@ -185,6 +299,8 @@ else:
         <a class="basic-alignment left" href="/blog/2012/01/12/174442-octopress/" title="Previous Post: octopress tips">&laquo; octopress tips</a>
       
       
+        <a class="basic-alignment right" href="/blog/2012/01/15/143703-python/" title="next Post: python 参考手册 第3章">python 参考手册 第3章 &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -202,7 +318,31 @@ else:
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2012/01/15/093205-python/">python 参考手册 第二章</a>
+        <a href="/blog/2012/02/10/163323-python/">Python Tips</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/19/095304-python/">python 参考手册 第21章</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/18/175036-python/">python hiredis模块</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/16/162542-python/">python lxml模块</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/15/155751-redis/">Redis的七种武器及其适合的应用场景</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/15/143703-python/">python 参考手册 第3章</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/15/093205-python/">python 参考手册 第2章</a>
       </li>
     
       <li class="post">
@@ -217,32 +357,12 @@ else:
         <a href="/blog/2012/01/11/100854-redis/">redis.conf 配置参数</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/01/10/181350-munin/">munin </a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/09/175416-python/">python 参考手册 第一章</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/09/172719-git/">git 命令快速参考</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/08/183821-markdown/">markdown 语法说明</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/08/031317-octopress/">octopress 像黑客一样写博客</a>
-      </li>
-    
   </ul>
 </section>
 
 <section>
 <h1>Categories</h1>
-<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 160.0%'>Blog(4)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(2)</a>  <a href='/blog/categories/git' style='font-size: 115.0%'>Git(1)</a>  <a href='/blog/categories/monitor' style='font-size: 115.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 115.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 115.0%'>Python(1)</a>  <a href='/blog/categories/read' style='font-size: 130.0%'>Read(2)</a>  <a href='/blog/categories/redis' style='font-size: 130.0%'>Redis(2)</a> </span>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 130.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 140.0%'>Database(4)</a>  <a href='/blog/categories/git' style='font-size: 110.0%'>Git(1)</a>  <a href='/blog/categories/monitor' style='font-size: 110.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 110.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 110.0%'>Python(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(6)</a>  <a href='/blog/categories/read' style='font-size: 150.0%'>Read(5)</a>  <a href='/blog/categories/redis' style='font-size: 140.0%'>Redis(4)</a> </span>
 </section>
 
 
