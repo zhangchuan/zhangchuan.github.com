@@ -9,15 +9,8 @@
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="第3章 类型与对象 3.1 术语
-3.2 对象的身份与类型
-3.3 引用计数与垃圾收集
-3.4 引用与复制
-3.5 第一类对象
-3.6 表示数据的内置类型
-3.7 表示程序结构的内置类型
-3.8 解释器内部使用的内置类型
-3.9 对象行为与特殊方法 3.1 术语 程序中所有存储的数据都是对象：身份 &hellip;">
+  <meta name="description" content="官方手册
+">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,7 +67,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/01/15/143703-python/">Python 参考手册 第3章</a></h1>
+      <h1 class="entry-title"><a href="/blog/2012/01/18/175036-python/">Python Hiredis模块</a></h1>
     
     
       <p class="meta">
@@ -90,431 +83,14 @@
   
 
 
-<time datetime="2012-01-15T14:37:00+08:00" pubdate data-updated="true">Jan 15<span>th</span>, 2012</time>
+<time datetime="2012-01-18T17:50:00+08:00" pubdate data-updated="true">Jan 18<span>th</span>, 2012</time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h1>第3章 类型与对象</h1>
-
-<ul>
-<li><a href="#3.1">3.1 术语</a></li>
-<li><a href="#3.2">3.2 对象的身份与类型</a></li>
-<li><a href="#3.3">3.3 引用计数与垃圾收集</a></li>
-<li><a href="#3.4">3.4 引用与复制</a></li>
-<li><a href="#3.5">3.5 第一类对象</a></li>
-<li><a href="#3.6">3.6 表示数据的内置类型</a></li>
-<li><a href="#3.7">3.7 表示程序结构的内置类型</a></li>
-<li><a href="#3.8">3.8 解释器内部使用的内置类型</a></li>
-<li><a href="#3.9">3.9 对象行为与特殊方法</a></li>
-</ul>
-
-
-<h1 id=3.1>3.1 术语</h1>
-
-
-<ul>
-<li>程序中所有存储的数据都是对象：身份，类型，和值。</li>
-<li>对象身份是指向对象值所处位置的指针。例如a=42, 用值42创建一个整数对象，a是引用这个位置的具体名称。</li>
-<li>数据属性和方法，属性是对象相关的值，方法是在对象上执行的某些函数，使用(.)访问。
-
-<pre><code>a = 3 + 4j    # 创建以改革复数
-r = a.real    # 获得实部(属性之一)
-b = [1, 2, 3] # 创建一个列表
-b.append(7)   # 使用append方法添加一个新元素
-</code></pre></li>
-</ul>
-
-
-<h1 id=3.2>3.2 对象的身份与类型</h1>
-
-
-<ul>
-<li>内置函数id()返回对象身份，返回值为整数。</li>
-<li>is运算符用于比较两个对象的身份。</li>
-<li>内置函数type()返回对象类型。
-
-<pre><code># 比较两个对象
-def compare(a,b):
-    if a is b:
-        # a和b是同一个对象
-        statements
-    if a == b:
-        # a和b具有相同的值
-        statements
-    if type(a) is type(b):
-        # a和b具有相同类型
-        statements
-</code></pre></li>
-<li>对象本身也是一个对像，称作对象的类。所有类型对象都有一个指定名称，例如list, dict和file
-
-<pre><code>if type(s) is list:
-    s.append(item)
-if type(d) is dict:
-    s.update(t)
-</code></pre></li>
-<li>检查类型的最佳方式：isinstance(object, type)
-
-<pre><code>if isinstance(s, list):
-    s.append(item)
-if isinstance(d, dict):
-    d.update(t)
-</code></pre></li>
-</ul>
-
-
-<h1 id=3.3>3.3 引用计数和垃圾收集</h1>
-
-
-<ul>
-<li>所有对象都有引用计数，在给对象分配一个新的名称，或放入一个新的容器时，该对象的引用计数都会增加。
-
-<pre><code># 至始至终只有一个包含37的对象，其他操作只是创建类该对象的引用。
-a = 37        # 创建一个值为37的对象
-b = a         # 增加37的引用计数
-c = []
-c.append(b)   # 增加37的引用计数
-</code></pre></li>
-<li>使用del语句或者引用操作作用域或者被重新赋值，对象的引用计数会减少。
-
-<pre><code>del a         # 减少37的引用计数
-b = 42        # 减少37的引用计数
-c[0] = 2.0    # 减少37的引用计数
-</code></pre></li>
-<li>使用sys.getrefcount()函数可获得对象的当前引用计数。
-
-<pre><code>&gt;&gt;&gt; a = 37
-&gt;&gt;&gt; import sys
-&gt;&gt;&gt; sys.gerefcount(a)
-</code></pre></li>
-<li>当一个对象引用计数归零时，它讲被垃圾回收机制处理掉。
-
-<pre><code>a = {}
-b = {}
-a['b'] = b    # a包含b的引用
-b['a'] = a    # b包含a的引用
-del a
-del b
-</code></pre></li>
-</ul>
-
-
-<h1 id=3.4>3.4 引用和赋值</h1>
-
-
-<ul>
-<li>a = b 这样的赋值，会创建一个对b的新引用。对于可变对象，赋值实际是创建了b的一个副本。
-
-<pre><code>&gt;&gt;&gt; a = [1, 2, 3, 4]
-&gt;&gt;&gt; b = a     # b是对a的引用
-&gt;&gt;&gt; b is a
-True
-&gt;&gt;&gt; b[2] = -100   # 修改b中的一个元素
-&gt;&gt;&gt; a
-[1, 2, -100, 4]
-&gt;&gt;&gt;
-</code></pre></li>
-<li>浅复制和深复制。
-
-<pre><code># 浅复制是创建一个新对象，但它包含的是对原始对象中的包含项的引用。
-&gt;&gt;&gt; a = [1, 2, [3,4]]
-&gt;&gt;&gt; b = list(a)           # 创建a的一个浅复制
-&gt;&gt;&gt; b is a
-False
-&gt;&gt;&gt; b.append(100)         # 给b追加一个元素
-&gt;&gt;&gt; b
-[1, 2, [3,4], 100]
-&gt;&gt;&gt; a                     # 注意a没有变化
-[1, 2, [3,4]]
-&gt;&gt;&gt; b[2][0] = -100        # 修改b的一个元素
-[1, 2, [-100,4], 100]
-&gt;&gt;&gt; a                     # 注意a中的变化
-[1, 2, [-100,4]]
-
-# 深复制将创建一个新对象，并且递归复制它包含的所有对象。使用标准库中的copy.deepcopy()函数。
-&gt;&gt;&gt; import copy
-&gt;&gt;&gt; a = [1, 2, [3,4]]
-&gt;&gt;&gt; b = copy.deepcopy(a)
-&gt;&gt;&gt; b[2][0] = -100
-&gt;&gt;&gt; b
-[1, 2, [-100,4]]
-&gt;&gt;&gt; a             # 注意a没变化
-[1, 2, [3,4]]
-</code></pre></li>
-</ul>
-
-
-<h1 id=3.5>3.5 第一类对象</h1>
-
-
-<ul>
-<li>能够使用标识符命名的所有对象都可以当作数据处理。
-
-<pre><code>items = {
-    'number' : 42
-    'text'   : "Hello World"
-}
-# 一些不平常的项
-items["func"] = abs       # 添加abs()函数
-import math
-items["mod"] = math       # 添加一个模块
-items["error"] = ValueError   # 添加一个异常类型
-nums = [1, 2, 3, 4]
-items["append"] = nums.append # 添加另一个对象的一个方法
-#
-&gt;&gt;&gt; items["func"](-45)        # 执行abs(-45)
-45
-&gt;&gt;&gt; items["mod"].sqrt(4)      # 执行match.sqrt(4)
-2.0
-&gt;&gt;&gt; try:
-...     x = int("a lot")
-... expect items["error"] as e:   # e等同于except ValueError
-...     print("Couldn't convert")
-...
-Couldn't convert
-&gt;&gt;&gt; items["append"](100)      # 执行nums.append(100)
-&gt;&gt;&gt; nums
-[1, 2, 3, 4, 100]
-&gt;&gt;&gt;
-# 通过正确的类型把文本GOOG, 100, 490.10转换为一个字段列表。
-&gt;&gt;&gt; line = "GOOG, 100, 490.10"
-&gt;&gt;&gt; field_types = [str, int, float]
-&gt;&gt;&gt; raw_fields = line.split(',')
-&gt;&gt;&gt; fields = [ty(val) for ty,val in zip(field_types, raw_fields)]
-&gt;&gt;&gt; fields
-['GOOG', 100, 490.1,]
-</code></pre></li>
-</ul>
-
-
-<h1 id=3.6>3.6 表示数据的内置类型</h1>
-
-
-<ul>
-<li>表3-1 表示数据的内置类型
-
-<h2>3.6.1 None类型</h2></li>
-<li>None类型表示一个null对象。在程序中表示为None，如果一个函数没有显式返回值，则返回该对象。布尔值为False。
-
-<h2>3.6.2 数字类型</h2></li>
-<li>布尔性，整数，长整数，浮点数，复数。除了布尔值所有数字对象都是有符号的。</li>
-<li>布尔值包括True和False两个值，分别映射为1和0。</li>
-<li>整数表示范围在-2147483648和2147483647之间。长整数没有范围限制，取决于内存。在对整数值进行显式类型检查时，如果x是长整性，isinstance(x, int)将返回False。</li>
-<li>浮点数是本机双精度(64bit)的表示。精度范围是-308到308的指数。</li>
-<li>复数使用一对浮点数表示，实部与虚部分别用real和imag方法访问。方法conjugate()用于计算复数的共轭数。
-
-<h2>3.6.3 序列类型</h2></li>
-<li>序列表示索引为非负数的有序对象集合，包括字符串，列表和元组。所有序列都支持迭代。</li>
-<li>1. 所有序列的通用操作</li>
-<li>索引运算符[]可以访问序列的元素。s[i]访问序列s的元素i，</li>
-<li>len()函数可以返回任意序列的长度。</li>
-<li>max(),min()函数返回序列的最小值和最大值。</li>
-<li>sun()函数对序列中各项求和，只仅限于数字对象。</li>
-<li>2. 列表</li>
-<li>list()函数可将任意可迭代类型转换为列表。</li>
-<li>append方法用于将一个新元素追加到列表结尾。</li>
-<li>index方式用于搜索列表中首次出现的元素。</li>
-<li>remove方法用于删除列表中首次出现的元素。</li>
-<li>extend方法用于将序列点元素追加到列表中。</li>
-<li>sort方法用于对列表中的元素排序。</li>
-<li>reverse方法用于对列表中的元素逆排序。</li>
-<li>3. 字符串</li>
-<li>两种字符串类型：字节字符串(8bit)，Unicode字符串(16bit)。</li>
-<li>所有方法操作不会修改原始字符串。</li>
-<li>4. xrange对象</li>
-<li>不支持切片操作。python3更名为range()。
-
-<h2>3.6.4 映射类型</h2></li>
-<li>映射对象是无序的。</li>
-<li>字典是唯一内置的映射类型。</li>
-<li>任何不可变对象可作为字典键值。
-
-<h2>3.6.5 集合类型</h2></li>
-<li>set是可变集合，frozenset是不可变集合。
-
-<pre><code>s = set([1,5,10,15])
-f = frozenset(['a',37,'hello'])
-</code></pre></li>
-<li>difference方法，求差集。</li>
-<li>intersection方法，求交集。</li>
-<li>symmetric_difference，求对称查集。</li>
-</ul>
-
-
-<h1 id=3.7>3.7 表示程序结构的内置类型</h1>
-
-
-<ul>
-<li>3.7.1 可调用类型</li>
-<li>可调用类型表示支持函数操作的对象。包括</li>
-<li>1 用户定义的函数
-
-<pre><code>def foo(x,y):
-    return x + y
-bar = lambda x,y: x + y
-dir(foo)
-</code></pre></li>
-<li>2 方法</li>
-<li>实例方法，类方法，静态方法。
-
-<pre><code>class Foo(object):
-    def instance_method(self, arg):
-        statements
-    @classmethod
-    def class_method(cls, arg):
-        statements
-    @staticmethod
-    def static_method(arg):
-        statements
-</code></pre></li>
-<li>实例方法是操作指定类的实例的方法。实例作为第一个参数传递给方法，self</li>
-<li>类方法是把类本身当作一个对象进行操作，在第一个参数class中将类对象传递给类方法。</li>
-<li>静态方法就是打包在类中的函数。
-
-<pre><code>f = Foo()                 # 创建一个实例
-meth = f.instance_method  # 查找方法，注意这里没有()
-meth(37)`                 # 现在调用方法
-
-umeth = Foo.instance_method   # 查找Foo上的方法instance_method
-umeth(f,37)                   # 调用它，但要显式地提供self参数
-</code></pre></li>
-<li>3 内置函数与方法</li>
-<li>4 可调用的类和实例</li>
-<li>类对象和实例也可以当作可调用对象进行操作。</li>
-<li>3.7.2 类，类型和实例</li>
-<li>定义类时，类定义通常会生成一个type类型对象。
-
-<pre><code>&gt;&gt;&gt; class Foo(object):
-...     pass
-&gt;&gt;&gt; type(Foo)
-</code></pre></li>
-<li>创建一个对象实例时，实例的类型就是定义它的类。
-
-<pre><code>&gt;&gt;&gt; f = Foo()
-&gt;&gt;&gt; type(f)
-&lt;class '__main__.Foo'&gt;
-</code></pre></li>
-<li>3.7.3 模块</li>
-<li>模块对象是一个容器，可保存使用import语句加载的对象。</li>
-<li>模块定义了一个使用字典实现的命名空间。</li>
-</ul>
-
-
-<h1 id=3.8>3.8 解释器内部使用的内置类型</h1>
-
-
-<ul>
-<li>包括跟踪对象，代码对象，帧对象，生成器对象，切片对象，Ellipsis。</li>
-<li>3.8.1 代码对象</li>
-<li>由内置compile()函数返回。</li>
-<li>3.8.2 帧对象</li>
-<li>表示执行帧，多出现在跟踪对象中。</li>
-<li>3.8.3 跟踪对象</li>
-<li>出现异常会创建跟踪对象，使用sys.exc_info()函数获取栈跟踪信息。</li>
-<li>3.8.4 生成器对象</li>
-<li>调用生成器函数会产生生成器对象。yield会定义一个生成器函数。</li>
-<li>切片对象</li>
-<li>表示在扩展切片语法中指定的切片。内置slice()函数也会创建切片对象。</li>
-<li>3.8.6 Ellipsis对象</li>
-<li>用于表示索引查找[]中省略号是否存在。
-
-<pre><code>class Example(object):
-    def __getitem__(self, index):
-        print(index)
-e = Example()
-e[3, ..., 4]      # 调用e.__getitem__((3, Ellipsis, 4))
-</code></pre></li>
-</ul>
-
-
-<h1 id=3.9>3.9 对象行为与特殊方法</h1>
-
-
-<ul>
-<li>3.9.1 对象的创建与销毁</li>
-<li><strong>new</strong>()类方法可以创建实例。<strong>init</strong>()方法初始化对象属性，<strong>del</strong>()方法减少对象引用计数。
-
-<pre><code>x = A.__new__(A, args)
-is isinstance(x, A): x.__init__(args)
-</code></pre></li>
-<li>3.9.2 对象字符表示</li>
-<li><strong>repr</strong>()方法返回一个表达式字符串
-
-<pre><code>a = [2,3,4,5]     # 创建一个列表
-s = repr(a)       # s = '[2,3,4,5]'
-b = eval(s)       # 将s变为一个列表
-</code></pre></li>
-<li><strong>str</strong>()方法调用str()函数打印结果。</li>
-<li><strong>format</strong>()方法调用format()函数或字符串format()的方法。
-
-<pre><code>format(x, "spec")         # 调用x.__format__("spec")
-"x is (0:spec)".format(x) # 调用x.__format__("spec")
-</code></pre></li>
-<li>3.9.3 对象比较排序</li>
-<li><strong>bool</strong>()方法用于真值测试。</li>
-<li><strong>len</strong>()方法用于确定对象的真值。</li>
-<li><strong>hash</strong>()方法作用于字符键对象。</li>
-<li>3.9.4 类型检查</li>
-<li>isinstance()与issubclass()函数。</li>
-<li>3.9.5 属性访问</li>
-<li>调用<strong>getattribute</strong>()方法。如果找到属性，就返回，否则调用<strong>getattr</strong>()方法，引发AttributeError异常。</li>
-<li>3.9.6 属性包装与描述符</li>
-<li>3.9.7 序列与映射方法
-
-<pre><code>a = [1,2,3,4,5,6]
-len(a)                # a.__len__()
-x = a[2]              # x = a.__getitem__(2)
-a[1] = 7              # a.__setitem__(1,7)
-del a[2]              # a.__delitem__(2)
-5 in a                # a.__contains__(5)
-a = [1,2,3,4,5,6]
-x = a[1:5]            # x = a.__getitem__(slice(1,5,None))
-a[1:3] = (10,11,12)   # a.__setitem__(slice(1,3,None), (10,11,12))
-del a[1:4]            # a.__delitem__(slice(1,4,None))
-a = m[0:100:10]       # 带步进的切片(步进值=10)
-b = m[1:10, 3:20]     # 多维切片
-c = m[0:100:10, 50:75:5]  # 带步进的多维切片
-m[0:5, 5:10] = n      # 扩展切片分配
-del m[:10, 15:]       # 扩展切片删除
-a = m[..., 10:20]     # 使用Ellipsis对象访问扩展切片
-m[10:20, ...] = n
-a = m[0:10, 0:100:5, ...]
-# 调用__getitem__()方法如下
-a = m.__getitem__((slice(0,10,None), slice(0,100,5), Ellipsis))
-</code></pre></li>
-<li>3.9.8 迭代</li>
-<li>如果对象支迭代，必然提供obj.<strong>iter</strong>()方法。
-
-<pre><code># for x in s 等同于
-_iter = s.__iter__()
-while True:
-    try:
-        x = _iter.next() (#__iter.__next__() python3)
-</code></pre></li>
-<li>3.9.9 数学操作</li>
-<li>3.9.10 可调用接口
-
-<pre><code>class DistanceFrom(object):
-    def __init__(self, origin):
-        self.origin = origin
-    def __call__(self, x):
-        return abs(x - self.origin)
-nums = [1, 37, 42, 101, 13, 9, -20]
-nums.sort(key=DistanceFrom(10))   # 按照与10的距离进行排序
-</code></pre></li>
-<li>3.9.11 上下文协议</li>
-<li>语法
-
-<pre><code>with context [ as var]:
-    statements
-</code></pre></li>
-<li>执行with语句时，会调用<strong>enter</strong>()方法，可将返回值放入as var指定变量中。离开with语句快，会调用<strong>exit</strong>()方法。</li>
-<li>对象检查与dir()</li>
-<li>dir()通常用于检查对象。实现<strong>dir</strong>(self)方法后，dir()就可返回名称列表。</li>
-</ul>
-
+  <div class="entry-content"><p><a href="https://github.com/pietern/hiredis-py">官方手册</a></p>
 </div>
   
   
@@ -541,6 +117,18 @@ nums.sort(key=DistanceFrom(10))   # 按照与10的距离进行排序
 <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/02/23/120934-python/">PyMongo 创建,更新删除文档[MongoDB权威指南 第三章]</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/22/141006-mongodb/">monogodb 大杂烩</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/15/143830-scribe/">scribe安装</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2012/02/10/163323-python/">Python Tips</a>
@@ -570,24 +158,12 @@ nums.sort(key=DistanceFrom(10))   # 按照与10的距离进行排序
         <a href="/blog/2012/01/15/093205-python/">python 参考手册 第2章</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/01/12/174442-octopress/">octopress tips</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/12/143202-redis/">redis cookbook</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/11/100854-redis/">redis.conf 配置参数</a>
-      </li>
-    
   </ul>
 </section>
 
 <section>
 <h1>Categories</h1>
-<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 130.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 140.0%'>Database(4)</a>  <a href='/blog/categories/git' style='font-size: 110.0%'>Git(1)</a>  <a href='/blog/categories/monitor' style='font-size: 110.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 110.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 110.0%'>Python(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(6)</a>  <a href='/blog/categories/read' style='font-size: 150.0%'>Read(5)</a>  <a href='/blog/categories/redis' style='font-size: 140.0%'>Redis(4)</a> </span>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 118.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 106.0%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 112.0%'>Mongodb(2)</a>  <a href='/blog/categories/monitor' style='font-size: 106.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 106.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(10)</a>  <a href='/blog/categories/read' style='font-size: 130.0%'>Read(5)</a>  <a href='/blog/categories/redis' style='font-size: 124.0%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 106.0%'>Scribe(1)</a> </span>
 </section>
 
 

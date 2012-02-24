@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: redis | 研究中心]]></title>
+  <title><![CDATA[Category: Redis | 研究中心]]></title>
   <link href="http://zhangchuan.github.com/blog/categories/redis/atom.xml" rel="self"/>
   <link href="http://zhangchuan.github.com/"/>
-  <updated>2012-02-10T16:35:50+08:00</updated>
+  <updated>2012-02-24T19:04:25+08:00</updated>
   <id>http://zhangchuan.github.com/</id>
   <author>
     <name><![CDATA[Cloud.Zhang]]></name>

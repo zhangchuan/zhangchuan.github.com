@@ -1,0 +1,467 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>monogodb 大杂烩 - 研究中心</title>
+  <meta name="author" content="Cloud.Zhang">
+
+  
+  <meta name="description" content="一, 安装 下载连接 # mkdir -p /usr/local/mongo/{etc,bin,log}
+# mkdir -p /data # /usr/local/mongo/etc/mongodb.conf
+# 数据文件存放路径
+dbpath=/var/lib/mongodb # 错误日志文件 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://zhangchuan.github.com/blog/2012/02/22/141006-mongodb">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="研究中心" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:zhangchuan.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Monogodb 大杂烩</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-02-22T14:10:00+08:00" pubdate data-updated="true">Feb 22<span>nd</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h1>一, 安装</h1>
+
+<p><a href="http://www.mongodb.org/downloads">下载连接</a></p>
+
+<pre><code># mkdir -p /usr/local/mongo/{etc,bin,log}
+# mkdir -p /data
+
+# /usr/local/mongo/etc/mongodb.conf
+# 数据文件存放路径
+dbpath=/var/lib/mongodb
+
+# 错误日志文件
+logpath=/var/log/mongodb/mongodb.log
+
+# 错误日志文件采用追加模式,默认是覆盖模式
+logappend=true
+
+# 对外服务绑定IP. 根据业务需要, 尽量不要放公网.
+#bind_ip
+
+# 对外服务绑定端口,Web管理端口在这个port的基础上+1000 
+port = 27017
+# 开启简单的rest API, 提供Web管理界面操作支持
+rest = true
+
+# 定期显示CPU的CPU利用率和iowait
+#cpu = true
+
+# 关闭验证(默认)
+#noauth = true
+# 启用验证
+#auth = true
+
+# 详细输出
+#verbose = true
+# 安静输出
+#quiet = true
+
+# 在收到客户数据,检查数据的有效性
+#objcheck = true
+
+# 限制每个数据库的文件数，设置默认为8
+#quota = true
+# Set oplogging level where n is
+#   0=off (default)
+#   1=W
+#   2=R
+#   3=both
+#   7=W+some reads
+# 规定每个数据库允许的文件数
+#quotaFiles
+
+# diaglog选项 0=off 1=W 2=R 3=both 7=W+some reads
+# 提供的方式，是只读，只写，还是读写都行，还是主要写+部分的读模式
+#diaglog = 0
+
+# 调试诊断选项
+#nocursors = true
+# 忽略查询命中率
+#nohints = true
+# 关闭http接口访问
+#nohttpinterface = true
+# 禁用脚本引擎
+#noscripting = true
+# 不允许表扫描
+#notablescan = true
+# 禁用数据文件预分配(往往影响性能)
+#noprealloc = true
+# 设置信数据库.ns文件大小(MB) =16
+#nssize = &lt;size&gt;
+
+#修复所有数据库
+#repair
+#修复库生成的文件的目录,默认为目录名称dbpath
+#repairpath
+#数据写入磁盘的时间秒数(0=never,不推荐),默认60
+#syncdelay
+
+# Accout token for Mongo monitoring server.
+#mms-token = &lt;token&gt;
+# Server name for Mongo monitoring server.
+#mms-name = &lt;server-name&gt;
+# Ping interval for Mongo monitoring server.
+#mms-interval = &lt;seconds&gt;
+
+# 从一个dbpath里启用从库复制服务，该dbpath的数据库是主库的快照，可用于快速启用同步
+#fastsync
+# 如果从库与主库同步数据差得多，自动重新同步
+#autoresync
+# pair???
+#pairwith
+# 仲裁服务器，在主从和pair中用到
+#arbiter
+# 设置操作日志的大小(MB)
+#oplogSize
+# 设置存储操作日志的内存大小
+#opIdMem
+
+# 从库模式
+#slave = true
+# 当为从时，指定主的地址和端口
+#source = master.example.com
+# 设置从库同步主库的延迟时间
+#slavedelay
+# 指定单一的数据库复制
+#only = master.example.com
+# 主库模式
+#master = true
+#source = slave.example.com
+# 设置副本集名称
+# replSet = setname
+
+# 声明这是一个集群的config服务,默认端口27019，默认目录/data/configdb
+#configsvr
+# 声明这是一个集群的分片,默认端口27018
+#shardsvr
+# 关闭偏执为moveChunk数据保存
+#noMoveParanoia
+
+# tree /usr/local/mongo/bin
+|-- bsondump
+|-- mongo
+|-- mongod
+|-- mongodump
+|-- mongoexport
+|-- mongofiles
+|-- mongoimport
+|-- mongorestore
+|-- mongos
+|-- mongosniff
+|-- mongostat
+|-- mongotopmongosniff
+
+# mongostat --help
+Fields
+inserts      - # of inserts per second
+query        - # of queries per second
+update       - # of updates per second
+delete       - # of deletes per second
+getmore      - # of get mores (cursor batch) per second
+command      - # of commands per second
+flushes      - # of fsync flushes per second
+mapped       - amount of data mmaped (total data size) megabytes
+visze        - virtual size of process in megabytes
+res          - resident size of process in megabytes
+faults       - # of pages faults per sec (linux only)
+locked       - percent of time in global write lock
+idx miss     - percent of btree page misses (sampled)
+qr|qw        - queue lengths for clients waiting (read|write)
+ar|aw        - active clients (read|write)
+netIn        - network traffic in - bits
+netOut       - network traffic out - bits
+conn         - number of open connections
+
+# Python API
+#easy_install pymongo
+# -- python code --
+from pymongo import Connection
+
+# Making a Connection
+#connection = Connection() #default host and port
+connection = Connection('localhost', 27017)
+
+# Getting a Database
+#db = connection.test_database
+db = connection['test-database']
+
+# Getting a Collection
+#collection = db.test_collection
+collection = db['test-collection']
+
+# Documents
+import datetime
+
+post = {"author": "Mike",
+"text": "My first blog post!",
+"tags": ["mongodb", "python", "pymongo"],
+"date": datetime.datetime.utcnow()}
+
+# Inserting a Document
+posts = db.posts
+posts.insert(post)
+db.collection_names()
+
+# Getting a Single Document With find_one()
+print posts.find_one()
+print posts.find_one({"author": "Mike"})
+print posts.find_one({"author": "Eliot"})
+
+# Bulk Inserts
+new_posts = [{"author": "Mike",
+    "text": "Another post!",
+    "tags": ["bulk", "insert"],
+    "date": datetime.datetime(2009, 11, 12, 11, 14)},
+    {"author": "Eliot",
+    "title": "MongoDB is fun",
+    "text": "and pretty easy too!",
+    "date": datetime.datetime(2009, 11, 10, 10, 45)}]
+posts.insert(new_posts)
+
+# Querying for More Than One Document
+for post in posts.find():
+    print post
+
+for post in posts.find({"author": "Mike"}):
+    print post
+
+# Counting
+posts.count()
+posts.find({"author": "Mike"}).count()
+
+# Range Queries
+d = datetime.datetime(2009, 11, 12, 12)
+for post in posts.find({"date": {"$lt": d}}).sort("author"):
+    print post
+
+# Indexing
+posts.find({"date": {"$lt": d}}).sort("author").explain()["cursor"]
+posts.find({"date": {"$lt": d}}).sort("author").explain()["nscanned"]
+
+from pymongo import ASCENDING, DESCENDING
+posts.create_index([("date", DESCENDING), ("author", ASCENDING)])
+posts.find({"date": {"$lt": d}}).sort("author").explain()["cursor"]
+posts.find({"date": {"$lt": d}}).sort("author").explain()["nscanned"]
+</code></pre>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Cloud.Zhang</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-02-22T14:10:00+08:00" pubdate data-updated="true">Feb 22<span>nd</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/database/'>Database</a>, <a class='category' href='/blog/categories/mongodb/'>MongoDB</a>, <a class='category' href='/blog/categories/python/'>Python</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/02/15/143830-scribe/" title="Previous Post: scribe安装">&laquo; scribe安装</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/02/23/120934-python/" title="next Post: PyMongo 创建,更新删除文档[MongoDB权威指南 第三章]">PyMongo 创建,更新删除文档[MongoDB权威指南 第三章] &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1></h1>
+  <img src="/images/newton.gif">
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/02/23/120934-python/">PyMongo 创建,更新删除文档[MongoDB权威指南 第三章]</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/22/141006-mongodb/">monogodb 大杂烩</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/15/143830-scribe/">scribe安装</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/10/163323-python/">Python Tips</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/19/095304-python/">python 参考手册 第21章</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/18/175036-python/">python hiredis模块</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/16/162542-python/">python lxml模块</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/15/155751-redis/">Redis的七种武器及其适合的应用场景</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/15/143703-python/">python 参考手册 第3章</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/15/093205-python/">python 参考手册 第2章</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<h1>Categories</h1>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 118.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 106.0%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 112.0%'>Mongodb(2)</a>  <a href='/blog/categories/monitor' style='font-size: 106.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 106.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(10)</a>  <a href='/blog/categories/read' style='font-size: 130.0%'>Read(5)</a>  <a href='/blog/categories/redis' style='font-size: 124.0%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 106.0%'>Scribe(1)</a> </span>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p align="right" style="width: 75%">
+  Copyright &copy; 2012 - Cloud.Zhang
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

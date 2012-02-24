@@ -9,10 +9,8 @@
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="Munin FAQ
-PyMunin Plugins
-BSD Plugins
-">
+  <meta name="description" content="Theming &amp; Customization source/_includes/custom Landing Page vs. Blog Index $ mv source/index.html source/blog/index.html
+$ rake new_page[index. &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,7 +67,7 @@ BSD Plugins
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/01/10/181350-munin/">Munin 配置参数</a></h1>
+      <h1 class="entry-title"><a href="/blog/2012/01/12/174442-octopress/">Octopress Tips</a></h1>
     
     
       <p class="meta">
@@ -85,16 +83,37 @@ BSD Plugins
   
 
 
-<time datetime="2012-01-10T18:13:00+08:00" pubdate data-updated="true">Jan 10<span>th</span>, 2012</time>
+<time datetime="2012-01-12T17:44:00+08:00" pubdate data-updated="true">Jan 12<span>th</span>, 2012</time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p><a href="http://munin-monitoring.org/wiki/faq">Munin FAQ</a>
-<a href="http://aouyar.github.com/PyMunin/">PyMunin Plugins</a>
-<a href="http://anders.fupp.net/plugins/">BSD Plugins</a></p>
+  <div class="entry-content"><h1>Theming &amp; Customization</h1>
+
+<h2>source/_includes/custom</h2>
+
+<h2>Landing Page vs. Blog Index</h2>
+
+<pre><code>$ mv source/index.html source/blog/index.html
+$ rake new_page[index.html]
+# add
+blog_index_dir = 'source/blog'
+</code></pre>
+
+<h2>Changing the &lt;HEAD></h2>
+
+<ul>
+<li>source/_includes/custom/head.html
+
+<pre><code>&lt;!--Fonts from Google"s Web font directory at http://google.com/webfonts --&gt;
+&lt;link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"&gt;
+&lt;link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"&gt;
+</code></pre></li>
+<li>source/_includes/custom/asides/about.html</li>
+</ul>
+
 </div>
   
   
@@ -121,6 +140,18 @@ BSD Plugins
 <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/02/23/120934-python/">PyMongo 创建,更新删除文档[MongoDB权威指南 第三章]</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/22/141006-mongodb/">monogodb 大杂烩</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/15/143830-scribe/">scribe安装</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2012/02/10/163323-python/">Python Tips</a>
@@ -150,24 +181,12 @@ BSD Plugins
         <a href="/blog/2012/01/15/093205-python/">python 参考手册 第2章</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/01/12/174442-octopress/">octopress tips</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/12/143202-redis/">redis cookbook</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/11/100854-redis/">redis.conf 配置参数</a>
-      </li>
-    
   </ul>
 </section>
 
 <section>
 <h1>Categories</h1>
-<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 130.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 140.0%'>Database(4)</a>  <a href='/blog/categories/git' style='font-size: 110.0%'>Git(1)</a>  <a href='/blog/categories/monitor' style='font-size: 110.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 110.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 110.0%'>Python(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(6)</a>  <a href='/blog/categories/read' style='font-size: 150.0%'>Read(5)</a>  <a href='/blog/categories/redis' style='font-size: 140.0%'>Redis(4)</a> </span>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 118.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 106.0%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 112.0%'>Mongodb(2)</a>  <a href='/blog/categories/monitor' style='font-size: 106.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 106.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(10)</a>  <a href='/blog/categories/read' style='font-size: 130.0%'>Read(5)</a>  <a href='/blog/categories/redis' style='font-size: 124.0%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 106.0%'>Scribe(1)</a> </span>
 </section>
 
 

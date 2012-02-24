@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Scribe | 研究中心]]></title>
+  <link href="http://zhangchuan.github.com/blog/categories/scribe/atom.xml" rel="self"/>
+  <link href="http://zhangchuan.github.com/"/>
+  <updated>2012-02-24T19:04:25+08:00</updated>
+  <id>http://zhangchuan.github.com/</id>
+  <author>
+    <name><![CDATA[Cloud.Zhang]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[scribe安装]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/02/15/143830-scribe/"/>
+    <updated>2012-02-15T14:38:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/02/15/143830-scribe</id>
+    <content type="html"><![CDATA[<ul>
+<li>ubuntu安装依赖libboost-all-dev, python-dev</li>
+<li>centos安装依赖boost-devel, python-devel</li>
+<li><p>boost库文件必须高于1.36版本, centos通常自带的boost版本较低,需编译安装.</p></li>
+<li><p>编译thrift,不提供php与ruby支持.</p>
+
+<pre><code>./configure --without-php_extension --without-php --without-ruby
+make &amp;&amp; make install
+cd lib/py
+python setup.py install
+cd ../../contrib/fb303/
+./bootstrap.sh
+make &amp;&amp; make install
+cd py
+python setup.py install
+
+# 编译scribe
+./bootstrap.sh 
+make &amp;&amp; make install
+mkdir /etc/scribe
+cp -av examples/* /etc/scribe/
+cd lib/py
+python setup.py install
+</code></pre></li>
+</ul>
+
+
+<h1>参考资料:</h1>
+
+<p>http://agiletesting.blogspot.com/2009/10/compiling-installing-and-test-running.html
+http://silas.sewell.org/blog/2009/05/12/pipe-apache-or-any-logs-to-scribe/</p>
+]]></content>
+  </entry>
+  
+</feed>
