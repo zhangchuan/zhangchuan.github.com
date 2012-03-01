@@ -4,7 +4,7 @@
   <title><![CDATA[研究中心]]></title>
   <link href="http://zhangchuan.github.com/atom.xml" rel="self"/>
   <link href="http://zhangchuan.github.com/"/>
-  <updated>2012-03-01T17:12:21+08:00</updated>
+  <updated>2012-03-01T17:13:11+08:00</updated>
   <id>http://zhangchuan.github.com/</id>
   <author>
     <name><![CDATA[Cloud.Zhang]]></name>
@@ -532,7 +532,7 @@ db.stock.find({"desc": "mp3"}).limit(50).skip({"price": -1})
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[MongoDB权威指南 3]]]></title>
+    <title type="html"><![CDATA[MongoDB权威指南 3]]></title>
     <link href="http://zhangchuan.github.com/blog/2012/02/23/120934-python/"/>
     <updated>2012-02-23T12:09:00+08:00</updated>
     <id>http://zhangchuan.github.com/blog/2012/02/23/120934-python</id>
