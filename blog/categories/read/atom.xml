@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Read | 研究中心]]></title>
   <link href="http://zhangchuan.github.com/blog/categories/read/atom.xml" rel="self"/>
   <link href="http://zhangchuan.github.com/"/>
-  <updated>2012-02-29T17:14:16+08:00</updated>
+  <updated>2012-03-01T17:12:21+08:00</updated>
   <id>http://zhangchuan.github.com/</id>
   <author>
     <name><![CDATA[Cloud.Zhang]]></name>
@@ -14,1815 +14,774 @@
 
   
   <entry>
-    <title type="html"><![CDATA[python 参考手册 第21章]]></title>
-    <link href="http://zhangchuan.github.com/blog/2012/01/19/095304-python/"/>
-    <updated>2012-01-19T09:53:00+08:00</updated>
-    <id>http://zhangchuan.github.com/blog/2012/01/19/095304-python</id>
-    <content type="html"><![CDATA[<h1>第21章 网络编程和套接字</h1>
-
-<ul>
-<li><a href="#21.1">21.1 网络编程基础</a></li>
-<li><a href="#21.2">21.2 asynchat模块</a></li>
-</ul>
-
-
-<h1 id=21.1>21.1 网络编程基础</h1>
-
-
-<ul>
-<li>python网络编程模块支持TCP和UDP两种Internet协议。</li>
-<li>TCP协议是面向连接的可靠协议。</li>
-<li>UDP是以数据包为基础的协议。</li>
-<li>套接字类似文件的对象，使程序能够接受传入连接，进行传出连接，发送和接受数据。</li>
-<li>接受连接的机器(服务器)必须将套接字绑定到已知端口，提供服务。(0-1023是保留端口)</li>
-<li>使用socket模块编写TCP协议。
-
-<pre><code># 时间服务器程序
-from socket import *
-import time
-
-s = socket(AF_INET, SOCK_STREAM)  # 创建TCP套接字
-s.bind(('', 8888))                # 绑定到端口8888
-s.listen(5)                       # 监听，但只能挂起5个以下的连接
-
-While True:
-    client,addr = s.accept()      # 连接
-    print("Got a connection from %s" % str(addr))
-    timestr = time.ctime(time.time()) + "\r\n"
-    client.send(timestr.encode('ascii'))
-    client.close()
-
-# 客户端程序:
-from socket import *
-s = socket(AF_INET, SOCK_STREAM)  # 创建TCP套接字
-s.connect(('localhost', 8888)     # 连接到服务器
-tm = s.recv(1024)                 # 最多接收1024个字节
-s.close()
-print("The time is %s" % tm.decode('ascii'))
-</code></pre></li>
-<li>网络协议经常以文本方式传输数据，要进行编码，解码处理。python3 默认使用Unicode编码。</li>
-</ul>
-
-
-<h1 id=21.2>21.2 asynchat 模块</h1>
-
-
-<ul>
-<li>简化了异步网络应用程序的实现过程。包装了asyncore的低级I/O功能和一个高级编程接口。</li>
-<li>使用该模块，必须定义继承自async_chat的类。并定义两个方法：collect_incoming_data()和found_terminator()。</li>
-<li>asynchat模块总是和asyncore模块一起使用。
-
-<pre><code># 使用asynchat的异步HTTP服务器
-import asynchat, asyncore, socket
-import os
-import mimetypes
-try:
-    from http.client import responses     # python3
-except ImportError:
-    from httplib import responses         # python2
-# 该类插入到asyncore模块，仅处理接受的事件
-class async_http(asyncore.dispatcher):
-    def __init__(self, port):
-        asyncore.dispatcher.__init__(self)
-        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.bind(('', port))
-        self.listen(5)
-    def handle_accept(self):
-        client.addr = self.accept()
-        return async_http_handler(client)
-
-# 处理异步HTTP请求的类
-class async_http_handler(asynchat.async_chat):
-    def __init__(self, conn=None):
-        asynchat.asycn_chat_.__init__(self.conn)
-        self.data = []
-        self.got_header = False
-        self.set_terminator(b"\r\n\r\n")
-
-    # 获取传入数据并添加到数据缓冲区
-    def collect_incoming_data(self, data):
-        if not self.got_header:
-            self.data.append(data)
-
-    # 到达终止符(空白行)
-    def found_terminator(self):
-        self.got_header = True
-        header_data = b"".join(self.data)
-        # 将报头数据(二进制)解码为文本以便进一步处理
-        header_text = header_data.decode('latin-1')
-        header_lines = header_text.splitlines()
-        request = header_lines[0].split()
-        op = request[0]
-        url = request[1][1:]
-        self.process_request(op, url)
-
-    # 将文本加入到传出流，但首先要解码
-    def push_text(self, text):
-        self.push(text.encode('latin-1'))
-
-    # 处理请求
-    def process_request(self, op, url):
-        if op == "GET":
-            if not os.path.exists(url):
-                self.send_error(404, "File %s not found\r\n")
-            else:
-                type, encoding = mimetypes.guess_type(url)
-                size = os.path.getsize(url)
-                self.path_text("HTTP/1.0 200 OK\r\n")
-                self.push_text("Content-length: %s\r\n" % size) 
-                self.push_text("Content-type: %s\r\n" % type)
-                self.push_text("\r\n")
-                self.push_with_producer(file_producer(url))
-        else:
-            self.send_error(501, "%s method not implemented" % op)
-
-    # 错误处理  
-    def send_error(self, code, message):
-        self.push_text("HTTP/1.0 %s %s\r\n" % (code, responses[code]))
-        self.push_text("Content-type: text/plain\r\n")
-        self.push_text("\r\n")
-        self.push_text(message)
-
-class file_producer(object):
-    def __init__(self, filename, buffer_size=512):
-        self.f = open(filename, "rb")
-        self.buffer_size = buffer_size
-    def more(self):
-        data = self.f.read(self.buffer_size)
-        if not data:
-            self.f.close()
-        return data
-a = async_http(8080)
-asyncore.loop()
-# 要测试该实例，需要提供一个URL，并且该URL必须对应运行服务器那个目录中的文件。
-</code></pre></li>
-</ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[python 参考手册 第3章]]></title>
-    <link href="http://zhangchuan.github.com/blog/2012/01/15/143703-python/"/>
-    <updated>2012-01-15T14:37:00+08:00</updated>
-    <id>http://zhangchuan.github.com/blog/2012/01/15/143703-python</id>
-    <content type="html"><![CDATA[<h1>第3章 类型与对象</h1>
-
-<ul>
-<li><a href="#3.1">3.1 术语</a></li>
-<li><a href="#3.2">3.2 对象的身份与类型</a></li>
-<li><a href="#3.3">3.3 引用计数与垃圾收集</a></li>
-<li><a href="#3.4">3.4 引用与复制</a></li>
-<li><a href="#3.5">3.5 第一类对象</a></li>
-<li><a href="#3.6">3.6 表示数据的内置类型</a></li>
-<li><a href="#3.7">3.7 表示程序结构的内置类型</a></li>
-<li><a href="#3.8">3.8 解释器内部使用的内置类型</a></li>
-<li><a href="#3.9">3.9 对象行为与特殊方法</a></li>
-</ul>
-
-
-<h1 id=3.1>3.1 术语</h1>
-
-
-<ul>
-<li>程序中所有存储的数据都是对象：身份，类型，和值。</li>
-<li>对象身份是指向对象值所处位置的指针。例如a=42, 用值42创建一个整数对象，a是引用这个位置的具体名称。</li>
-<li>数据属性和方法，属性是对象相关的值，方法是在对象上执行的某些函数，使用(.)访问。
-
-<pre><code>a = 3 + 4j    # 创建以改革复数
-r = a.real    # 获得实部(属性之一)
-b = [1, 2, 3] # 创建一个列表
-b.append(7)   # 使用append方法添加一个新元素
-</code></pre></li>
-</ul>
-
-
-<h1 id=3.2>3.2 对象的身份与类型</h1>
-
-
-<ul>
-<li>内置函数id()返回对象身份，返回值为整数。</li>
-<li>is运算符用于比较两个对象的身份。</li>
-<li>内置函数type()返回对象类型。
-
-<pre><code># 比较两个对象
-def compare(a,b):
-    if a is b:
-        # a和b是同一个对象
-        statements
-    if a == b:
-        # a和b具有相同的值
-        statements
-    if type(a) is type(b):
-        # a和b具有相同类型
-        statements
-</code></pre></li>
-<li>对象本身也是一个对像，称作对象的类。所有类型对象都有一个指定名称，例如list, dict和file
-
-<pre><code>if type(s) is list:
-    s.append(item)
-if type(d) is dict:
-    s.update(t)
-</code></pre></li>
-<li>检查类型的最佳方式：isinstance(object, type)
-
-<pre><code>if isinstance(s, list):
-    s.append(item)
-if isinstance(d, dict):
-    d.update(t)
-</code></pre></li>
-</ul>
-
-
-<h1 id=3.3>3.3 引用计数和垃圾收集</h1>
-
-
-<ul>
-<li>所有对象都有引用计数，在给对象分配一个新的名称，或放入一个新的容器时，该对象的引用计数都会增加。
-
-<pre><code># 至始至终只有一个包含37的对象，其他操作只是创建类该对象的引用。
-a = 37        # 创建一个值为37的对象
-b = a         # 增加37的引用计数
-c = []
-c.append(b)   # 增加37的引用计数
-</code></pre></li>
-<li>使用del语句或者引用操作作用域或者被重新赋值，对象的引用计数会减少。
-
-<pre><code>del a         # 减少37的引用计数
-b = 42        # 减少37的引用计数
-c[0] = 2.0    # 减少37的引用计数
-</code></pre></li>
-<li>使用sys.getrefcount()函数可获得对象的当前引用计数。
-
-<pre><code>&gt;&gt;&gt; a = 37
-&gt;&gt;&gt; import sys
-&gt;&gt;&gt; sys.gerefcount(a)
-</code></pre></li>
-<li>当一个对象引用计数归零时，它讲被垃圾回收机制处理掉。
-
-<pre><code>a = {}
-b = {}
-a['b'] = b    # a包含b的引用
-b['a'] = a    # b包含a的引用
-del a
-del b
-</code></pre></li>
-</ul>
-
-
-<h1 id=3.4>3.4 引用和赋值</h1>
-
-
-<ul>
-<li>a = b 这样的赋值，会创建一个对b的新引用。对于可变对象，赋值实际是创建了b的一个副本。
-
-<pre><code>&gt;&gt;&gt; a = [1, 2, 3, 4]
-&gt;&gt;&gt; b = a     # b是对a的引用
-&gt;&gt;&gt; b is a
-True
-&gt;&gt;&gt; b[2] = -100   # 修改b中的一个元素
-&gt;&gt;&gt; a
-[1, 2, -100, 4]
-&gt;&gt;&gt;
-</code></pre></li>
-<li>浅复制和深复制。
-
-<pre><code># 浅复制是创建一个新对象，但它包含的是对原始对象中的包含项的引用。
-&gt;&gt;&gt; a = [1, 2, [3,4]]
-&gt;&gt;&gt; b = list(a)           # 创建a的一个浅复制
-&gt;&gt;&gt; b is a
-False
-&gt;&gt;&gt; b.append(100)         # 给b追加一个元素
-&gt;&gt;&gt; b
-[1, 2, [3,4], 100]
-&gt;&gt;&gt; a                     # 注意a没有变化
-[1, 2, [3,4]]
-&gt;&gt;&gt; b[2][0] = -100        # 修改b的一个元素
-[1, 2, [-100,4], 100]
-&gt;&gt;&gt; a                     # 注意a中的变化
-[1, 2, [-100,4]]
-
-# 深复制将创建一个新对象，并且递归复制它包含的所有对象。使用标准库中的copy.deepcopy()函数。
-&gt;&gt;&gt; import copy
-&gt;&gt;&gt; a = [1, 2, [3,4]]
-&gt;&gt;&gt; b = copy.deepcopy(a)
-&gt;&gt;&gt; b[2][0] = -100
-&gt;&gt;&gt; b
-[1, 2, [-100,4]]
-&gt;&gt;&gt; a             # 注意a没变化
-[1, 2, [3,4]]
-</code></pre></li>
-</ul>
-
-
-<h1 id=3.5>3.5 第一类对象</h1>
-
-
-<ul>
-<li>能够使用标识符命名的所有对象都可以当作数据处理。
-
-<pre><code>items = {
-    'number' : 42
-    'text'   : "Hello World"
-}
-# 一些不平常的项
-items["func"] = abs       # 添加abs()函数
-import math
-items["mod"] = math       # 添加一个模块
-items["error"] = ValueError   # 添加一个异常类型
-nums = [1, 2, 3, 4]
-items["append"] = nums.append # 添加另一个对象的一个方法
-#
-&gt;&gt;&gt; items["func"](-45)        # 执行abs(-45)
-45
-&gt;&gt;&gt; items["mod"].sqrt(4)      # 执行match.sqrt(4)
-2.0
-&gt;&gt;&gt; try:
-...     x = int("a lot")
-... expect items["error"] as e:   # e等同于except ValueError
-...     print("Couldn't convert")
-...
-Couldn't convert
-&gt;&gt;&gt; items["append"](100)      # 执行nums.append(100)
-&gt;&gt;&gt; nums
-[1, 2, 3, 4, 100]
-&gt;&gt;&gt;
-# 通过正确的类型把文本GOOG, 100, 490.10转换为一个字段列表。
-&gt;&gt;&gt; line = "GOOG, 100, 490.10"
-&gt;&gt;&gt; field_types = [str, int, float]
-&gt;&gt;&gt; raw_fields = line.split(',')
-&gt;&gt;&gt; fields = [ty(val) for ty,val in zip(field_types, raw_fields)]
-&gt;&gt;&gt; fields
-['GOOG', 100, 490.1,]
-</code></pre></li>
-</ul>
-
-
-<h1 id=3.6>3.6 表示数据的内置类型</h1>
-
-
-<ul>
-<li>表3-1 表示数据的内置类型
-
-<h2>3.6.1 None类型</h2></li>
-<li>None类型表示一个null对象。在程序中表示为None，如果一个函数没有显式返回值，则返回该对象。布尔值为False。
-
-<h2>3.6.2 数字类型</h2></li>
-<li>布尔性，整数，长整数，浮点数，复数。除了布尔值所有数字对象都是有符号的。</li>
-<li>布尔值包括True和False两个值，分别映射为1和0。</li>
-<li>整数表示范围在-2147483648和2147483647之间。长整数没有范围限制，取决于内存。在对整数值进行显式类型检查时，如果x是长整性，isinstance(x, int)将返回False。</li>
-<li>浮点数是本机双精度(64bit)的表示。精度范围是-308到308的指数。</li>
-<li>复数使用一对浮点数表示，实部与虚部分别用real和imag方法访问。方法conjugate()用于计算复数的共轭数。
-
-<h2>3.6.3 序列类型</h2></li>
-<li>序列表示索引为非负数的有序对象集合，包括字符串，列表和元组。所有序列都支持迭代。</li>
-<li>1. 所有序列的通用操作</li>
-<li>索引运算符[]可以访问序列的元素。s[i]访问序列s的元素i，</li>
-<li>len()函数可以返回任意序列的长度。</li>
-<li>max(),min()函数返回序列的最小值和最大值。</li>
-<li>sun()函数对序列中各项求和，只仅限于数字对象。</li>
-<li>2. 列表</li>
-<li>list()函数可将任意可迭代类型转换为列表。</li>
-<li>append方法用于将一个新元素追加到列表结尾。</li>
-<li>index方式用于搜索列表中首次出现的元素。</li>
-<li>remove方法用于删除列表中首次出现的元素。</li>
-<li>extend方法用于将序列点元素追加到列表中。</li>
-<li>sort方法用于对列表中的元素排序。</li>
-<li>reverse方法用于对列表中的元素逆排序。</li>
-<li>3. 字符串</li>
-<li>两种字符串类型：字节字符串(8bit)，Unicode字符串(16bit)。</li>
-<li>所有方法操作不会修改原始字符串。</li>
-<li>4. xrange对象</li>
-<li>不支持切片操作。python3更名为range()。
-
-<h2>3.6.4 映射类型</h2></li>
-<li>映射对象是无序的。</li>
-<li>字典是唯一内置的映射类型。</li>
-<li>任何不可变对象可作为字典键值。
-
-<h2>3.6.5 集合类型</h2></li>
-<li>set是可变集合，frozenset是不可变集合。
-
-<pre><code>s = set([1,5,10,15])
-f = frozenset(['a',37,'hello'])
-</code></pre></li>
-<li>difference方法，求差集。</li>
-<li>intersection方法，求交集。</li>
-<li>symmetric_difference，求对称查集。</li>
-</ul>
-
-
-<h1 id=3.7>3.7 表示程序结构的内置类型</h1>
-
-
-<ul>
-<li>3.7.1 可调用类型</li>
-<li>可调用类型表示支持函数操作的对象。包括</li>
-<li>1 用户定义的函数
-
-<pre><code>def foo(x,y):
-    return x + y
-bar = lambda x,y: x + y
-dir(foo)
-</code></pre></li>
-<li>2 方法</li>
-<li>实例方法，类方法，静态方法。
-
-<pre><code>class Foo(object):
-    def instance_method(self, arg):
-        statements
-    @classmethod
-    def class_method(cls, arg):
-        statements
-    @staticmethod
-    def static_method(arg):
-        statements
-</code></pre></li>
-<li>实例方法是操作指定类的实例的方法。实例作为第一个参数传递给方法，self</li>
-<li>类方法是把类本身当作一个对象进行操作，在第一个参数class中将类对象传递给类方法。</li>
-<li>静态方法就是打包在类中的函数。
-
-<pre><code>f = Foo()                 # 创建一个实例
-meth = f.instance_method  # 查找方法，注意这里没有()
-meth(37)`                 # 现在调用方法
-
-umeth = Foo.instance_method   # 查找Foo上的方法instance_method
-umeth(f,37)                   # 调用它，但要显式地提供self参数
-</code></pre></li>
-<li>3 内置函数与方法</li>
-<li>4 可调用的类和实例</li>
-<li>类对象和实例也可以当作可调用对象进行操作。</li>
-<li>3.7.2 类，类型和实例</li>
-<li>定义类时，类定义通常会生成一个type类型对象。
-
-<pre><code>&gt;&gt;&gt; class Foo(object):
-...     pass
-&gt;&gt;&gt; type(Foo)
-</code></pre></li>
-<li>创建一个对象实例时，实例的类型就是定义它的类。
-
-<pre><code>&gt;&gt;&gt; f = Foo()
-&gt;&gt;&gt; type(f)
-&lt;class '__main__.Foo'&gt;
-</code></pre></li>
-<li>3.7.3 模块</li>
-<li>模块对象是一个容器，可保存使用import语句加载的对象。</li>
-<li>模块定义了一个使用字典实现的命名空间。</li>
-</ul>
-
-
-<h1 id=3.8>3.8 解释器内部使用的内置类型</h1>
-
-
-<ul>
-<li>包括跟踪对象，代码对象，帧对象，生成器对象，切片对象，Ellipsis。</li>
-<li>3.8.1 代码对象</li>
-<li>由内置compile()函数返回。</li>
-<li>3.8.2 帧对象</li>
-<li>表示执行帧，多出现在跟踪对象中。</li>
-<li>3.8.3 跟踪对象</li>
-<li>出现异常会创建跟踪对象，使用sys.exc_info()函数获取栈跟踪信息。</li>
-<li>3.8.4 生成器对象</li>
-<li>调用生成器函数会产生生成器对象。yield会定义一个生成器函数。</li>
-<li>切片对象</li>
-<li>表示在扩展切片语法中指定的切片。内置slice()函数也会创建切片对象。</li>
-<li>3.8.6 Ellipsis对象</li>
-<li>用于表示索引查找[]中省略号是否存在。
-
-<pre><code>class Example(object):
-    def __getitem__(self, index):
-        print(index)
-e = Example()
-e[3, ..., 4]      # 调用e.__getitem__((3, Ellipsis, 4))
-</code></pre></li>
-</ul>
-
-
-<h1 id=3.9>3.9 对象行为与特殊方法</h1>
-
-
-<ul>
-<li>3.9.1 对象的创建与销毁</li>
-<li><strong>new</strong>()类方法可以创建实例。<strong>init</strong>()方法初始化对象属性，<strong>del</strong>()方法减少对象引用计数。
-
-<pre><code>x = A.__new__(A, args)
-is isinstance(x, A): x.__init__(args)
-</code></pre></li>
-<li>3.9.2 对象字符表示</li>
-<li><strong>repr</strong>()方法返回一个表达式字符串
-
-<pre><code>a = [2,3,4,5]     # 创建一个列表
-s = repr(a)       # s = '[2,3,4,5]'
-b = eval(s)       # 将s变为一个列表
-</code></pre></li>
-<li><strong>str</strong>()方法调用str()函数打印结果。</li>
-<li><strong>format</strong>()方法调用format()函数或字符串format()的方法。
-
-<pre><code>format(x, "spec")         # 调用x.__format__("spec")
-"x is (0:spec)".format(x) # 调用x.__format__("spec")
-</code></pre></li>
-<li>3.9.3 对象比较排序</li>
-<li><strong>bool</strong>()方法用于真值测试。</li>
-<li><strong>len</strong>()方法用于确定对象的真值。</li>
-<li><strong>hash</strong>()方法作用于字符键对象。</li>
-<li>3.9.4 类型检查</li>
-<li>isinstance()与issubclass()函数。</li>
-<li>3.9.5 属性访问</li>
-<li>调用<strong>getattribute</strong>()方法。如果找到属性，就返回，否则调用<strong>getattr</strong>()方法，引发AttributeError异常。</li>
-<li>3.9.6 属性包装与描述符</li>
-<li>3.9.7 序列与映射方法
-
-<pre><code>a = [1,2,3,4,5,6]
-len(a)                # a.__len__()
-x = a[2]              # x = a.__getitem__(2)
-a[1] = 7              # a.__setitem__(1,7)
-del a[2]              # a.__delitem__(2)
-5 in a                # a.__contains__(5)
-a = [1,2,3,4,5,6]
-x = a[1:5]            # x = a.__getitem__(slice(1,5,None))
-a[1:3] = (10,11,12)   # a.__setitem__(slice(1,3,None), (10,11,12))
-del a[1:4]            # a.__delitem__(slice(1,4,None))
-a = m[0:100:10]       # 带步进的切片(步进值=10)
-b = m[1:10, 3:20]     # 多维切片
-c = m[0:100:10, 50:75:5]  # 带步进的多维切片
-m[0:5, 5:10] = n      # 扩展切片分配
-del m[:10, 15:]       # 扩展切片删除
-a = m[..., 10:20]     # 使用Ellipsis对象访问扩展切片
-m[10:20, ...] = n
-a = m[0:10, 0:100:5, ...]
-# 调用__getitem__()方法如下
-a = m.__getitem__((slice(0,10,None), slice(0,100,5), Ellipsis))
-</code></pre></li>
-<li>3.9.8 迭代</li>
-<li>如果对象支迭代，必然提供obj.<strong>iter</strong>()方法。
-
-<pre><code># for x in s 等同于
-_iter = s.__iter__()
-while True:
-    try:
-        x = _iter.next() (#__iter.__next__() python3)
-</code></pre></li>
-<li>3.9.9 数学操作</li>
-<li>3.9.10 可调用接口
-
-<pre><code>class DistanceFrom(object):
-    def __init__(self, origin):
-        self.origin = origin
-    def __call__(self, x):
-        return abs(x - self.origin)
-nums = [1, 37, 42, 101, 13, 9, -20]
-nums.sort(key=DistanceFrom(10))   # 按照与10的距离进行排序
-</code></pre></li>
-<li>3.9.11 上下文协议</li>
-<li>语法
-
-<pre><code>with context [ as var]:
-    statements
-</code></pre></li>
-<li>执行with语句时，会调用<strong>enter</strong>()方法，可将返回值放入as var指定变量中。离开with语句快，会调用<strong>exit</strong>()方法。</li>
-<li>对象检查与dir()</li>
-<li>dir()通常用于检查对象。实现<strong>dir</strong>(self)方法后，dir()就可返回名称列表。</li>
-</ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[python 参考手册 第2章]]></title>
-    <link href="http://zhangchuan.github.com/blog/2012/01/15/093205-python/"/>
-    <updated>2012-01-15T09:32:00+08:00</updated>
-    <id>http://zhangchuan.github.com/blog/2012/01/15/093205-python</id>
-    <content type="html"><![CDATA[<h1>第2章 词汇和语法约定</h1>
-
-<ul>
-<li><a href="#2.1">2.1 行结构和缩进</a></li>
-<li><a href="#2.2">2.2 标识符和保留字</a></li>
-<li><a href="#2.3">2.3 数字字面变量</a></li>
-<li><a href="#2.4">2.4 字符串字面量</a></li>
-<li><a href="#2.5">2.5 容器</a></li>
-<li><a href="#2.6">2.6 运算符，分割符啊哈及特殊符号</a></li>
-<li><a href="#2.7">2.7 文档字符串</a></li>
-<li><a href="#2.8">2.8 装饰器</a></li>
-<li><a href="#2.9">2.9 源代码编码</a></li>
-</ul>
-
-
-<h1 id=2.1>2.1 行结构和缩进</h1>
-
-
-<ul>
-<li>每条语句以换行符结束。可用续航符()分行。
-
-<pre><code>a = math.cos(3 * (x - n) + \
-  math.sin(3 * (y - n))
-</code></pre></li>
-<li>包含在圆括号，方括号，大括号，三引号的程序部分可以跨多行。</li>
-<li>缩进用于表示不同的代码块，应用空格缩经，且整个代码的缩进必须保持一致。
-
-<pre><code>if a:
-    statement1    # 缩进一致，正确
-    statement2
-else:
-    statement3
-      statement4  # 缩进不一致，错误
-</code></pre></li>
-<li>函数体，条件语句，循环或类较短，可放在一行。
-
-<pre><code>if a: statement1
-else: statement2
-</code></pre></li>
-<li>表示一个空的函数体或代码块。
-
-<pre><code>if a:
-    pass
-else:
-    statements
-</code></pre></li>
-<li>分号(;)可用于分割放在一行的多条语句。</li>
-<li>\#表示次行的内容是注释。</li>
-</ul>
-
-
-<h1 id=2.2>2.2 标识符和保留字</h1>
-
-
-<ul>
-<li>标识符可包含字母，数字，下划线，必须以非数字字符开始且区分大小写。</li>
-<li>保留字不能作为标识符。
-
-<pre><code>and         del        from     nonlocal    try
-as          elif       global   not         while
-assert      else       if       or          with
-class       exec       in       print
-continue    finally    is       raise
-def         for        lamba    return
-</code></pre></li>
-</ul>
-
-
-<h1 id=2.3>2.3 数字字面变量</h1>
-
-
-<ul>
-<li>布尔值：True和False，整数值对应1和0。</li>
-<li>整数：  分为十进制，八进制(0)，十六进制(0x)，二进制(0b)。</li>
-<li>浮点数：整数后跟小数位。</li>
-<li>复数：  整数/浮点数(实数)后加上j或J(虚数)。
-&lt;h1.id=2.4>2.4 字符串字面量</h1></li>
-<li>将文本放入单引号，双引号，三引号中构成字符串字面量。</li>
-<li>反斜杠()用于转义特殊字符。</li>
-<li>表2-1 标准的字符转义码</li>
-<li>在字符串面量前加上前缀"u"构成Unicode字符串字面量。
-
-<pre><code>s = u"Jalape\u00floo" #python3 不必加u前缀
-</code></pre></li>
-<li>在字符串面量前加上前缀"r"构成原始字符串。r必须在u之后。</li>
-</ul>
-
-
-<h1 id=2.5>2.5 容器</h1>
-
-
-<ul>
-<li>[列表] (元组) {字典}
-
-<pre><code>a = [ 1, 3.4, 'hello' ]   # 一个列表
-b = ( 10, 20, 30 )        # 一个元组
-c = { 'a':3, 'b':42 }     # 一个字典
-</code></pre></li>
-</ul>
-
-
-<h1 id=2.6>2.6 运算符，分隔符及特殊符号</h1>
-
-
-<pre><code>  +    -    *    **    /    //    %    &lt;&lt;    &gt;&gt;    &amp;    |
-  ^    ~    &lt;    &gt;     &lt;=   &gt;=    ==   !=    &lt;&gt;    +=
-  -=   *=   /=   //=   %=   **=   &amp;=   |=    ^=    &gt;&gt;=  &lt;==
-</code></pre>
-
-<h1 id=2.7>2.7 文档字符串</h1>
-
-
-<ul>
-<li>模块，类或函数的第一条语句是字符串。
-
-<pre><code>def fact(n):
-    "This function computes a factorial"
-    if (n &lt;=1): return 1
-    else: return n * fact(n-1)
-</code></pre></li>
-<li>通过对象<strong>doc</strong>属性访问文档字符串
-
-<pre><code>&gt;&gt;&gt; print fact.__doc__
-</code></pre></li>
-</ul>
-
-
-<h1 id=2.8>2.8 装饰器</h1>
-
-
-<ul>
-<li>装饰器用@表示，必须在单独的行并位于函数，方法类之前。
-
-<pre><code>@staticmethod
-def bar():
-    pass
-</code></pre></li>
-<li>使用多个装饰器
-
-<pre><code>@foo
-@bar
-def spam():
-    pass
-</code></pre></li>
-</ul>
-
-
-<h1 id=2.9>2.9 源代码编码</h1>
-
-
-<ul>
-<li>python源程序使用7位ASCII码标准，在注释语句时，可使用Unicode编码，但其他元素只能使用ASCII字符。
-
-<pre><code>#!/usr/bin/env python
-# -*- coding: UTF-8 -*-
-s = "Jalapefio"
-</code></pre></li>
-</ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[redis cookbook]]></title>
-    <link href="http://zhangchuan.github.com/blog/2012/01/12/143202-redis/"/>
-    <updated>2012-01-12T14:32:00+08:00</updated>
-    <id>http://zhangchuan.github.com/blog/2012/01/12/143202-redis</id>
+    <title type="html"><![CDATA[MongoDB权威指南 7]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/03/01/154153-mongodb/"/>
+    <updated>2012-03-01T15:41:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/03/01/154153-mongodb</id>
     <content type="html"><![CDATA[<ul>
-<li><a href="#1">1. An Introduction to Redis</a></li>
-<li><a href="#2">2. Clients</a></li>
-<li><a href="#3">3. Leveraging Redis</a></li>
-<li><a href="#4">4. Redis Administration and Maintenance</a></li>
-</ul>
+<li>7.1 数据库命令</li>
+<li>7.1.1 命令行的工作原理
 
+<pre><code>&gt; db.test.drop()
+&gt; db.runCommand({"drop": "test"});
+# 如果"ok"的值是true, 代表命令成功运行, 如果为false, 代表命令执行出了问题.
+</code></pre></li>
+<li>7.1.2 命令参考
 
-<h1 id=2>CHAPTER 2 Clients</h1>
+<pre><code># 获得所有命令的最新列表
+&gt; db.listCommands()
+http://localhost:28017/_commands
+# 返回MongoDB服务器的版本号和主机的操作系统
+. buildInfo
+&gt; {"buildInfo": 1}
+# 返回指定集合的统计信息, 包括数据大小, 已分配的存储空间和索引大小
+. collStats
+&gt; {"collStats": collection}
+# 列出指定集合中满足查询条件的文档的指定键的所有不同值
+. distinct
+&gt; {"distinct": collection, "key": key, "query": query}
+# 删除集合的所有数据
+. drop
+&gt; {"drop": collection}
+# 删除当前数据库的所有数据
+. dropDatabase
+&gt; {"dropDatabase": 1}
+# 删除集合里面名称为name的索引, 如果名称为"*", 则删除全部索引
+. dropIndexes
+&gt; {"dropIndexes": collection, "index": name}
+# findAndModify参考第3章
+. findAndModify
+# 查看对本集合执行最后一次操作的错误信息. 在w台服务器复制集合的最后操作前, 这个命令会阻塞
+. getlastError
+{"getLastError": 1[, "w": w[, "wtimeout": timeout]]}
+# 检查服务器是主还是从服务器
+. isMaster
+{"isMaster": 1}
+# 返回所有可以在服务器上运行的命令和相关信息
+. ListCommands
+{"listCommands": 1}
+# 列出服务器上所有数据库
+. listDatabases
+{"listDatabases": 1}
+# 检查服务器连接是否正常
+. ping
+{"ping": 1}
+# 将集合a重命名为b, a,b必须是完整的名称空间命名
+. renameCollection
+{"renameCollection": a, "to": b}
+# 修复并压缩当前数据库, 这个操作非常耗时
+. repairDatabase
+{"repairDatabase": 1}
+# 返回这台服务器的管理统计信息
+. serverStatus
+{"serverStatus": 1}
+</code></pre></li>
+<li>7.2 固定集合
 
+<pre><code>固定集合像环形队列, 空间需要预先分配, 如果空间不足, 最早的文档就会自动删除.
+默认情况下固定集合没有索引
+</code></pre></li>
+<li>7.2.1 属性及用法
 
-<p><strong>Using Redis from the Command Line</strong></p>
+<pre><code>在做插入操作时, 无需额外分配空间. 所以固定集合进行插入速度极快.
+按照插入顺序输出的查询速度极快, 因为文档本身是按顺序存储的
+适合日志应用场景
+</code></pre></li>
+<li>7.2.2 创建固定集合
 
-<pre><code>$ redis-cli -h
-$ redis-cli -h serverip
-$ redis-cli -p 6380
-$ redis-cli INFO
-$ cat command_list.txt | redis-cli &gt; command_output.txt
-</code></pre>
+<pre><code># 创建一个固定集合my_collection, 大小是100000字节
+&gt; db.createCollection("my_collection", {capped: true, size: 100000});
+# 指定文档数量的上限
+&gt; db.createCollection("my_collection", {capped: true, size: 100000, max: 100});
+# 转换已经普通集合为固定集合
+&gt; db.runCommand({convertToCapped: "test", size: 10000});
+</code></pre></li>
+<li>7.2.3 自然排序
 
-<p><strong>Using Redis from Python with redis-py</strong></p>
+<pre><code>自然排序就是文档在磁盘上的顺序
+# 可以使用自然排序按照反向插入的顺序排序
+&gt; db.my_collection.find().sort({"$natural": -1})
+</code></pre></li>
+<li>7.2.4 尾部游标</li>
+<li>7.3 GridFS: 存储文件
 
-<pre><code>$ pip install redis-py
-$ easy_install redis
+<pre><code>简化需求
+直接利用已建立的复制或分片机制
+不产生磁盘碎片, MongoDB以2GB分配文件空间
+</code></pre></li>
+<li>7.3.1 开始使用GridFS: mongofiles
 
-&gt;&gt;&gt; import redis
-&gt;&gt;&gt; redis = redis.Redis(host='localhost', port=6379, db=0)
-&gt;&gt;&gt; redis.smembers('circle:jdoe:soccer')
-set(['users:toby', 'users:adam', 'users:apollo', 'users:mike'])
-&gt;&gt;&gt; redis.sadd('circle:jdoe:soccer', 'users:fred')
-True
-&gt;&gt;&gt; redis.smembers('circle:jdoe:soccer')
-set(['users:toby', 'users:adam', 'users:apollo', 'users:mike', 'users:fred'])  
+<pre><code># 上传文件
+$ mongofiles put foo.txt
+# 查看文件
+$ mongofiles list
+# 下载文件
+$ mongofiles get foo.txt
+# 查找文件
+$ mongofiles search foo.txt
+# 删除文件
+$ mongofiles delete foo.txt
+</code></pre></li>
+<li>7.3.2 通过MongoDB驱动程序操作GirdFS
 
-$ pip install hiredis
-$ easy_install hiredis
-</code></pre>
+<pre><code>from pymongo import Connection
+import gridfs
+db = Connection().test
+fs = gridfs.GridFS(db)
+file_id = fs.put("Hello, World", filename = "foo.txt")
+fs.list()
+fs.get(file_id).read()
+</code></pre></li>
+<li>7.3.3 内部原理
 
-<h1 id=3>CHAPTER 3 Leveraging Redis</h1>
+<pre><code>GridFS将大文件分成很多块, 每块作为一个单独的文档存储.
+# fs.files
+. _id
+文件的唯一id, 在块中作为"files_id"键的值存储
+. length
+文件内容总的字节数
+. chunkSize
+每块的大小, 以字节为单位. 默认是256K, 必要时可以调整
+. uploadDate
+文件存入GridFS的时间戳
+. md5
+文件内容的md5校验和, 由服务器端生成
+# distint获取GridFS中不重复的文件名列表
+&gt; db.fs.files.distinct("filename")
+</code></pre></li>
+<li>7.4 服务器端脚本</li>
+<li>7.4.1 db.eval
 
+<pre><code>利用db.eval可以在MongoDB服务器端执行任意的JavaScript脚本
+db.eval可以用来模拟多事物: db.eval锁住数据库, 然后执行JavaScript, 再解锁
+&gt; db.eval("function(u) { print('Hello, '+u+'!'); }", [username]) 
+&gt; db.eval("function(x,y,z) { return x+y+z;}", [num1,num2,num3])
+</code></pre></li>
+<li>7.4.2 存储JavaScript
 
-<p><strong>Using Redis as a Key/Value Store</strong>
-Storing application usage counters</p>
-
-<pre><code># vists:pageid:totals
-$ SET visits:1:totals 21389
-$ SET visits:2:totals 1367894
-$ INCR visits:635:totals    # visits:635:totals + 1
-$ GET visits:635:totals
-</code></pre>
-
-<p>Storing object data in hashes</p>
-
-<pre><code>redis&gt; hset users:jdoe name "John Doe"
-(integer) 1
-redis&gt; hset users:jdoe email "jdoe@test.com"
-(integer) 1
-redis&gt; hset users:jdoe phone "+1555313940"
-(integer) 1
-redis&gt; hincrby users:jdoe visits 1
-(integer) 1
-
-redis&gt; hget users:jdoe email
-"jdoe@test.com"
-redis&gt; hgetall users:jdoe
-1) "name"
-2) "John Doe"
-3) "email"
-4) "jdoe@test.com"
-5) "phone"
-6) "+1555313940"
-7) "visits"
-8) "1"
-
-
-redis&gt; hkeys users:jdoe
-1) "name"
-2) "email"
-3) "phone"
-4) "visits"
-redis&gt; hvals users:jdoe
-1) "John Doe"
-2) "jdoe@test.com"
-3) "+1555313940"
-4) "1"
-</code></pre>
-
-<p><strong>Storing user “Circles” using sets</strong></p>
-
-<pre><code>redis&gt; sadd circle:jdoe:family users:anna
-(integer) 1
-redis&gt; sadd circle:jdoe:family users:richard
-(integer) 1
-redis&gt; sadd circle:jdoe:family users:mike
-(integer) 1
-redis&gt; sadd circle:jdoe:soccer users:mike
-(integer) 1
-redis&gt; sadd circle:jdoe:soccer users:adam
-(integer) 1
-redis&gt; sadd circle:jdoe:soccer users:toby
-(integer) 1
-redis&gt; sadd circle:jdoe:soccer users:apollo
-(integer) 1
-
-redis&gt; smembers circle:jdoe:family
-1) "users:richard"
-2) "users:mike"
-3) "users:anna"
-redis&gt; hgetall users:mike
-(...)
-
-redis&gt; sinter circle:jdoe:family circle:jdoe:soccer
-1) "users:mike"
-redis&gt; sunion circle:jdoe:family circle:jdoe:soccer
-1) "users:anna"
-2) "users:mike"
-3) "users:apollo"
-4) "users:adam"
-5) "users:richard"
-6) "users:toby"
-</code></pre>
-
-<p><strong>Quick Reference for Key Operations</strong></p>
-
-<ul>
-<li><strong>SET key value</strong></li>
-<li>Sets the key to hold the given value. Existing data is overwritten (even if of a different data type).</li>
-<li><strong>GET key</strong></li>
-<li>Returns the content held by the key. Works only with string values.</li>
-<li><strong>INCR key</strong></li>
-<li>Increments the integer stored at key by 1.</li>
-<li><strong>INCRBY key value</strong></li>
-<li>Performs the same operation as INCR, but incrementing by value instead.</li>
-<li><strong>DECR key</strong></li>
-<li>Decrements the integer stored at key by 1.</li>
-<li><strong>DECRBY key value</strong></li>
-<li>Performs the same operation as DECR, but decrementing by value instead.</li>
-<li><strong>Inspecting Your Data</strong></li>
-<li>   redis> KEYS *</li>
-<li>   redis> TYPE keyname</li>
-</ul>
-
-
-<p><strong>Quick Reference for Debugging</strong></p>
-
-<ul>
-<li><strong>KEYS pattern</strong></li>
-<li>Lists all the keys in the current database that match the given pattern.</li>
-<li><strong>TYPE key-name</strong></li>
-<li>Tells the type of the key. Possible types are: string, list, hash, set, zset, and none.</li>
-<li><strong>MONITOR</strong></li>
-<li>Outputs the commands received by the Redis server in real time.</li>
-<li><strong>Implementing OAuth on Top of Redis</strong></li>
-<li>  redis> HMSET /consumers/key:dpf43f3p2l4k3l03 secret kd94hf93k423kf44 created_at 201103060000</li>
-<li><pre><code>     redirect_url http://www.example.com/oauth_redirect name test_application
+<pre><code>&gt; db.system.js.insert({"_id": "x", "value": 1}) 
+&gt; db.system.js.insert({"_id": "x", "value": 2}) 
+&gt; db.system.js.insert({"_id": "x", "value": 3}) 
+# 对其求和
+&gt; db.eval("return x+y+z;")
 </code></pre></li>
 </ul>
 
-
-<p><strong>Quick Reference for Adding Values to Sets</strong></p>
-
-<ul>
-<li><strong>HSET hash-name key value</strong></li>
-<li>Sets a value on a hash with the given key. As with other Redis commands, if the hash doesn’t exist, it’s created.</li>
-<li><strong>HMSET hash-name key1 value1 [key2 value2 ...]</strong></li>
-<li>Allows you to set several values in a hash with a single command.
-
-<pre><code>redis&gt; HGETALL /consumers/key:dpf43f3p2l4k3l03
-redis&gt; SADD /nonces/key:dpf43f3p2l4k3l03/timestamp:20110306182600 dji430splmx33448
-redis&gt; EXPIRE /nonces/key:dpf43f3p2l4k3l03/timestamp:20110306182600 1800
-redis&gt; HSET /request_tokens/key:dpf43f3p2l4k3l03 hh5s93j4hdidpola hdhd0244k9j7ao03
-</code></pre></li>
-</ul>
-
-
-<p><strong>Quick Reference for Authorization Algorithm</strong></p>
-
-<ul>
-<li><strong>HGETALL hash-name</strong></li>
-<li>Returns all the key/value pairs in the given hash.</li>
-<li><strong>SADD set-name element</strong></li>
-<li>Adds the element to the given set unless it’s already a member. The return value is 1 if the element is added and 0 if it was already a member.</li>
-<li><strong>EXPIRE key seconds</strong></li>
-<li>Sets an expiration timeout on a key, after which it will be deleted. This can be used on any type of key (strings, hashes, lists, sets or sorted sets) and is one of the most powerful Redis features.</li>
-<li><strong>EXPIREAT key timestamp</strong></li>
-<li>Performs the same operation as EXPIRE, except you can specify a UNIX timestamp (seconds since midnight, January 1, 1970) instead of the number of elapsed seconds.</li>
-<li><strong>TTL key</strong></li>
-<li>Tells you the remaining time to live of a key with an expiration timeout.</li>
-<li><strong>PERSIST key</strong></li>
-<li>Removes the expiration timeout on the given key.</li>
-<li>Redirections and consent
-
-<pre><code>redis&gt; SET /authorizations/request_token:hh5s93j4hdidpola 16
-redis&gt; HGET /consumers/key:dpf43f3p2l4k3l03 redirect_url
-redis&gt; HGETALL /consumers/key:dpf43f3p2l4k3l03
-redis&gt; HGET /request_tokens/key:dpf43f3p2l4k3l03 hh5s93j4hdidpola
-redis&gt; GET /authorizations/request_token:hh5s93j4hdidpola
-redis&gt; SADD /nonces/key:dpf43f3p2l4k3l03/timestamp:20110306182700 kllo9940pd9333jh
-redis&gt; EXPIRE /nonces/key:dpf43f3p2l4k3l03/timestamp:20110306182600 1800
-redis&gt; HMSET /access_tokens/consumer_key:dpf43f3p2l4k3l03/access_token:nnch734d00sl2jdk
-       secret pfkkdhi9sl3r4s00 user_id 16 created_at 20110306182600
-redis&gt; HDEL /request_tokens/key:dpf43f3p2l4k3l03 hh5s93j4hdidpola
-redis&gt; DEL /authorizations/request_token:hh5s93j4hdidpola
-redis&gt; HSET /users/user_id:16/applications dpf43f3p2l4k3l03 nnch734d00sl2jdk
-redis&gt; HDEL /users/user_id:16/applications dpf43f3p2l4k3l03
-redis&gt; DEL /access_tokens/consumer_key:dpf43f3p2l4k3l03/access_token:nnch734d00sl2jdk
-redis&gt; EXPIRE /access_tokens/consumer_key:dpf43f3p2l4k3l03/access_token:nnch734d00sl2jdk 86400
-</code></pre></li>
-</ul>
-
-
-<p><strong>Quick Reference for Hash Operations</strong></p>
-
-<ul>
-<li><strong>HGET hash-name key</strong></li>
-<li>Returns the value at key in the given hash.</li>
-<li><strong>HDEL hash-name key</strong></li>
-<li>Deletes a key/value pair in the given hash.</li>
-</ul>
-
-
-<h1 id=4>CHAPTER 4 Redis Administration and Maintenance</h1>
-
-
-<p><strong>Starting a Redis Slave</strong></p>
-
-<pre><code>redis&gt; slaveof master-ip-or-hostname masterport
-redis&gt; masterauth master-password
-redis&gt; SLAVEOF master-ip-or-hostname [masterport]
-redis&gt; CONFIG SET masterauth password
-</code></pre>
-
-<p><strong>Handling a Dataset Larger Than Memory</strong></p>
-
-<pre><code>vm-enabled yes
-vm-swap-file
-vm-max-memory
-vm-pages
-vm-page-size
-vm-max-threads
-</code></pre>
 ]]></content>
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[python 参考手册 第1章]]></title>
-    <link href="http://zhangchuan.github.com/blog/2012/01/09/175416-python/"/>
-    <updated>2012-01-09T17:54:00+08:00</updated>
-    <id>http://zhangchuan.github.com/blog/2012/01/09/175416-python</id>
-    <content type="html"><![CDATA[<h1>第2章 Python 简介</h1>
+    <title type="html"><![CDATA[MongDB权威指南 6]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/03/01/142455-mongodb/"/>
+    <updated>2012-03-01T14:24:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/03/01/142455-mongodb</id>
+    <content type="html"><![CDATA[<ul>
+<li>6.1 count
 
-<ul>
-<li><a href="#1.1">1.1 运行Python</a></li>
-<li><a href="#1.2">1.2 变量和算术表达式</a></li>
-<li><a href="#1.3">1.3 条件语句</a></li>
-<li><a href="#1.4">1.4 文件输入和输出</a></li>
-<li><a href="#1.5">1.5 字符串</a></li>
-<li><a href="#1.6">1.6 列表</a></li>
-<li><a href="#1.7">1.7 元组</a></li>
-<li><a href="#1.8">1.8 集合</a></li>
-<li><a href="#1.9">1.9 字典</a></li>
-<li><a href="#1.10">1.10 迭代与循环</a></li>
-<li><a href="#1.11">1.11 函数</a></li>
-<li><a href="#1.12">1.12 生成器</a></li>
-<li><a href="#1.13">1.13 协程</a></li>
-<li><a href="#1.14">1.14 对象与类</a></li>
-<li><a href="#1.15">1.15 异常</a></li>
-<li><a href="#1.16">1.16 模块</a></li>
-<li><a href="#1.17">1.17 获得帮助</a></li>
+<pre><code># count是最简单的聚合工具, 返回集合中的文档数量
+&gt; db.foo.count()
+&gt; db.foo.insert({"x": 1})
+&gt; db.foo.count()
+&gt; db.foo.count({"x": 1})
+</code></pre></li>
+<li>6.2 distinct
+
+<pre><code># distinct是用来找出给定键的所有不同值, 使用时必须指定集合和键
+&gt; db.runCommand({"distinct": "people", "key": "age"})
+</code></pre></li>
+<li>6.3 group
+
+<pre><code># group 先根据选定的键, 将集合依据选定键值的不同分成若干组, 然后通过聚合每一组的文档, 产生一个结果文档
+{"day": "2010/10/03", "time": "10/3/2010 03:57:01 GMT-400", "price": 4.23}
+{"day": "2010/10/04", "time": "10/4/2010 11:28:39 GMT-400", "price": 4.27}
+{"day": "2010/10/03", "time": "10/3/2010 05:00:23 GMT-400", "price": 4.10}
+{"day": "2010/10/06", "time": "10/6/2010 05:57:58 GMT-400", "price": 4.30}
+{"day": "2010/10/04", "time": "10/3/2010 08:34:50 GMT-400", "price": 4.01}
+# 获得近30天的收盘价
+{"day": "2010/10/03", "time": "10/3/2010 05:00:23 GMT-400", "price": 4.10}
+{"day": "2010/10/04", "time": "10/4/2010 11:28:39 GMT-400", "price": 4.27}
+{"day": "2010/10/06", "time": "10/6/2010 05:57:58 GMT-400", "price": 4.30}
+&gt; db.runCommand({"group": {
+"ns": "stocks",
+"key": "day",
+"initial": {"time": 0},
+"$reduce": function(doc, prev) {
+    if (doc.time &gt; prev.time) {
+        prev.price = doc.price;
+        prev.time = doc.time;
+    }},
+"condition": {"day": {"$gt": "2010/09/30"}}
+}})
+# "ns": "stocks"
+# 指定要进行分组的集合
+# "key": "day"
+# 指定文档分组依据的键. 所有"day"值相同的文档被划分到一组
+# "initial": {"time": 0}
+# 每一组reduce函数调用的初始时间
+# "$reduce": function(doc, prev) { ... }
+# 每个文档对应一次这个调用, 系统会传递两个参数: 当前文档和累加其文档. 
+# "condition": {"day": {"$gt": "2010/09/30"}}
+</code></pre></li>
+<li>6.3.1 使用完成器
+
+<pre><code># 博客系统, 每篇文章有多个标签, 现在要找出每天最热点的标签, 可以再一次按天分组, 为每一个标签计数
+&gt; db.posts.group({
+"key": {"tags": true},
+"initial": {"tags": {}},
+"$reduce": function(doc, prev) {
+    for (i in doc.tags) {
+        if (doc.tags[i] in prev.tags) {
+            prev.tags[doc.tags[i]]++;
+        } else {
+            prev.tags[doc.tags[i]] = 1;
+        }
+    }
+}})
+# "finalize"附带一个函数, 在每组结果传递到客户端之前被调用一次. 可处理结果的残枝败叶
+&gt; db.posts.group({
+"key": {"tags": true},
+"initial": {"tags": {}},
+"$reduce": function(doc, prev) {
+    for (i in doc.tags) {
+        if (doc.tags[i] in prev.tags) {
+            prev.tags[doc.tags[i]]++;
+        } else {
+            prev.tags[doc.tags[i]] = 1;
+        }
+    },
+"finalize": function(prev) {
+    var mostPopular = 0;
+    for (i in prev.tags) {
+        if (prev.tags[i] &gt; mostPopular) {
+            prev.tag = i;
+            mostPopular = prev.tags[i];
+        }
+    }
+    delete.prev.tags
+}})
+</code></pre></li>
+<li>6.3.2 将函数做为键使用
+
+<pre><code>&gt; db.posts.group({"ns": "posts",
+"$keyf": function(x) { return x.category.toLowerCase(); },
+"initializer": ... })
+</code></pre></li>
+<li>6.4 MapReduce</li>
 </ul>
 
-
-<h1 id=1.1>1.1 运行Python</h1>
-
-
-<pre><code>$ python
-&gt;&gt;&gt; print "Hello World"
-&gt;&gt;&gt; print("Hello World") #python 3
-</code></pre>
-
-<p>桌面计算器, _用于保存最后一次运算结果,并只在交互式环境中才有效</p>
-
-<pre><code>&gt;&gt;&gt; 6000 + 4523.50 + 134.12
-&gt;&gt;&gt; _ + 8192.32
-</code></pre>
-
-<p>创建程序, #表示整个一行都是注释</p>
-
-<pre><code># helloworld.py
-print "Hello World"
-</code></pre>
-
-<p>执行程序</p>
-
-<pre><code>$ python helloworld.py
-</code></pre>
-
-<p>退出程序, 输入EOF. UNIX(Ctrl+D),Windows(Ctrl+Z).通过程序抛出SystemExit异常</p>
-
-<pre><code>&gt;&gt;&gt; raise SystemExit
-</code></pre>
-
-<h1 id=1.2>1.2 变量和算术表达式</h1>
-
-
-<p><strong>程序清单1-1 简单的复利计算</strong>
-{% codeblock lang:python %}
-principal = 1000    # 初始金额
-rate = 0.05         # 利率
-numyears = 5        # 年数
-year = 1
-while year &lt;= numyears:</p>
-
-<pre><code>principal = principal * (1 + rate)
-print year, principal # 注意在Python3中是print(year, principal)
-</code></pre>
-
-<p>{% endcodeblock %}
-Python是一种动态类型语言,变量名无类型,但在执行过程中可以引用任意类型的数据</p>
-
-<pre><code># principal名称引用的值的类型由integer动态变为了float
-principal = principal * (1 + rate)
-</code></pre>
-
-<p>换行代表一条语句的结束,也可在同一行上使用分号隔开多条语句</p>
-
-<pre><code>principal = 1000; rate = 0.05; numyears = 5;
-</code></pre>
-
-<p>while语句对条件表达式进行判断,True执行循环主体,False退出循环.建议每个缩进层次用4个空格.</p>
-
-<p>字符串格式化运算符%</p>
-
-<pre><code># 将principal精度限制为2位
-print "%3d %0.2f" % (year, principal)
-print("%3d %0.2f" % (year, principal))  #Python 3
-</code></pre>
-
-<p>整数 "%d", 字符串 "%s", 浮点数 "%f"</p>
-
-<p>更新的字符串格式方法</p>
-
-<pre><code>print format(year, "3d"), format(principal, "0.2f")
-print(format(year, "3d"), format(principal, "0.2f"))  #Python 3
-</code></pre>
-
-<p>一次格式化多个字符串</p>
-
-<pre><code>print "{0:3d} {1:0.2f}".format(year, principal)
-print("{0:3d} {1:0.2f}".format(year, principal))    #Python 3    
-</code></pre>
-
-<h1 id=1.3>1.3 条件语句</h1>
-
-
-<pre><code>if a &lt; b:
-    print "Computer says Yes"
-else:
-    print "Computer says No"
-# if和elase主体用缩进表示,else子句可选.
-</code></pre>
-
-<p>用pass语句用于创建空子句</p>
-
-<pre><code>if a &lt; b:
-    pass    # Do nothing
-else:
-    print "Computer says No"
-</code></pre>
-
-<p>使用or, and和not关键字可以创建布尔类型表达式</p>
-
-<pre><code>if product == "game" and type == "pirate memory" \
-                     and not (age &lt; 4 or age &gt; 8):
-    print "I'll take it!"
-</code></pre>
-
-<p>elif语句, 处理多个测试</p>
-
-<pre><code>if suffix == ".htm":
-    content = "text/html"
-elif suffix == ".jpg":
-    content = "image/jpeg"
-elif suffix == ".png":
-    content = "image/png"
-else:
-    raise RuntimeError("Unknown content type")
-</code></pre>
-
-<p>in运算符用于检查某个值是否包含在另一个对象, 返回True/False</p>
-
-<pre><code>if 'spam' in s:
-    has_spam = True
-else:
-    has_spam = False
-# 可缩写为 has_spam = 'spam' in s
-</code></pre>
-
-<h1 id=1.4>1.4 文件输入和输出</h1>
-
-
-<p>打开文件并逐行读取内容</p>
-
-<pre><code>f = open("foo.txt")     #返回一个文件对象
-line = f.readline()     #调用文件的readline()方法
-while line:
-    print line,         #后面跟','将忽略换行符
-    # print(line, end='')   #Python 3
-    line = f.readline()
-f.close()
-</code></pre>
-
-<p>open()函数返回一个新的文件对象, readline()方法读取一行内容,包括结尾的换行符, 读至结尾返回空字符串</p>
-
-<pre><code>for line in open("foo.txt"):
-    print line,
-</code></pre>
-
-<p>将程序输出到文件中,print >> 文件</p>
-
-<pre><code>f = open("out", "w")    #打开文件以便写入
-while year &lt;= numyears:
-    principal = principal * (1 + rate)
-    print &gt;&gt;f, "%3d %0.2f" % (year, principal)
-    year += 1
-f.close()
-</code></pre>
-
-<p>>>语法只能用于Python 2中, Python 3:</p>
-
-<pre><code>print("%3d %0.2f" % (year, principal), file=f)
-</code></pre>
-
-<p>文件对象支持使用write()方法写入原始数据</p>
-
-<pre><code>f.write("%d %0.2f" % (year, principal))
-</code></pre>
-
-<p>输入流从读取sys.stdin文件,输出流写入sys.stdout文件</p>
-
-<pre><code>import sys
-sys.stdout.write("Enter your name :")
-name = sys.stdin.readline()
-#Python 2可简化为
-name = raw_input("Enter your name :")
-#Python 3 raw_input函数叫做input()
-</code></pre>
-
-<h1 id=1.5>1.5 字符串</h1>
-
-
-<p>将字符串放在单引号,双引号,三引号中创建字符串</p>
-
-<pre><code>a = "Hello World"
-b = 'Python is groovy'
-c = """Computer says 'No'"""
-</code></pre>
-
-<p>引号必须对应匹配,单引号和双引号的字符串必须在一个逻辑行.三引号可放于多个文本行</p>
-
-<pre><code>print '''Content-type: text/html
-
-&lt;h1&gt; Hello World &lt;/h1&gt;
-Click &lt;a href="http://www.python.org"&gt;here&lt;/a&gt;.
-'''
-</code></pre>
-
-<p>字符串存储在以0开始, 使用整数索引的字符序列中. 要提取其中一个字符, 可以使用索引运算符s[i]</p>
-
-<pre><code>a = "Hello World"
-b = a[4]    # b = 'o'
-</code></pre>
-
-<p>使用切片运算符s[i:j]提取子字符串. 省略i, 起始开始. 省略j, 结束为至</p>
-
-<pre><code>c = a[:5]   # c = "Hello"
-d = a[6:]   # d = "World"  ## d = a[5:] d = " World"
-e = a[3:8]  # e = "lo Wo"
-</code></pre>
-
-<p>+运算符连接字符串</p>
-
-<pre><code>g = a + " This is a test"
-</code></pre>
-
-<p>Python不会把字符串的值转换成数值</p>
-
-<pre><code>x = "37"
-y = "42"
-z = x + y   # z = "3742" (字符串连接)
-</code></pre>
-
-<p>int(), float() 将字符串值转换为数值</p>
-
-<pre><code>z = int(x) + int(y) # z = 79 (Integer +)
-</code></pre>
-
-<p>str(), repr(), format() 将非字符串值转换为字符串形式</p>
-
-<pre><code>s = "The value of x is " + str(x)
-s = "The value of x is " + repr(x)
-s = "The value of x is " + format(x,"4d")
-</code></pre>
-
-<p>str()输出与print相同, repr()表示输出对象在程序中的值</p>
-
-<pre><code>&gt;&gt;&gt; x = 3.4
-&gt;&gt;&gt; str(x)
-&gt;&gt;&gt; repr(x)     # 计算机无法精确表示十进制小数,
-&gt;&gt;&gt; format(x, "0.5f")
-</code></pre>
-
-<h1 id=1.6>1.6 列表</h1>
-
-
-<p>将任意对象放在方括号中创建列表</p>
-
-<pre><code>name = [ "Dave", "Mark", "Ann", "Phil" ]
-</code></pre>
-
-<p>列表从0开始整数索引,索引运算符可访问并修改列表的项</p>
-
-<pre><code>a = names[2]        # 返回列表的第3项"Ann"
-name[0] = "Jeff"    # 将第1项改为"Jeff"
-</code></pre>
-
-<p>append(), 将新项追加到列表末尾</p>
-
-<pre><code>names.append("Paula")
-</code></pre>
-
-<p>insert(), 将一项插入到列表</p>
-
-<pre><code>names.insert(2, "Thomas")
-</code></pre>
-
-<p>切片运算符, 提取子列表并对其赋值</p>
-
-<pre><code>b = names[0:2]      # 返回[ "Jeff", "Mark" ]
-c = names[2:]       # 返回[ "Thomas", "Ann", "Phil", "Paula" ]
-names[1] = 'Jeff'   # 将names中第第2项替换为'Jeff'
-names[0:2] = ['Dave', 'Mark', 'Jeff']   #将列表的头两项替换为右边的列表
-</code></pre>
-
-<p>+运算符连接列表</p>
-
-<pre><code>a = [1,2,3] + [4,5] # 结果是[1,2,3,4,5]
-</code></pre>
-
-<p>创建空列表</p>
-
-<pre><code>names = []      # 一个空列表
-names = list()  # 一个空列表
-</code></pre>
-
-<p>列表可以包括任意种类的Python对象,包括其他列表</p>
-
-<pre><code>a = [1,"Dave",3.14, ["Mark", 7, 9, [100,101]], 10]
-</code></pre>
-
-<p>嵌套列表需要多次索引运算进行访问</p>
-
-<pre><code>a[1]        # 返回"Dave"
-a[3][2]     # 返回9
-a[3][3][1]  # 返回101
-</code></pre>
-
-<p><strong>程序清单1-2 列表的高级特性</strong>
-{% codeblock lang:python %}
-import sys              # 加载sys模块
-if len(sys.argv) != 2   # 检查命令行参数的数量</p>
-
-<pre><code>print "Please supply a filename"
-raise SystemExit(1)
-</code></pre>
-
-<p>f = open(sys.argv[1])   # 命令行上的文件名
-lines = f.readlines()   # 将所有行读取到一个列表中
-f.close()</p>
-
-<h1>将所有输入值从字符串转换为浮点数</h1>
-
-<p>fvalues = [float(line) for line in lines]</p>
-
-<h1>打印最小值和最大值</h1>
-
-<p>print "The minimum value is ", min(fvalues)
-print "The maximum value is ", max(fvalues)
-{% endcodeblock %}</p>
-
-<p>转换值的代码可简化为</p>
-
-<pre><code>fvalues = [float(line) for line in open(sys.argv[1])]
-</code></pre>
-
-<h1 id=1.7>1.7 元组</h1>
-
-
-<p>将任意对象放在圆括号中创建列表</p>
-
-<pre><code>stock = ('GOOG', 100, 490.10)
-address = ('www.python.org', 80)
-person = (first_name, last_name, phone)
-</code></pre>
-
-<p>可以省略圆括号</p>
-
-<pre><code>stock = 'GOOG', 100, 490.10
-address = 'www.python.org', 80
-person = first_name, last_name, phone
-</code></pre>
-
-<p>0个和1个元素的元组</p>
-
-<pre><code>a = ()      # 0-元组(空元组)
-b = (item,) # 1-元组(注意随后的逗号)
-c = (item,) # 1-元组(注意随后的逗号)
-</code></pre>
-
-<p>将元祖解包为一组变量</p>
-
-<pre><code>name, shares, price = stock
-host, port = address
-first_name, last_name, phone = person
-</code></pre>
-
-<p>创建元组后不能对其修改(替换,删除,插入), 列表可以,但如果程序创建了大量小列表(项&lt;12),会造成内存浪费</p>
-
-<p>字符串split()方法按指定的分割符将一个字符串划分为一个字段列表</p>
-
-<pre><code># 文件中各行的格式为"name, shares, price"
-filename = "portfolio.csv"
-portfolio = []
-for line in open(filename):
-    fields = line.split(",")        # 将每行划分为一个列表
-    name = fields[0]                # 提取并转换每个字段
-    shares = int(fields[1])
-    price = float(fields[2])
-    stock = (name, shares, price)   # 创建一个元祖(name, shares, price)
-    portfolio.append(stock)         # 将记录追加到列表中
-&gt;&gt;&gt; portfolio[0]
-&gt;&gt;&gt; portfolio[1]
-&gt;&gt;&gt; portfolio[1][1]
-&gt;&gt;&gt; portfolio[1][2]
-# 更简单的方法
-total = 0.0
-for name, shares, price in portfolio:
-    total += shares * price
-</code></pre>
-
-<h1 id=1.8>1.8 集合</h1>
-
-
-<p>使用set函数创建集合</p>
-
-<pre><code>s = set([3,5,9,10])     # 创建一个数值集合
-t = set("Hello")        # 创建一个唯一字符的集合
-</code></pre>
-
-<p>集合是无序的</p>
-
-<pre><code>&gt;&gt;&gt; t
-set(['H', 'e', 'l', 'o'])   # 注意只出现了一个'l'
-a = t | s       # t和s的并集
-b = t &amp; s       # t和s的交集
-c = t - s       # 求差集(项在t中,但不在s中)
-d = t ^ s       # 对称基集(项在t或s中, 但不会同时出现在二者中)
-</code></pre>
-
-<p>add(), update()在集合中添加新项</p>
-
-<pre><code>t.add('x')              # 添加一项
-s.update([10,37,42])    # 在s中添加多项
-</code></pre>
-
-<p>remove() 删除一项</p>
-
-<pre><code>t.remove('H')
-</code></pre>
-
-<h1 id=1.9>1.9 字典</h1>
-
-
-<p>将关联数组或散列表放入大括号中{}创建字典</p>
-
-<pre><code>stock = {
-    "name"  : "GOOG",
-    "shares": 100,
-    "price" : 490.10    
-}
-</code></pre>
-
-<p>访问字典成员</p>
-
-<pre><code>name = stock["name"]
-value = stock["shares"] * stock["price"]
-</code></pre>
-
-<p>插入修改对象</p>
-
-<pre><code>stock["shares"] = 75
-stock["date"]   = "June 7, 2007" 
-</code></pre>
-
-<p>可变对象不可用作关键字
-字典可作为快速查找序数据的一个容器</p>
-
-<pre><code># 股票价格
-price = {
-    "GOOG" : 490.10,
-    "AAPL" : 123.50,
-    "IBM"  : 91.50,
-    "MSFT" : 52.13
-}
-</code></pre>
-
-<p>创建空字典</p>
-
-<pre><code>prices = {}     # 一个空字典
-prices = dict{} # 一个空字典
-</code></pre>
-
-<p>in运算符测试是否为字典成员</p>
-
-<pre><code>if "SCOX" in prices:
-    p = prices["SCOX"]
-else:
-    p = 0.0
-# 更简洁的方法
-p = price.get("SCOX", 0.0)
-</code></pre>
-
-<p>获得字典关键字列表</p>
-
-<pre><code>syms = list(prints) # syms = ["AAPL", "MSFT", "IBM", "GOOG"]
-</code></pre>
-
-<p>del语句删除字典元素</p>
-
-<pre><code>del prices["MSFT"]
-</code></pre>
-
-<h1 id=1.10>1.10 迭代与循环</h1>
-
-
-<p>每次迭代将列表[1,2,3,4,......,9]中的下一个值赋给变量n.</p>
-
-<pre><code>for n in [1,2,3,4,5,6,7,8,9]:
-    print "2 to the %d power is %d" % (n, 2**n)
-# 更简洁的方法
-for n in range(1,10):
-    print "2 to the %d power is %d" % (n, 2**n)
-</code></pre>
-
-<p>range(i,j,[,步进值]) i到j-1, i省略默认为0</p>
-
-<pre><code>a = range(5)        # a = 0,1,2,3,4
-a = range(1,8)      # a = 1,2,3,4,5,6,7
-c = range(1,14,3)   # a = 0,3,6,9,12
-d = range(8,1,-1)   # a = 8,7,6,5,4,3,2
-</code></pre>
-
-<p>xrange()用于处理极大范围的整数值.Python3中已更名为range()</p>
-
-<p>for语句可迭代多种对象,包括字符串, 列表, 字典和文件</p>
-
-<pre><code>a = "Hello World"
-# 打印出a中的每个字符
-for c in a:
-    print c
-
-b = ["Dave", "Mark", "Ann", "Phil"]
-# 打印出一个列表的成员
-for name in b:
-    print name
-c = { 'GOOG':490.10, 'IBM':91.50, 'AAPL':123.15 }
-# 打印出一个字典的所有成员
-for key in c:
-    print key, c[key]
-
-# 打印一个文件中的所有行
-f = open("foo.txt")
-for line in f:
-    print line,
-</code></pre>
-
-<h1 id=1.11>1.11 函数</h1>
-
-
-<p>使用def语句创建函数</p>
-
-<pre><code>def remainder(a,b):
-    q = a // b      # //是截断除法运算符
-    r = a - q*b
-    return r 
-</code></pre>
-
-<p>调用函数</p>
-
-<pre><code>result = remainder(37,15)
-</code></pre>
-
-<p>让函数返回多个值</p>
-
-<pre><code>def divide(a,b):
-    q = q // b      # 如果a和b是整数, q就是整数
-    r = a - q*b
-    return (q,r)
-</code></pre>
-
-<p>讲结果放到单独的变量中</p>
-
-<pre><code>quotient, remainder = divide(1456,33)
-</code></pre>
-
-<p>给函数参数提供默认值, 调用此函数时可省略</p>
-
-<pre><code>def connect(hostname, port, timeout=300):
-    # 函数体
-connect('www.python.org', 80)
-</code></pre>
-
-<p>使用关键字参数调用函数</p>
-
-<pre><code>connect(port=80, hostname="www.python.org")
-</code></pre>
-
-<p>变量定义在函数中,作用域只在函数体内,要修改全局变量的值, 可用global语句</p>
-
-<pre><code>count = 0
-...
-def foo():
-    global count
-    count += 1      # 更改全局变量count
-</code></pre>
-
-<h1 id=1.12>1.12 生成器</h1>
-
-
-<p>yield语句可让函数生成一个结果序列</p>
-
-<pre><code>def countdown(n):
-    print "Counting down!"
-    while n &gt; 0:
-        yield n     # 生成一个值(n)
-        n -= 1
-</code></pre>
-
-<p>生成器创建一个对象, 连续调用next()方法生成结果序列(Python3中是<strong>next</strong>())</p>
-
-<pre><code>&gt;&gt;&gt; c = countdown(5)
-&gt;&gt;&gt; c.next()
-&gt;&gt;&gt; c.next()
-&gt;&gt;&gt; c.next()
-&gt;&gt;&gt;
-# 通常使用for 循环调用
-&gt;&gt;&gt; for i in countdown(5):
-    print i,
-</code></pre>
-
-<p>模拟UNIX tail -f命令</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[MongoDB权威指南 5]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/03/01/104304-mongodb/"/>
+    <updated>2012-03-01T10:43:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/03/01/104304-mongodb</id>
+    <content type="html"><![CDATA[<ul>
+<li>5.1 索引简介
+
+<pre><code>&gt; db.people.find({"username": "mark"})
+# 对"username"建立索引
+&gt; db.people.ensureIndex({"username": 1})
+# 同样的索引只需创建一次, 已创建的索引会加速该键的查询, 对其他查询并没有帮助, 如下
+# 同时尽量避免让服务器做表扫描, 在集合很大时会很慢
+&gt; db.people.find({"data": data1}).sort({"data": 1, "username": 1})
+# 针对上例创建的索引, 在多键索引时应考虑索引创建的方向(升序1,降序-1)
+&gt; db.ensureIndex({"data": 1, "username": 1})
+# 多键索引可以利用前部索引
+&gt; {"a":1, "b":1, "c":1, ..., "z":1}
+#实际上会有{"a":1},{"a":1, "b":1},{"a":1, "b":1, "c":1}等的索引
+# MongoDB的查询优化器会重排查询项的顺序, 但缺点是每次插入,更新和删除时会产生额外开销
+# 要是查询要返回集合一半以上的结果, 用表扫描要比索引更高校.
+</code></pre></li>
+<li>5.1.1 扩展索引
+
+<pre><code>&gt; db.status.ensureIndex({user: 1, data: -1})
+# 如果内存放不下所有索引, 会非常慢, 改变索引顺序, 将最后几天的索引保存在内存, 减少内存交换, 这样查询任何用户的状态都会快很多
+&gt; db.status.ensureIndex({data: -1, user: 1})
+# 创建索引应考虑
+1) 会做什么样的查询? 其中哪些键需要索引?
+2) 每个键的索引方向是怎样的?
+3) 如何应对扩展? 有没有种不同的键的排列可以使常用数据更多地保留在内存中?
+</code></pre></li>
+<li>5.1.2 索引内嵌文档中的键
+
+<pre><code># 对内嵌文档的额索引与普通键索引并无差异, 两者也可以联合组成复合索引
+&gt; db.blog.ensureIndex({"comments.date": 1})
+</code></pre></li>
+<li>5.1.3 为排序创建索引
+
+<pre><code># 需要针对查询中大量的排序做索引, 如果没有索引的键调用sort, MongoDB需要将所有的数据提取到内存来排序.
+</code></pre></li>
+<li>5.1.4 索引名称
+
+<pre><code># 集合中的每个索引都有一个字符串类型的名字, 来唯一标识索引. 可以通过ensureIndex选项制定自定义的名字
+&gt; db.foo.ensureIndex({"a":1, "b":1, "c":1, ..., "z":1}, {"name":"alphabet"})
+</code></pre></li>
+<li>5.2 唯一索引
+
+<pre><code># 唯一索引可以确保集合的每一个文档的指定键都有唯一值
+&gt; db.people.ensureIndex({"username": 1}, {"unique": true})
+</code></pre></li>
+<li>5.2.1 消除重复
+
+<pre><code># 创建索引时, 将所有所有包含重复值的文档都删掉
+&gt; db.people.ensureIndex({"username": 1}, {"unique": true, "dropDups": true})
+</code></pre></li>
+<li>5.2.2 复合唯一索引
+
+<pre><code># 单个键可以相同, 所有键盘组合起来不同
+&gt; {files_id: ObjectID("4b23c3ca7525f35f94b60a2d"), n: 1}
+&gt; {files_id: ObjectID("4b23c3ca7525f35f94b60a2d"), n: 2}
+&gt; {files_id: ObjectID("4b23c3ca7525f35f94b60a2d"), n: 3}
+&gt; {files_id: ObjectID("4b23c3ca7525f35f94b60a2d"), n: 4}
+</code></pre></li>
+<li>5.3 使用explain和hint
+
+<pre><code>&gt; db.foo.find().explain()
+# "cursor": 索引使用情况, "BasicCursor"未使用索引
+# "nscanned": 数据库查找了多少个文档
+# "n": 返回文档的数量
+# "millis": 0 这个毫秒表示数据库执行查询的时间
+</code></pre></li>
+<li>5.4 索引管理
+
+<pre><code># 索引的元信息保存在每个数据库的system.indexes集合中, 只能进行ensureIndex或dropIndexes操作
+# system.namespaces包含集合的索引名字
+# 集合名和索引名加起来不能超过127字节
+# 修改索引
+# background在后台建立索引
+&gt; db.people.ensureIndex({"username": 1}, {"background": true})
+# 删除索引
+# 通过system.indexes集合找出索引名,在通过dropIndexes
+# db.runCommand({"dropIndexes": "foo", "index": "*"})
+</code></pre></li>
+<li>5.5 地理空间索引
+
+<pre><code># 创建地址空间索引
+&gt; db.map.ensureIndex({"gps": "2d"})
+# "gps"键的值必须是某种形式的一对值, 一个包含两个元素的数组, 或者连个键的内嵌文档
+{"gps": [0,100]}
+{"gps": {"x": -30, "y": 30]}
+{"gps": {"Latitude": -180, "longitude": 180}}
+# 默认地理空间值的范围为-180~180, 也可以重新指定
+&gt; db.star.trek.ensureIndex({"light-years": "2d"}, {"min": -1000, "max": 1000})
+# 地址空间查询有两种方式
+&gt; db.map.find({"gps": {"$near": [40, -73]}})
+&gt; db.map.find({"gps": {"$near": [40, -73]}}).limit(10)
+&gt; db.runCommand({geoNear: "map", near: [40, -73], num: 10})
+# 查找指定形状内的文档
+# "$box" 第一个数组, 指定左下角下标, 第二个数组, 指定右下角下标
+&gt; db.map.find({"gps": {"$within": {"$box": [[10, 20], [15, 30]]}}})
+# "$center" 查找圆内部所有点, 参数表示圆心和半径
+&gt; db.map.find({"gps": {"$within": {"$center": [[12, 25], 5]}}})
+</code></pre></li>
+<li>5.5.1 复合地理空间索引
+
+<pre><code># 创建爱呢"location"和"desc"的复合地理空间索引
+&gt; db.ensureIndex({"location": "2d", "desc": 1})
+# 查找咖啡馆
+&gt; db.map.find({"location": {"$near": [-70, 30]}, "desc": "coffeeshop"}).limit(1)
+</code></pre></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[MongoDB权威指南 4]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/02/28/084414-python/"/>
+    <updated>2012-02-28T08:44:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/02/28/084414-python</id>
+    <content type="html"><![CDATA[<ul>
+<li>4.1 find简介</li>
+<li>返回一个集合中文档的子集, 空的查询文档{}会匹配集合的全部内容
+
+<pre><code>mongo&gt; db.c.find()
+# 限定查找条件
+db.users.find({"age": 27})
+db.users.find({"username": "joe"})
+db.users.find({"username": "joe", "age": 27})
+</code></pre></li>
+<li>4.1.1 指定返回的键
+
+<pre><code>db.users.find({}, {"username": 1, "email": 1})
+# 不希望结果中含有"fata1_weakness"键:
+db.users.find({}, {"fata1_weakness": 0})
+# 防止返回"_id":
+db.users.find({}, {"username": 1, "_id": 0})
+</code></pre></li>
+<li>4.1.2 限制</li>
+<li>4.2 查询条件</li>
+<li>4.2.1 查询条件
+"$lt", "$lte", "$gt", "$gte", "$ne" 分别对应&lt;, &lt;=, >, >=, !=
+
+<pre><code>mongo&gt; db.users.find({"age": {"$gte": 18, "$lte": 30}})
+mongo&gt; db.users.find({"registered": {"$lt": "01/01/2007"}})
+mongo&gt; db.users.find({"username": {"$ne": "joe"}})
+</code></pre></li>
+<li>4.2.2 OR查询
+"$in"可以用来查询一个键的多个值, "$or"用来完成多个键值的任意给定值
+
+<pre><code>db.raffle.find({"ticket_no": {"$in": [725, 542, 390]}})
+db.raffle.find({"user_id": {"$in": [12345, "joe"]}})
+{ticket_no" {"$in": [725]}} == {ticket_no: 725}
+</code></pre>
+
+"$nin"返回与数组中所有条件都不匹配的文档
+
+<pre><code>db.raffle.find({"ticket_no": {"$nin": [725, 542, 390]}})
+db.raffle.find({"$or": [{"ticket_no": 725}, {"winner": true}]})
+db.raffle.find({"$or": [{"ticket_no": {"$in": [725, 542, 390]}}, {"winner": true}]})
+</code></pre></li>
+<li>4.2.3 $not
+
+<pre><code>db.users.find({"id_num": {"$mod": [5, 1]}})
+db.users.find({"id_num": {"$not": {"$mod": [5, 1]}}})
+</code></pre></li>
+<li>4.2.4 条件语句的规则</li>
+<li>一个键可以有多个条件, 但一个键盘不能对应多个更新修改器
+
+<pre><code>db.users.find({"age": {"$lt": 30, "$gt": 20}})
+</code></pre></li>
+<li>4.3 特定于类型的查询</li>
+<li>4.3.1 null</li>
+<li>null不仅仅匹配自身, 而且匹配"不存在的". 返回缺少这个键的所有文档
+
+<pre><code>db.c.find({"z": null})
+db.c.find({"z": {"$in": [null], "$exists": true}})
+</code></pre></li>
+<li>4.3.2 正则表达式</li>
+<li>MongoDB使用PCRE库匹配正则表达式
+
+<pre><code># 忽略大小写
+db.users.find({"name": /joe/i})
+db.users.find({"name": /joe?/i})
+</code></pre></li>
+<li>4.3.3 查询数组
+
+<pre><code>db.food.insert({"fruit": ["apple", "banana", "peach"]})     
+db.food.find({"fruit": "banana"})
+</code></pre></li>
+<li>1 $all</li>
+<li>通过多个元素匹配数组
+
+<pre><code>db.food.insert({"_id": 1, "fruit": ["apple", "banana", "peach"]}) 
+db.food.insert({"_id": 2, "fruit": ["apple", "kumquat", "orange"]}) 
+db.food.insert({"_id": 3, "fruit": ["cherry", "banana", "apple"]}) 
+# 查找既有"apple"又有"banana"的文档
+db.food.find({"fruit": {"$all": ["apple", "banana"]}})
+db.food.find({"fruit": ["apple", "banana", "peach"]})
+# 查找数组指定位置的元素
+db.food.find({"fruit.2": "peach"})
+</code></pre></li>
+<li>2 $size</li>
+<li>查询指定长度的数组
+
+<pre><code>db.food.find({"fruit": {"$size": 3}})
+# "$size"不能与其他查询子句组合(比如"$gt"), 但可以通过在文档中添加一个"size"键实现, 但不能与"$addToSet"同时使用
+db.food.update({"$push": {"fruit": "strawberry}})
+db.food.update({"$push": {"fruit": "strawberry}, "$inc": {"size": 1}})
+db.food.find({"size": {"$gt": 3}})
+</code></pre></li>
+<li>3 $slice操作符</li>
+<li>返回数组的一个子集合
+
+<pre><code># 返回前10条评论
+db.blog.posts.find_one(criteria, {"comments": {"$slice": 10}])
+# 返回最后10条评论
+db.blog.posts.find_one(criteria, {"comments": {"$slice": -10}])
+# 返回第24-33条评论
+db.blog.posts.find_one(criteria, {"comments": {"$slice": 23,10}])
+</code></pre></li>
+<li>4.3.4 查询内嵌文档
+
+<pre><code>db.people.insert({"name": {"first": "Joe", "last": "Schmoe"}, "age": 45})
+# 查询名为Joe Schmoe的人
+db.people.find({"name": {"first": "Joe", "last": "Schmoe"}})
+# 使用点表示法查询更通用
+db.people.find({"name.first": "Joe", "name.last": "Schmoe"})
+# 正确的指定一组条件, 不用指定每个键, 要使用"$elemMatch"
+db.blog.find({"comments": {"$elemMatch": {"author": "joe", "score": {"$gte": 5}}}})
+</code></pre></li>
+<li>4.4 $where查询
+
+<pre><code># 如果文档中两个值相等, 则返回
+db.foo.insert({"apple": 1, "banana": 6, "peach": 3})
+db.foo.insert({"apple": 8, "spinach": 4, "watermelon": 4})
+db.foo.find({"$where": "this.x + this.y == 10"})
+# where查询比常规查询慢得多, 尽量避免使用.
+</code></pre></li>
+<li>4.5 游标</li>
+<li>4.5.1 limit, skip和sort
+
+<pre><code># limit指定是上限, 并非下限, 如果匹配结果不到3个, 则返回匹配数量的结果
+db.c.find().limit(3)
+# 略过前3个匹配的文档, 若匹配的文档少于3个, 则不会返回
+db.c.find().skip(3)
+# "username"升序, "age"降序
+db.c.find().sort({"username": 1, "age": -1})
+# 搜索mp3, 每页返回50个结果, 按价格降序
+db.stock.find({"desc": "mp3"}).limit(50).sort({"price": -1})
+# skip同样可以实现, 不过会导致性能问题, 应避免
+db.stock.find({"desc": "mp3"}).limit(50).skip({"price": -1})
+</code></pre></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[MongoDB权威指南 3]]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/02/23/120934-python/"/>
+    <updated>2012-02-23T12:09:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/02/23/120934-python</id>
+    <content type="html"><![CDATA[<ul>
+<li>#
+
+<pre><code>from pymongo import Connection
+connection = Connection()
+db = connection['test']
+collection = db['col_test']
+</code></pre></li>
+<li><p>3.1 插入并保存文档</p>
+
+<pre><code>mongo&gt; db.foo.insert({"bar": "baz"})
+#
+db.foo.insert[{"bar": "baz"}]
+</code></pre></li>
+<li><p>3.1.1 批量插入</p></li>
+<li>批量插入是单个TCP请求, 提高处理效率. 只适用将多个文档插入到一个集合.</li>
+<li><p>批量插入有消息长度为16M的限制.</p>
+
+<pre><code>mongo&gt; ???
+# 批量插入对象必须是序列对象 
+db.foo.insert([{"bar": "baz"}, {"baz": "bar"}])
+</code></pre></li>
+<li><p>3.1.2 插入: 原理和作用</p></li>
+<li>在启动时打开--objecheck选项会检查输入的有效性, 但会影响效率</li>
+<li><p>文档不能超过4M</p></li>
+<li><p>3.2 删除文档</p>
+
+<pre><code># 删除集合中所有文档. 但不会删除集合本身及其索引.
+mongo&gt; db.foo.remove()
+# 也可按指定条件删除
+db.foo.remove()
+db.foo.remove({"bar": "baz"})
+</code></pre></li>
+<li><p>删除速度</p></li>
+<li>删除集合比删除文档速度更快.
 
 <pre><code>import time
-def tail(f):
-    f.seek(0,2)     # 移动到EOF
-    while True:
-        line = f.readline() #尝试读取一个新的文件行
-        if not line:
-            time.sleep(0.1)
-            continue
-        yield line
-</code></pre>
+from pymongo import Connection
 
-<p>在多行中查找特定字符串</p>
+db = Connection().foo
+collection = db.bar
+# 插入测试记录
+for i in range(1000000):
+    collection.insert({"foo": "bar", "baz": i, "z": 10 - i})
 
-<pre><code>def grep(lines, searchtext):
-    for line in lines:
-        if searchtext in line:  yield line
+start = time.time()
+# 使用db.drop_collection("bar")代替下面两行, 速度提升会相当明显
+#db.drop_collection("bar")
+collection.remove()
+collection.find_one()
 
-# UNIX "tail -f | grep python"命令的python实现
-wwwlog = tail(open("access-log"))
-pylines = grep(wwwlog, "python")
-for line in pylines:
-    print line,
-</code></pre>
+total = time.time() - start
+print "%d seconds" % total
+</code></pre></li>
+<li>3.3 更新文档</li>
+<li>update有2个参数, 一个是查询文档, 一个是修改文档</li>
+<li>3.3.1 文档替换</li>
+<li>确保更新总是指向唯一文档
 
-<h1 id=1.13>1.13 协程</h1>
+<pre><code>from pymongo import Connection
+db = Connection().foo
+# 导入测试数据
+db.users.insert({"name": "joe", "friends": 32, "enemies": 2})
+# mongo shell 
+mongo&gt; var joe = db.users.findOne({"name": "joe"});
+mongo&gt; joe.relationships = {"friends": joe.friends, "enemies": joe.enemies};
+mongo&gt; joe.username = joe.name;
+mongo&gt; delete joe.friends;
+mongo&gt; delete joe.enemies;
+mongo&gt; delete joe.name;
+mongo&gt; db.users.update({"name": "joe"}, joe);
+# OK 转换为python代码
+joe = db.users.find_one({"name": "joe"})
+joe['relationships'] = {"friends": joe['friends'], "enemies": joe['enemies']}
+joe['username'] = joe['name']
+del joe['friends']
+del joe['enemies']
+del joe['name']
+# 不是子字典?
+db.users.update({"username": joe['username']}, joe)
+</code></pre></li>
+<li>3.3.2 使用修改器
 
+<pre><code># 每当有人访问页面的时候, 增加计数器
+from pymongo import Connection
+db = Connection().foo
+# 导入测试数据
+db.analytics.insert({"url":"www.example.com", "pageviews": 52})
+# 使用$inc修改器
+db.analytics.update({"url":"www.example.com"}, {"$inc": {"pageviews": 1}})
+# 执行db.analytics.find()会发现"pageviews"的值增加了1
+db.analytics.find().next()
+</code></pre></li>
+<li>1 "$set"修改器入门</li>
+<li>"$set"用来指定一个键的数值,如果不存在就创建它
 
-<p>以表达式(yield)形式创建协程</p>
+<pre><code># 导入测试数据
+db.users.insert({"name": "joe", "age": 30, "sex": "male", "location": "Wisconsin"})
+# 添加喜欢的书籍
+db.users.update({"name": "joe", "age": 30}, {"$set": {"favorite book": "war and peace"}})
+# 修改喜欢的书籍
+db.users.update({"name": "joe", "age": 30}, {"$set": {"favorite book": "green eggs and ham"}})
+# cool的是还可以修改键值的数据类型
+db.users.update({"name": "joe", "age": 30}, {"$set": {"favorite book": ["cat's cradle", "foundation trilogy", "ender's game"]}}) 
+# 不爱读书了, 可以试试"$unset"
+db.users.update({"name": "joe", "age": 30}, {"$unset": {"favorite book": 1}})
 
-<pre><code>def print_matches(matchtext):
-    print "Looking for", matchtext
-    while True:
-        line = (yield)      # 获得一行文本
-        if matchtext in line:
-            print line
-</code></pre>
+# 也可用"$set"修改内嵌的文档
+# 导入测试数据 
+from pymongo import Connection
+db = Connection().blog
+db.posts.insert({"title": "A Blog Post", "content": "...", "author": {"name": "joe", "email": "joe@example.com"}})
+# OK, 开始更新
+db.posts.update({"author.name": "joe"}, {"$set": {"author.name": "joe schmoe"}})
+</code></pre></li>
+<li>2 增加和减少</li>
+<li>"$inc" 修改器用来增加已有的键值, 或在不存在的时候创建一个键, 操作对象必须是数字类型.
 
-<p>向前执行第一条(yield)语句, 然后用send()发送数据</p>
+<pre><code>from pymongo import Connection
+db = Connection().foo
+db.games.insert({"game": "pinball", "user": "joe"})
+# 分数并不存在, "$inc"创建这个键后, 设定初始值
+db.games.update({"game": "pinball", "user": "joe"}, {"$inc": {"score": 50}})
+# 如果小球落入加分区, 要加10000分
+db.games.update({"game": "pinball", "user": "joe"}, {"$inc": {"score": 10000}})
+</code></pre></li>
+<li>3 数组操作器</li>
+<li>"$push"向已有的数据末尾加入一个元素
 
-<pre><code>&gt;&gt;&gt; matcher = print_matches("python")
-&gt;&gt;&gt; matcher.next()      # 向前执行到第一条(yield)语句
-&gt;&gt;&gt; matcher.send("Hello World")
-&gt;&gt;&gt; matcher.send("python is cool")
-&gt;&gt;&gt; matcher.send("yow!")
-&gt;&gt;&gt; matcher.close()     # 匹配器函数调用结束
-</code></pre>
+<pre><code>from pymongo import Connection
+db = Connection().blog
+# 导入测试数据
+db.posts.insert({"title": "A blog post", "content": "..."})
+# 下面两行有待调试
+db.posts.update({"title": "A blog post"}, {"$push": {"comments": {"name": "joe", "email": "joe@example.com", "content": "nice post."}}})
+db.posts.update({"title": "A blog post"}, {"$push": {"comments": {"name": "bob", "email": "bob@example.com", "content": "good post."}}})
+# "$ne", 如果一个值不在数据就把它加进去
+db.papers.update({"authors cited": {"$ne": "Richie"}}, {"$push": {"authors cited": "Richie"}})
+# 不过有时更适合用"$addToSet"
+# 导入测试数据
+db.users.insert({"username": "joe", "emails": ["joe@example.com", "joe@gmail.com", "joe@yahoo.com"]})
+# 用"$addToSet"可以避免重复
+db.users.update({"username": "joe"}, {"$addToSet": {"emails": "joe@gmail.com"}})
+db.users.update({"username": "joe"}, {"$addToSet": {"emails": "joe@gmail.com"}})
+# "$addToSet"和"$each"组合起来, 可以添加多个不同的值. "$ne"和"$push"就不能实现.
+db.users.update({"username": "joe"}, {"$addToSet": {"emails": {"$each": ["joe@php.net", "joe@example.com", "joe@python.org"]}}})
+# 从数组删除元素, 可以使用"$pop"修改器
+# 从数组末尾删除一个元素
+{$pop: {key: 1}}
+# 从数组头部删除
+{$pop: {key: -1}}
+# 基于特定条件删除元素, 可以用"$pull"
+db.lists.insert({"todo": ["dishes", "laundry", "dry cleaning"]})
+db.lists.update({}, {"$pull": {"todo": "laundry"}})
+</code></pre></li>
+<li>4 数组的定位修改器
 
-<p>共同使用生成器和协程的例子</p>
+<pre><code># 若数组包含多个值, 针对某一特定值的修改需要使用定位操作符"$"定位操作,数组下标以0开始
+# 导入测试数据
+db.posts.insert({"content": "...", "comments": [{"comment": "good post", "author": "John", "votes":0},
+{"comment": "i thought it was too short", "author": "Claire", "votes":3},
+{"comment": "free watches", "author": "Alice", "votes":-1}]})
+# 增加第一个评论的投票数量
+db.posts.update({"content": "..."}, {"$inc": {"comments.0.votes": 1}})
+# 但是有时怎么会预先知道下标呢? 比如上面的comments.0.votes. 这时就要用到"$"去更新,如果有多个匹配,只会更新第一个匹配元素
+db.posts.update({"comments.author": "John"}, {"$set": {"comments.$.author": "Jim"}})
+</code></pre></li>
+<li>5 修改器的速度</li>
+<li><p>在不改变文档大小的前提下,更新会很快. "$inc", "$set"相对更快."$push", "$pull"相对更慢</p>
 
-<pre><code># 一组匹配器协程
-matchers = [
-    print_matches("python"),
-    print_matches("guido"),
-    print_matches("jython")
-]
-# 通过调用next()准备所有的匹配器
-for m in matchers: m.next()
-# 为所有匹配器提供一个活动的日志文件, 为此
-# 必须有一台活动的Web服务器将数据写入日志
-wwwlog = tail(open("access-log"))
-for line in wwwlog:
-    for m in matchers:
-        m.send(line)    # 将数据发送到每个匹配器协程中
-</code></pre>
+<pre><code>from pymongo import Connection
+import time
 
-<h1 id=1.14>1.14 对象与类</h1>
+db = Connection().performance_test
+db.drop_collection("updates")
+collection = db.updates
 
+collection.insert({"x": 1})
+# make sure the insert is complete before we start timing
+collection.find_one()
 
-<p>程序中所有值都是对象. 对象由内部数据和各种方法组成</p>
+start = time.time()
 
-<pre><code>items = [37,42]     # 创建一个列表对象
-items.append(73)    # 调用append()方法
-</code></pre>
+for i in range(100000):
+    collection.update({}, {"$inc": {"x": 1}})
+    # 如果改用"$push"的话. 速度就很悲剧了
+    collection.update({}, {"$push": {"x": 1}})
 
-<p>列出对象可用的方法</p>
+# make sure the updates are complete before we stop timing
+collection.find_one()
 
-<pre><code>&gt;&gt;&gt; items = [37,42]
-&gt;&gt;&gt; dir(items)
-</code></pre>
+print time.time() - start
+</code></pre></li>
+<li><p>3.3.3 upsert</p></li>
+<li><p>upsert是一种特殊的更新. 如果文档不符合更新条件, 则会以这个条件和更新文档为基础创建一个新文档</p>
 
-<p>以双下划线开始和结束的是特殊方法</p>
+<pre><code># update 第3个参数表示这个是upsert. &lt;-true
+db.analytics.update({"url": "/blog"}, {"$inc": {"visits": 1}}, True)
+db.math.remove()
+db.math.update({"count": 25}, {"$inc": {"count": 3}}, true)
+db.math.find_one()
+# 下面会再新建一个文档. 为什么, 因为上面的count已经是28, 由于没有匹配
+db.math.update({"count": 25}, {"$inc": {"count": 3}}, true)
+</code></pre></li>
+<li><p>save是一个shell函数, 可以在文档不存在时插入(文档不含有_id), 存在时更新(含有_id), 调用upsert</p>
 
-<pre><code>&gt;&gt;&gt; items.__add__([73,101])
-</code></pre>
+<pre><code>x = db.math.find_one()
+x['count'] = 20
+db.math.save(x)
+</code></pre></li>
+<li>3.3.4 更新多个文档</li>
+<li>默认只更新第一个匹配的文档, 如要要让所有文档更新, 可以设置update的第4个参数为true
 
-<p>class语句用于定义新的对象类型. object是所有Python类型的根类型, def语句定义方法, 方法的self参数作为第一个参数, 指向对象本身. <strong>init</strong>用于初始化对象</p>
+<pre><code># 给所有在特定日期过生的用户发一份礼物.
+# help(db.users.update)
+db.users.update({"birthday": "10/13/1978"}, {"$set": {"gift": "Happy Birtday!"}}, False, multi=True)
+# 想要知道到底更新了多少条文档
+db.count.update({x: 1}, {"$inc": {x: 1}}, False, multi=True)
+mongo&gt; db.runCommand({getLastError: 1})
+</code></pre></li>
+<li><p>3.3.5 返回已更新的文档</p>
 
-<pre><code>class Stack(object):
-    def __init__(self):     # 初始化栈
-        self.stack = []
-    def push(self, object):
-        self.stack.append(object)
-    def pop(self):
-        return self.stack.pop()
-    def length(self):
-        return len(self.stack)
-</code></pre>
+<pre><code># 在一个操作中返回结果,并更新
+mongo&gt; ps = db.runCommand({"findAndModify": "processes", "query": {"status": "READY"}, "sort": {"priority": -1},
+"update": {"$set": {"status": "RUNNING"}})
+ps = db.command({"findAndModify": "processes", "query": {"status": "READY"}, "sort": {"priority": -1},
+"update": {"$set": {"status": "RUNNING"}})
+ps = db.command({"findAndModify": "processes", "query": {"status": "READY"}, "sort": {"priority": -1},
+"remove": true).value
+# findAndModify
+字符集, 集合名
+. query
+查询文档, 用来检索文档的条件
+. sort
+排序结果的文件
+. update
+修改器文档, 对所找到的文档执行更新
+. remove
+布尔类型,表示是否删除文档
+. new
+布尔类型,表示返回的是更新前的文档还是更新后的文档. 默认是更新前的文档
+</code></pre></li>
+<li><p>3.4 瞬间完成</p></li>
+<li>不需要等待数据响应,发出后就不再操心的动作(离弦之箭)</li>
+</ul>
 
-<p>使用类</p>
-
-<pre><code>s = Stack()     # 创建一个栈
-s.push("Dave")  # 在栈中放入一些内容
-s.push(42)
-s.push([3,4,5])
-x = s.pop()     # x的值为[3,4,5]
-y = s.pop()     # y的值为42
-del s           # 删除s
-</code></pre>
-
-<p>继承list</p>
-
-<pre><code>class Stack(list):
-    # 为栈接口添加push()方法
-    # 注意: 列表已提供一个pop()方法
-    def push(self, object):
-        self.append(object)
-</code></pre>
-
-<p>静态方法</p>
-
-<pre><code>class EventHanlder(object):
-    @staticmethod
-    def dispatcherThread():
-        while (1):
-            # 等待请求
-EventHandler.dispatcherTread()  # 像函数一样调用方法
-</code></pre>
-
-<h1 id=1.15>1.15 异常</h1>
-
-
-<p>如果程序出现错误会引发异常，可以使用try和except语句捕获并处理异常</p>
-
-<pre><code>try:
-    f = open("file.txt","r")
-except IOError as e:
-    print e
-# 如果出现IOError, 引发错误的详细信息将保存在对象e中
-</code></pre>
-
-<p>raise语句用于手工引发异常</p>
-
-<pre><code>raise RuntimeError("Computer says no")
-</code></pre>
-
-<p>管理系统资源，</p>
-
-<pre><code>import threading
-message_lock = threading.Lock()
-...
-with message_lock:
-    message.add(newmessage)
-# with语句执行会自动获取message_lock对象, 离开with代码块后锁定会自动释放
-</code></pre>
-
-<h1 id=1.16>1.16 模块</h1>
-
-
-<p>模块文件的后缀必须是.py</p>
-
-<pre><code># file : div.py
-def divide(a, b):
-    q = a/b     # 如果a和b是整数, 则q也是整数
-    r = a - q*b
-    return (q,r)
-# 在其他程序中import该模块
-import div
-a, b = div.divide(2305, 29)
-# import语句创建新的命名空间，并在新的命名空间执行.py相关的语句.
-</code></pre>
-
-<p>使用不同的名称导入模块</p>
-
-<pre><code>import div as foo
-a ,b = foo.divide(2305, 29)     # 不再使用div前缀
-</code></pre>
-
-<p>把模块所有内容加载到当前命名空间</p>
-
-<pre><code>from div import *
-</code></pre>
-
-<p>dir函数可列出模块内容</p>
-
-<pre><code>&gt;&gt;&gt; import string
-&gt;&gt;&gt; dir(string)
-</code></pre>
-
-<h1 id=1.17>1.17 获得帮助</h1>
-
-
-<p>help()获得内置模块及Python相关信息</p>
-
-<p>help('模块名')获得具体模块信息</p>
-
-<p><strong>doc</strong>属性, 获得函数用途的文档说明</p>
-
-<pre><code>&gt;&gt;&gt; print issubclass.__doc__
-</code></pre>
-
-<p>pydoc命令返回python模块文档</p>
 ]]></content>
   </entry>
   

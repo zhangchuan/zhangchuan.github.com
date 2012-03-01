@@ -4,7 +4,7 @@
   <title><![CDATA[Category: MongoDB | 研究中心]]></title>
   <link href="http://zhangchuan.github.com/blog/categories/mongodb/atom.xml" rel="self"/>
   <link href="http://zhangchuan.github.com/"/>
-  <updated>2012-02-29T17:14:16+08:00</updated>
+  <updated>2012-03-01T17:12:21+08:00</updated>
   <id>http://zhangchuan.github.com/</id>
   <author>
     <name><![CDATA[Cloud.Zhang]]></name>
@@ -14,7 +14,280 @@
 
   
   <entry>
-    <title type="html"><![CDATA[PyMongo 查询[MongoDB权威指南 第三章]]]></title>
+    <title type="html"><![CDATA[MongoDB权威指南 7]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/03/01/154153-mongodb/"/>
+    <updated>2012-03-01T15:41:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/03/01/154153-mongodb</id>
+    <content type="html"><![CDATA[<ul>
+<li>7.1 数据库命令</li>
+<li>7.1.1 命令行的工作原理
+
+<pre><code>&gt; db.test.drop()
+&gt; db.runCommand({"drop": "test"});
+# 如果"ok"的值是true, 代表命令成功运行, 如果为false, 代表命令执行出了问题.
+</code></pre></li>
+<li>7.1.2 命令参考
+
+<pre><code># 获得所有命令的最新列表
+&gt; db.listCommands()
+http://localhost:28017/_commands
+# 返回MongoDB服务器的版本号和主机的操作系统
+. buildInfo
+&gt; {"buildInfo": 1}
+# 返回指定集合的统计信息, 包括数据大小, 已分配的存储空间和索引大小
+. collStats
+&gt; {"collStats": collection}
+# 列出指定集合中满足查询条件的文档的指定键的所有不同值
+. distinct
+&gt; {"distinct": collection, "key": key, "query": query}
+# 删除集合的所有数据
+. drop
+&gt; {"drop": collection}
+# 删除当前数据库的所有数据
+. dropDatabase
+&gt; {"dropDatabase": 1}
+# 删除集合里面名称为name的索引, 如果名称为"*", 则删除全部索引
+. dropIndexes
+&gt; {"dropIndexes": collection, "index": name}
+# findAndModify参考第3章
+. findAndModify
+# 查看对本集合执行最后一次操作的错误信息. 在w台服务器复制集合的最后操作前, 这个命令会阻塞
+. getlastError
+{"getLastError": 1[, "w": w[, "wtimeout": timeout]]}
+# 检查服务器是主还是从服务器
+. isMaster
+{"isMaster": 1}
+# 返回所有可以在服务器上运行的命令和相关信息
+. ListCommands
+{"listCommands": 1}
+# 列出服务器上所有数据库
+. listDatabases
+{"listDatabases": 1}
+# 检查服务器连接是否正常
+. ping
+{"ping": 1}
+# 将集合a重命名为b, a,b必须是完整的名称空间命名
+. renameCollection
+{"renameCollection": a, "to": b}
+# 修复并压缩当前数据库, 这个操作非常耗时
+. repairDatabase
+{"repairDatabase": 1}
+# 返回这台服务器的管理统计信息
+. serverStatus
+{"serverStatus": 1}
+</code></pre></li>
+<li>7.2 固定集合
+
+<pre><code>固定集合像环形队列, 空间需要预先分配, 如果空间不足, 最早的文档就会自动删除.
+默认情况下固定集合没有索引
+</code></pre></li>
+<li>7.2.1 属性及用法
+
+<pre><code>在做插入操作时, 无需额外分配空间. 所以固定集合进行插入速度极快.
+按照插入顺序输出的查询速度极快, 因为文档本身是按顺序存储的
+适合日志应用场景
+</code></pre></li>
+<li>7.2.2 创建固定集合
+
+<pre><code># 创建一个固定集合my_collection, 大小是100000字节
+&gt; db.createCollection("my_collection", {capped: true, size: 100000});
+# 指定文档数量的上限
+&gt; db.createCollection("my_collection", {capped: true, size: 100000, max: 100});
+# 转换已经普通集合为固定集合
+&gt; db.runCommand({convertToCapped: "test", size: 10000});
+</code></pre></li>
+<li>7.2.3 自然排序
+
+<pre><code>自然排序就是文档在磁盘上的顺序
+# 可以使用自然排序按照反向插入的顺序排序
+&gt; db.my_collection.find().sort({"$natural": -1})
+</code></pre></li>
+<li>7.2.4 尾部游标</li>
+<li>7.3 GridFS: 存储文件
+
+<pre><code>简化需求
+直接利用已建立的复制或分片机制
+不产生磁盘碎片, MongoDB以2GB分配文件空间
+</code></pre></li>
+<li>7.3.1 开始使用GridFS: mongofiles
+
+<pre><code># 上传文件
+$ mongofiles put foo.txt
+# 查看文件
+$ mongofiles list
+# 下载文件
+$ mongofiles get foo.txt
+# 查找文件
+$ mongofiles search foo.txt
+# 删除文件
+$ mongofiles delete foo.txt
+</code></pre></li>
+<li>7.3.2 通过MongoDB驱动程序操作GirdFS
+
+<pre><code>from pymongo import Connection
+import gridfs
+db = Connection().test
+fs = gridfs.GridFS(db)
+file_id = fs.put("Hello, World", filename = "foo.txt")
+fs.list()
+fs.get(file_id).read()
+</code></pre></li>
+<li>7.3.3 内部原理
+
+<pre><code>GridFS将大文件分成很多块, 每块作为一个单独的文档存储.
+# fs.files
+. _id
+文件的唯一id, 在块中作为"files_id"键的值存储
+. length
+文件内容总的字节数
+. chunkSize
+每块的大小, 以字节为单位. 默认是256K, 必要时可以调整
+. uploadDate
+文件存入GridFS的时间戳
+. md5
+文件内容的md5校验和, 由服务器端生成
+# distint获取GridFS中不重复的文件名列表
+&gt; db.fs.files.distinct("filename")
+</code></pre></li>
+<li>7.4 服务器端脚本</li>
+<li>7.4.1 db.eval
+
+<pre><code>利用db.eval可以在MongoDB服务器端执行任意的JavaScript脚本
+db.eval可以用来模拟多事物: db.eval锁住数据库, 然后执行JavaScript, 再解锁
+&gt; db.eval("function(u) { print('Hello, '+u+'!'); }", [username]) 
+&gt; db.eval("function(x,y,z) { return x+y+z;}", [num1,num2,num3])
+</code></pre></li>
+<li>7.4.2 存储JavaScript
+
+<pre><code>&gt; db.system.js.insert({"_id": "x", "value": 1}) 
+&gt; db.system.js.insert({"_id": "x", "value": 2}) 
+&gt; db.system.js.insert({"_id": "x", "value": 3}) 
+# 对其求和
+&gt; db.eval("return x+y+z;")
+</code></pre></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[MongoDB权威指南 5]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/03/01/104304-mongodb/"/>
+    <updated>2012-03-01T10:43:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/03/01/104304-mongodb</id>
+    <content type="html"><![CDATA[<ul>
+<li>5.1 索引简介
+
+<pre><code>&gt; db.people.find({"username": "mark"})
+# 对"username"建立索引
+&gt; db.people.ensureIndex({"username": 1})
+# 同样的索引只需创建一次, 已创建的索引会加速该键的查询, 对其他查询并没有帮助, 如下
+# 同时尽量避免让服务器做表扫描, 在集合很大时会很慢
+&gt; db.people.find({"data": data1}).sort({"data": 1, "username": 1})
+# 针对上例创建的索引, 在多键索引时应考虑索引创建的方向(升序1,降序-1)
+&gt; db.ensureIndex({"data": 1, "username": 1})
+# 多键索引可以利用前部索引
+&gt; {"a":1, "b":1, "c":1, ..., "z":1}
+#实际上会有{"a":1},{"a":1, "b":1},{"a":1, "b":1, "c":1}等的索引
+# MongoDB的查询优化器会重排查询项的顺序, 但缺点是每次插入,更新和删除时会产生额外开销
+# 要是查询要返回集合一半以上的结果, 用表扫描要比索引更高校.
+</code></pre></li>
+<li>5.1.1 扩展索引
+
+<pre><code>&gt; db.status.ensureIndex({user: 1, data: -1})
+# 如果内存放不下所有索引, 会非常慢, 改变索引顺序, 将最后几天的索引保存在内存, 减少内存交换, 这样查询任何用户的状态都会快很多
+&gt; db.status.ensureIndex({data: -1, user: 1})
+# 创建索引应考虑
+1) 会做什么样的查询? 其中哪些键需要索引?
+2) 每个键的索引方向是怎样的?
+3) 如何应对扩展? 有没有种不同的键的排列可以使常用数据更多地保留在内存中?
+</code></pre></li>
+<li>5.1.2 索引内嵌文档中的键
+
+<pre><code># 对内嵌文档的额索引与普通键索引并无差异, 两者也可以联合组成复合索引
+&gt; db.blog.ensureIndex({"comments.date": 1})
+</code></pre></li>
+<li>5.1.3 为排序创建索引
+
+<pre><code># 需要针对查询中大量的排序做索引, 如果没有索引的键调用sort, MongoDB需要将所有的数据提取到内存来排序.
+</code></pre></li>
+<li>5.1.4 索引名称
+
+<pre><code># 集合中的每个索引都有一个字符串类型的名字, 来唯一标识索引. 可以通过ensureIndex选项制定自定义的名字
+&gt; db.foo.ensureIndex({"a":1, "b":1, "c":1, ..., "z":1}, {"name":"alphabet"})
+</code></pre></li>
+<li>5.2 唯一索引
+
+<pre><code># 唯一索引可以确保集合的每一个文档的指定键都有唯一值
+&gt; db.people.ensureIndex({"username": 1}, {"unique": true})
+</code></pre></li>
+<li>5.2.1 消除重复
+
+<pre><code># 创建索引时, 将所有所有包含重复值的文档都删掉
+&gt; db.people.ensureIndex({"username": 1}, {"unique": true, "dropDups": true})
+</code></pre></li>
+<li>5.2.2 复合唯一索引
+
+<pre><code># 单个键可以相同, 所有键盘组合起来不同
+&gt; {files_id: ObjectID("4b23c3ca7525f35f94b60a2d"), n: 1}
+&gt; {files_id: ObjectID("4b23c3ca7525f35f94b60a2d"), n: 2}
+&gt; {files_id: ObjectID("4b23c3ca7525f35f94b60a2d"), n: 3}
+&gt; {files_id: ObjectID("4b23c3ca7525f35f94b60a2d"), n: 4}
+</code></pre></li>
+<li>5.3 使用explain和hint
+
+<pre><code>&gt; db.foo.find().explain()
+# "cursor": 索引使用情况, "BasicCursor"未使用索引
+# "nscanned": 数据库查找了多少个文档
+# "n": 返回文档的数量
+# "millis": 0 这个毫秒表示数据库执行查询的时间
+</code></pre></li>
+<li>5.4 索引管理
+
+<pre><code># 索引的元信息保存在每个数据库的system.indexes集合中, 只能进行ensureIndex或dropIndexes操作
+# system.namespaces包含集合的索引名字
+# 集合名和索引名加起来不能超过127字节
+# 修改索引
+# background在后台建立索引
+&gt; db.people.ensureIndex({"username": 1}, {"background": true})
+# 删除索引
+# 通过system.indexes集合找出索引名,在通过dropIndexes
+# db.runCommand({"dropIndexes": "foo", "index": "*"})
+</code></pre></li>
+<li>5.5 地理空间索引
+
+<pre><code># 创建地址空间索引
+&gt; db.map.ensureIndex({"gps": "2d"})
+# "gps"键的值必须是某种形式的一对值, 一个包含两个元素的数组, 或者连个键的内嵌文档
+{"gps": [0,100]}
+{"gps": {"x": -30, "y": 30]}
+{"gps": {"Latitude": -180, "longitude": 180}}
+# 默认地理空间值的范围为-180~180, 也可以重新指定
+&gt; db.star.trek.ensureIndex({"light-years": "2d"}, {"min": -1000, "max": 1000})
+# 地址空间查询有两种方式
+&gt; db.map.find({"gps": {"$near": [40, -73]}})
+&gt; db.map.find({"gps": {"$near": [40, -73]}}).limit(10)
+&gt; db.runCommand({geoNear: "map", near: [40, -73], num: 10})
+# 查找指定形状内的文档
+# "$box" 第一个数组, 指定左下角下标, 第二个数组, 指定右下角下标
+&gt; db.map.find({"gps": {"$within": {"$box": [[10, 20], [15, 30]]}}})
+# "$center" 查找圆内部所有点, 参数表示圆心和半径
+&gt; db.map.find({"gps": {"$within": {"$center": [[12, 25], 5]}}})
+</code></pre></li>
+<li>5.5.1 复合地理空间索引
+
+<pre><code># 创建爱呢"location"和"desc"的复合地理空间索引
+&gt; db.ensureIndex({"location": "2d", "desc": 1})
+# 查找咖啡馆
+&gt; db.map.find({"location": {"$near": [-70, 30]}, "desc": "coffeeshop"}).limit(1)
+</code></pre></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[MongoDB权威指南 4]]></title>
     <link href="http://zhangchuan.github.com/blog/2012/02/28/084414-python/"/>
     <updated>2012-02-28T08:44:00+08:00</updated>
     <id>http://zhangchuan.github.com/blog/2012/02/28/084414-python</id>
@@ -157,7 +430,7 @@ db.stock.find({"desc": "mp3"}).limit(50).skip({"price": -1})
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[PyMongo 创建,更新删除文档[MongoDB权威指南 第三章]]]></title>
+    <title type="html"><![CDATA[MongoDB权威指南 3]]]></title>
     <link href="http://zhangchuan.github.com/blog/2012/02/23/120934-python/"/>
     <updated>2012-02-23T12:09:00+08:00</updated>
     <id>http://zhangchuan.github.com/blog/2012/02/23/120934-python</id>

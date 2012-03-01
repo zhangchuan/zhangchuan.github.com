@@ -1,0 +1,337 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>MongDB权威指南 6 - 研究中心</title>
+  <meta name="author" content="Cloud.Zhang">
+
+  
+  <meta name="description" content="6.1 count # count是最简单的聚合工具, 返回集合中的文档数量
+&gt; db.foo.count()
+&gt; db.foo.insert({"x": 1})
+&gt; db.foo.count()
+&gt; db.foo.count({"x": 1}) 6.2 distinct &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://zhangchuan.github.com/blog/2012/03/01/142455-mongodb">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="研究中心" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:zhangchuan.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">MongDB权威指南 6</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-03-01T14:24:00+08:00" pubdate data-updated="true">Mar 1<span>st</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><ul>
+<li>6.1 count
+
+<pre><code># count是最简单的聚合工具, 返回集合中的文档数量
+&gt; db.foo.count()
+&gt; db.foo.insert({"x": 1})
+&gt; db.foo.count()
+&gt; db.foo.count({"x": 1})
+</code></pre></li>
+<li>6.2 distinct
+
+<pre><code># distinct是用来找出给定键的所有不同值, 使用时必须指定集合和键
+&gt; db.runCommand({"distinct": "people", "key": "age"})
+</code></pre></li>
+<li>6.3 group
+
+<pre><code># group 先根据选定的键, 将集合依据选定键值的不同分成若干组, 然后通过聚合每一组的文档, 产生一个结果文档
+{"day": "2010/10/03", "time": "10/3/2010 03:57:01 GMT-400", "price": 4.23}
+{"day": "2010/10/04", "time": "10/4/2010 11:28:39 GMT-400", "price": 4.27}
+{"day": "2010/10/03", "time": "10/3/2010 05:00:23 GMT-400", "price": 4.10}
+{"day": "2010/10/06", "time": "10/6/2010 05:57:58 GMT-400", "price": 4.30}
+{"day": "2010/10/04", "time": "10/3/2010 08:34:50 GMT-400", "price": 4.01}
+# 获得近30天的收盘价
+{"day": "2010/10/03", "time": "10/3/2010 05:00:23 GMT-400", "price": 4.10}
+{"day": "2010/10/04", "time": "10/4/2010 11:28:39 GMT-400", "price": 4.27}
+{"day": "2010/10/06", "time": "10/6/2010 05:57:58 GMT-400", "price": 4.30}
+&gt; db.runCommand({"group": {
+"ns": "stocks",
+"key": "day",
+"initial": {"time": 0},
+"$reduce": function(doc, prev) {
+    if (doc.time &gt; prev.time) {
+        prev.price = doc.price;
+        prev.time = doc.time;
+    }},
+"condition": {"day": {"$gt": "2010/09/30"}}
+}})
+# "ns": "stocks"
+# 指定要进行分组的集合
+# "key": "day"
+# 指定文档分组依据的键. 所有"day"值相同的文档被划分到一组
+# "initial": {"time": 0}
+# 每一组reduce函数调用的初始时间
+# "$reduce": function(doc, prev) { ... }
+# 每个文档对应一次这个调用, 系统会传递两个参数: 当前文档和累加其文档. 
+# "condition": {"day": {"$gt": "2010/09/30"}}
+</code></pre></li>
+<li>6.3.1 使用完成器
+
+<pre><code># 博客系统, 每篇文章有多个标签, 现在要找出每天最热点的标签, 可以再一次按天分组, 为每一个标签计数
+&gt; db.posts.group({
+"key": {"tags": true},
+"initial": {"tags": {}},
+"$reduce": function(doc, prev) {
+    for (i in doc.tags) {
+        if (doc.tags[i] in prev.tags) {
+            prev.tags[doc.tags[i]]++;
+        } else {
+            prev.tags[doc.tags[i]] = 1;
+        }
+    }
+}})
+# "finalize"附带一个函数, 在每组结果传递到客户端之前被调用一次. 可处理结果的残枝败叶
+&gt; db.posts.group({
+"key": {"tags": true},
+"initial": {"tags": {}},
+"$reduce": function(doc, prev) {
+    for (i in doc.tags) {
+        if (doc.tags[i] in prev.tags) {
+            prev.tags[doc.tags[i]]++;
+        } else {
+            prev.tags[doc.tags[i]] = 1;
+        }
+    },
+"finalize": function(prev) {
+    var mostPopular = 0;
+    for (i in prev.tags) {
+        if (prev.tags[i] &gt; mostPopular) {
+            prev.tag = i;
+            mostPopular = prev.tags[i];
+        }
+    }
+    delete.prev.tags
+}})
+</code></pre></li>
+<li>6.3.2 将函数做为键使用
+
+<pre><code>&gt; db.posts.group({"ns": "posts",
+"$keyf": function(x) { return x.category.toLowerCase(); },
+"initializer": ... })
+</code></pre></li>
+<li>6.4 MapReduce</li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Cloud.Zhang</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-03-01T14:24:00+08:00" pubdate data-updated="true">Mar 1<span>st</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/mongdb/'>MongDB</a>, <a class='category' href='/blog/categories/read/'>Read</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/03/01/104304-mongodb/" title="Previous Post: MongoDB权威指南 5">&laquo; MongoDB权威指南 5</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/03/01/154153-mongodb/" title="next Post: MongoDB权威指南 7">MongoDB权威指南 7 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1></h1>
+  <img src="/images/newton.gif">
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/03/01/154153-mongodb/">MongoDB权威指南 7</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/01/142455-mongodb/">MongDB权威指南 6</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/01/104304-mongodb/">MongoDB权威指南 5</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/28/084414-python/">MongoDB权威指南 4</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/23/120934-python/">MongoDB权威指南 3]</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/22/141006-mongodb/">monogodb 大杂烩</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/15/143830-scribe/">scribe安装</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/10/163323-python/">Python Tips</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/19/095304-python/">python 参考手册 第21章</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/18/175036-python/">python hiredis模块</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<h1>Categories</h1>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 118.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 106.0%'>Git(1)</a>  <a href='/blog/categories/mongdb' style='font-size: 106.0%'>Mongdb(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 130.0%'>Mongodb(5)</a>  <a href='/blog/categories/monitor' style='font-size: 106.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 106.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 154.0%'>Python(9)</a>  <a href='/blog/categories/read' style='font-size: 160.0%'>Read(10)</a>  <a href='/blog/categories/redis' style='font-size: 124.0%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 106.0%'>Scribe(1)</a> </span>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p align="right" style="width: 75%">
+  Copyright &copy; 2012 - Cloud.Zhang
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

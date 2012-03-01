@@ -9,8 +9,15 @@
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="
-">
+  <meta name="description" content="第2章 词汇和语法约定 2.1 行结构和缩进
+2.2 标识符和保留字
+2.3 数字字面变量
+2.4 字符串字面量
+2.5 容器
+2.6 运算符，分割符啊哈及特殊符号
+2.7 文档字符串
+2.8 装饰器
+2.9 源代码编码 2.1 行结构和缩进 每条语句以换行符结束。可用续航符()分行。 a = &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -67,7 +74,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/01/11/100854-redis/">redis.conf 配置参数</a></h1>
+      <h1 class="entry-title"><a href="/blog/2012/01/15/093205-python/">Python 参考手册 第2章</a></h1>
     
     
       <p class="meta">
@@ -83,14 +90,172 @@
   
 
 
-<time datetime="2012-01-11T10:08:00+08:00" pubdate data-updated="true">Jan 11<span>th</span>, 2012</time>
+<time datetime="2012-01-15T09:32:00+08:00" pubdate data-updated="true">Jan 15<span>th</span>, 2012</time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content">
+  <div class="entry-content"><h1>第2章 词汇和语法约定</h1>
+
+<ul>
+<li><a href="#2.1">2.1 行结构和缩进</a></li>
+<li><a href="#2.2">2.2 标识符和保留字</a></li>
+<li><a href="#2.3">2.3 数字字面变量</a></li>
+<li><a href="#2.4">2.4 字符串字面量</a></li>
+<li><a href="#2.5">2.5 容器</a></li>
+<li><a href="#2.6">2.6 运算符，分割符啊哈及特殊符号</a></li>
+<li><a href="#2.7">2.7 文档字符串</a></li>
+<li><a href="#2.8">2.8 装饰器</a></li>
+<li><a href="#2.9">2.9 源代码编码</a></li>
+</ul>
+
+
+<h1 id=2.1>2.1 行结构和缩进</h1>
+
+
+<ul>
+<li>每条语句以换行符结束。可用续航符()分行。
+
+<pre><code>a = math.cos(3 * (x - n) + \
+  math.sin(3 * (y - n))
+</code></pre></li>
+<li>包含在圆括号，方括号，大括号，三引号的程序部分可以跨多行。</li>
+<li>缩进用于表示不同的代码块，应用空格缩经，且整个代码的缩进必须保持一致。
+
+<pre><code>if a:
+    statement1    # 缩进一致，正确
+    statement2
+else:
+    statement3
+      statement4  # 缩进不一致，错误
+</code></pre></li>
+<li>函数体，条件语句，循环或类较短，可放在一行。
+
+<pre><code>if a: statement1
+else: statement2
+</code></pre></li>
+<li>表示一个空的函数体或代码块。
+
+<pre><code>if a:
+    pass
+else:
+    statements
+</code></pre></li>
+<li>分号(;)可用于分割放在一行的多条语句。</li>
+<li>\#表示次行的内容是注释。</li>
+</ul>
+
+
+<h1 id=2.2>2.2 标识符和保留字</h1>
+
+
+<ul>
+<li>标识符可包含字母，数字，下划线，必须以非数字字符开始且区分大小写。</li>
+<li>保留字不能作为标识符。
+
+<pre><code>and         del        from     nonlocal    try
+as          elif       global   not         while
+assert      else       if       or          with
+class       exec       in       print
+continue    finally    is       raise
+def         for        lamba    return
+</code></pre></li>
+</ul>
+
+
+<h1 id=2.3>2.3 数字字面变量</h1>
+
+
+<ul>
+<li>布尔值：True和False，整数值对应1和0。</li>
+<li>整数：  分为十进制，八进制(0)，十六进制(0x)，二进制(0b)。</li>
+<li>浮点数：整数后跟小数位。</li>
+<li>复数：  整数/浮点数(实数)后加上j或J(虚数)。
+&lt;h1.id=2.4>2.4 字符串字面量</h1></li>
+<li>将文本放入单引号，双引号，三引号中构成字符串字面量。</li>
+<li>反斜杠()用于转义特殊字符。</li>
+<li>表2-1 标准的字符转义码</li>
+<li>在字符串面量前加上前缀&#8221;u&#8221;构成Unicode字符串字面量。
+
+<pre><code>s = u"Jalape\u00floo" #python3 不必加u前缀
+</code></pre></li>
+<li>在字符串面量前加上前缀&#8221;r&#8221;构成原始字符串。r必须在u之后。</li>
+</ul>
+
+
+<h1 id=2.5>2.5 容器</h1>
+
+
+<ul>
+<li>[列表] (元组) {字典}
+
+<pre><code>a = [ 1, 3.4, 'hello' ]   # 一个列表
+b = ( 10, 20, 30 )        # 一个元组
+c = { 'a':3, 'b':42 }     # 一个字典
+</code></pre></li>
+</ul>
+
+
+<h1 id=2.6>2.6 运算符，分隔符及特殊符号</h1>
+
+
+<pre><code>  +    -    *    **    /    //    %    &lt;&lt;    &gt;&gt;    &amp;    |
+  ^    ~    &lt;    &gt;     &lt;=   &gt;=    ==   !=    &lt;&gt;    +=
+  -=   *=   /=   //=   %=   **=   &amp;=   |=    ^=    &gt;&gt;=  &lt;==
+</code></pre>
+
+<h1 id=2.7>2.7 文档字符串</h1>
+
+
+<ul>
+<li>模块，类或函数的第一条语句是字符串。
+
+<pre><code>def fact(n):
+    "This function computes a factorial"
+    if (n &lt;=1): return 1
+    else: return n * fact(n-1)
+</code></pre></li>
+<li>通过对象<strong>doc</strong>属性访问文档字符串
+
+<pre><code>&gt;&gt;&gt; print fact.__doc__
+</code></pre></li>
+</ul>
+
+
+<h1 id=2.8>2.8 装饰器</h1>
+
+
+<ul>
+<li>装饰器用@表示，必须在单独的行并位于函数，方法类之前。
+
+<pre><code>@staticmethod
+def bar():
+    pass
+</code></pre></li>
+<li>使用多个装饰器
+
+<pre><code>@foo
+@bar
+def spam():
+    pass
+</code></pre></li>
+</ul>
+
+
+<h1 id=2.9>2.9 源代码编码</h1>
+
+
+<ul>
+<li>python源程序使用7位ASCII码标准，在注释语句时，可使用Unicode编码，但其他元素只能使用ASCII字符。
+
+<pre><code>#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+s = "Jalapefio"
+</code></pre></li>
+</ul>
+
 </div>
   
   
@@ -119,11 +284,23 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2012/02/28/084414-python/">PyMongo 查询[MongoDB权威指南 第三章]</a>
+        <a href="/blog/2012/03/01/154153-mongodb/">MongoDB权威指南 7</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2012/02/23/120934-python/">PyMongo 创建,更新删除文档[MongoDB权威指南 第三章]</a>
+        <a href="/blog/2012/03/01/142455-mongodb/">MongDB权威指南 6</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/01/104304-mongodb/">MongoDB权威指南 5</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/28/084414-python/">MongoDB权威指南 4</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/23/120934-python/">MongoDB权威指南 3]</a>
       </li>
     
       <li class="post">
@@ -146,24 +323,12 @@
         <a href="/blog/2012/01/18/175036-python/">python hiredis模块</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/01/16/162542-python/">python lxml模块</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/15/155751-redis/">Redis的七种武器及其适合的应用场景</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/15/143703-python/">python 参考手册 第3章</a>
-      </li>
-    
   </ul>
 </section>
 
 <section>
 <h1>Categories</h1>
-<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 116.36363636363636%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 127.27272727272728%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 105.45454545454545%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 116.36363636363636%'>Mongodb(3)</a>  <a href='/blog/categories/monitor' style='font-size: 105.45454545454545%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 105.45454545454545%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(11)</a>  <a href='/blog/categories/read' style='font-size: 127.27272727272728%'>Read(5)</a>  <a href='/blog/categories/redis' style='font-size: 121.81818181818181%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 105.45454545454545%'>Scribe(1)</a> </span>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 118.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 106.0%'>Git(1)</a>  <a href='/blog/categories/mongdb' style='font-size: 106.0%'>Mongdb(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 130.0%'>Mongodb(5)</a>  <a href='/blog/categories/monitor' style='font-size: 106.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 106.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 154.0%'>Python(9)</a>  <a href='/blog/categories/read' style='font-size: 160.0%'>Read(10)</a>  <a href='/blog/categories/redis' style='font-size: 124.0%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 106.0%'>Scribe(1)</a> </span>
 </section>
 
 

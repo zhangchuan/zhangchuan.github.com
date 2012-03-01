@@ -1,0 +1,389 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>MongoDB权威指南 7 - 研究中心</title>
+  <meta name="author" content="Cloud.Zhang">
+
+  
+  <meta name="description" content="7.1 数据库命令
+7.1.1 命令行的工作原理 &gt; db.test.drop()
+&gt; db.runCommand({"drop": "test"});
+# 如果"ok"的值是true, 代表命令成功运行, 如果为false, 代表命令执行出了问题. 7.1.2 命令参考 # &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://zhangchuan.github.com/blog/2012/03/01/154153-mongodb">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="研究中心" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:zhangchuan.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">MongoDB权威指南 7</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-03-01T15:41:00+08:00" pubdate data-updated="true">Mar 1<span>st</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><ul>
+<li>7.1 数据库命令</li>
+<li>7.1.1 命令行的工作原理
+
+<pre><code>&gt; db.test.drop()
+&gt; db.runCommand({"drop": "test"});
+# 如果"ok"的值是true, 代表命令成功运行, 如果为false, 代表命令执行出了问题.
+</code></pre></li>
+<li>7.1.2 命令参考
+
+<pre><code># 获得所有命令的最新列表
+&gt; db.listCommands()
+http://localhost:28017/_commands
+# 返回MongoDB服务器的版本号和主机的操作系统
+. buildInfo
+&gt; {"buildInfo": 1}
+# 返回指定集合的统计信息, 包括数据大小, 已分配的存储空间和索引大小
+. collStats
+&gt; {"collStats": collection}
+# 列出指定集合中满足查询条件的文档的指定键的所有不同值
+. distinct
+&gt; {"distinct": collection, "key": key, "query": query}
+# 删除集合的所有数据
+. drop
+&gt; {"drop": collection}
+# 删除当前数据库的所有数据
+. dropDatabase
+&gt; {"dropDatabase": 1}
+# 删除集合里面名称为name的索引, 如果名称为"*", 则删除全部索引
+. dropIndexes
+&gt; {"dropIndexes": collection, "index": name}
+# findAndModify参考第3章
+. findAndModify
+# 查看对本集合执行最后一次操作的错误信息. 在w台服务器复制集合的最后操作前, 这个命令会阻塞
+. getlastError
+{"getLastError": 1[, "w": w[, "wtimeout": timeout]]}
+# 检查服务器是主还是从服务器
+. isMaster
+{"isMaster": 1}
+# 返回所有可以在服务器上运行的命令和相关信息
+. ListCommands
+{"listCommands": 1}
+# 列出服务器上所有数据库
+. listDatabases
+{"listDatabases": 1}
+# 检查服务器连接是否正常
+. ping
+{"ping": 1}
+# 将集合a重命名为b, a,b必须是完整的名称空间命名
+. renameCollection
+{"renameCollection": a, "to": b}
+# 修复并压缩当前数据库, 这个操作非常耗时
+. repairDatabase
+{"repairDatabase": 1}
+# 返回这台服务器的管理统计信息
+. serverStatus
+{"serverStatus": 1}
+</code></pre></li>
+<li>7.2 固定集合
+
+<pre><code>固定集合像环形队列, 空间需要预先分配, 如果空间不足, 最早的文档就会自动删除.
+默认情况下固定集合没有索引
+</code></pre></li>
+<li>7.2.1 属性及用法
+
+<pre><code>在做插入操作时, 无需额外分配空间. 所以固定集合进行插入速度极快.
+按照插入顺序输出的查询速度极快, 因为文档本身是按顺序存储的
+适合日志应用场景
+</code></pre></li>
+<li>7.2.2 创建固定集合
+
+<pre><code># 创建一个固定集合my_collection, 大小是100000字节
+&gt; db.createCollection("my_collection", {capped: true, size: 100000});
+# 指定文档数量的上限
+&gt; db.createCollection("my_collection", {capped: true, size: 100000, max: 100});
+# 转换已经普通集合为固定集合
+&gt; db.runCommand({convertToCapped: "test", size: 10000});
+</code></pre></li>
+<li>7.2.3 自然排序
+
+<pre><code>自然排序就是文档在磁盘上的顺序
+# 可以使用自然排序按照反向插入的顺序排序
+&gt; db.my_collection.find().sort({"$natural": -1})
+</code></pre></li>
+<li>7.2.4 尾部游标</li>
+<li>7.3 GridFS: 存储文件
+
+<pre><code>简化需求
+直接利用已建立的复制或分片机制
+不产生磁盘碎片, MongoDB以2GB分配文件空间
+</code></pre></li>
+<li>7.3.1 开始使用GridFS: mongofiles
+
+<pre><code># 上传文件
+$ mongofiles put foo.txt
+# 查看文件
+$ mongofiles list
+# 下载文件
+$ mongofiles get foo.txt
+# 查找文件
+$ mongofiles search foo.txt
+# 删除文件
+$ mongofiles delete foo.txt
+</code></pre></li>
+<li>7.3.2 通过MongoDB驱动程序操作GirdFS
+
+<pre><code>from pymongo import Connection
+import gridfs
+db = Connection().test
+fs = gridfs.GridFS(db)
+file_id = fs.put("Hello, World", filename = "foo.txt")
+fs.list()
+fs.get(file_id).read()
+</code></pre></li>
+<li>7.3.3 内部原理
+
+<pre><code>GridFS将大文件分成很多块, 每块作为一个单独的文档存储.
+# fs.files
+. _id
+文件的唯一id, 在块中作为"files_id"键的值存储
+. length
+文件内容总的字节数
+. chunkSize
+每块的大小, 以字节为单位. 默认是256K, 必要时可以调整
+. uploadDate
+文件存入GridFS的时间戳
+. md5
+文件内容的md5校验和, 由服务器端生成
+# distint获取GridFS中不重复的文件名列表
+&gt; db.fs.files.distinct("filename")
+</code></pre></li>
+<li>7.4 服务器端脚本</li>
+<li>7.4.1 db.eval
+
+<pre><code>利用db.eval可以在MongoDB服务器端执行任意的JavaScript脚本
+db.eval可以用来模拟多事物: db.eval锁住数据库, 然后执行JavaScript, 再解锁
+&gt; db.eval("function(u) { print('Hello, '+u+'!'); }", [username]) 
+&gt; db.eval("function(x,y,z) { return x+y+z;}", [num1,num2,num3])
+</code></pre></li>
+<li>7.4.2 存储JavaScript
+
+<pre><code>&gt; db.system.js.insert({"_id": "x", "value": 1}) 
+&gt; db.system.js.insert({"_id": "x", "value": 2}) 
+&gt; db.system.js.insert({"_id": "x", "value": 3}) 
+# 对其求和
+&gt; db.eval("return x+y+z;")
+</code></pre></li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Cloud.Zhang</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-03-01T15:41:00+08:00" pubdate data-updated="true">Mar 1<span>st</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/mongodb/'>MongoDB</a>, <a class='category' href='/blog/categories/read/'>Read</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/03/01/142455-mongodb/" title="Previous Post: MongDB权威指南 6">&laquo; MongDB权威指南 6</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1></h1>
+  <img src="/images/newton.gif">
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/03/01/154153-mongodb/">MongoDB权威指南 7</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/01/142455-mongodb/">MongDB权威指南 6</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/01/104304-mongodb/">MongoDB权威指南 5</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/28/084414-python/">MongoDB权威指南 4</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/23/120934-python/">MongoDB权威指南 3]</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/22/141006-mongodb/">monogodb 大杂烩</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/15/143830-scribe/">scribe安装</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/10/163323-python/">Python Tips</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/19/095304-python/">python 参考手册 第21章</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/01/18/175036-python/">python hiredis模块</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<h1>Categories</h1>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 118.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 106.0%'>Git(1)</a>  <a href='/blog/categories/mongdb' style='font-size: 106.0%'>Mongdb(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 130.0%'>Mongodb(5)</a>  <a href='/blog/categories/monitor' style='font-size: 106.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 106.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 154.0%'>Python(9)</a>  <a href='/blog/categories/read' style='font-size: 160.0%'>Read(10)</a>  <a href='/blog/categories/redis' style='font-size: 124.0%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 106.0%'>Scribe(1)</a> </span>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p align="right" style="width: 75%">
+  Copyright &copy; 2012 - Cloud.Zhang
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -9,12 +9,10 @@
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="4.1 find简介
-返回一个集合中文档的子集, 空的查询文档{}会匹配集合的全部内容 mongo&gt; db.c.find()
-# 限定查找条件
-db.users.find({"age": 27})
-db.users.find({"username": "joe"})
-db.users. &hellip;">
+  <meta name="description" content="7.1 数据库命令
+7.1.1 命令行的工作原理 &gt; db.test.drop()
+&gt; db.runCommand({"drop": "test"});
+# 如果"ok"的值是true, 代表命令成功运行, 如果为false, 代表命令执行出了问题. 7.1.2 命令参考 # &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -71,7 +69,7 @@ db.users. &hellip;">
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/02/28/084414-python/">PyMongo 查询[MongoDB权威指南 第三章]</a></h1>
+      <h1 class="entry-title"><a href="/blog/2012/03/01/154153-mongodb/">MongoDB权威指南 7</a></h1>
     
     
       <p class="meta">
@@ -87,7 +85,7 @@ db.users. &hellip;">
   
 
 
-<time datetime="2012-02-28T08:44:00+08:00" pubdate data-updated="true">Feb 28<span>th</span>, 2012</time>
+<time datetime="2012-03-01T15:41:00+08:00" pubdate data-updated="true">Mar 1<span>st</span>, 2012</time>
         
       </p>
     
@@ -95,137 +93,151 @@ db.users. &hellip;">
 
 
   <div class="entry-content"><ul>
-<li>4.1 find简介</li>
-<li>返回一个集合中文档的子集, 空的查询文档{}会匹配集合的全部内容
+<li>7.1 数据库命令</li>
+<li>7.1.1 命令行的工作原理
 
-<pre><code>mongo&gt; db.c.find()
-# 限定查找条件
-db.users.find({"age": 27})
-db.users.find({"username": "joe"})
-db.users.find({"username": "joe", "age": 27})
+<pre><code>&gt; db.test.drop()
+&gt; db.runCommand({"drop": "test"});
+# 如果"ok"的值是true, 代表命令成功运行, 如果为false, 代表命令执行出了问题.
 </code></pre></li>
-<li>4.1.1 指定返回的键
+<li>7.1.2 命令参考
 
-<pre><code>db.users.find({}, {"username": 1, "email": 1})
-# 不希望结果中含有"fata1_weakness"键:
-db.users.find({}, {"fata1_weakness": 0})
-# 防止返回"_id":
-db.users.find({}, {"username": 1, "_id": 0})
+<pre><code># 获得所有命令的最新列表
+&gt; db.listCommands()
+http://localhost:28017/_commands
+# 返回MongoDB服务器的版本号和主机的操作系统
+. buildInfo
+&gt; {"buildInfo": 1}
+# 返回指定集合的统计信息, 包括数据大小, 已分配的存储空间和索引大小
+. collStats
+&gt; {"collStats": collection}
+# 列出指定集合中满足查询条件的文档的指定键的所有不同值
+. distinct
+&gt; {"distinct": collection, "key": key, "query": query}
+# 删除集合的所有数据
+. drop
+&gt; {"drop": collection}
+# 删除当前数据库的所有数据
+. dropDatabase
+&gt; {"dropDatabase": 1}
+# 删除集合里面名称为name的索引, 如果名称为"*", 则删除全部索引
+. dropIndexes
+&gt; {"dropIndexes": collection, "index": name}
+# findAndModify参考第3章
+. findAndModify
+# 查看对本集合执行最后一次操作的错误信息. 在w台服务器复制集合的最后操作前, 这个命令会阻塞
+. getlastError
+{"getLastError": 1[, "w": w[, "wtimeout": timeout]]}
+# 检查服务器是主还是从服务器
+. isMaster
+{"isMaster": 1}
+# 返回所有可以在服务器上运行的命令和相关信息
+. ListCommands
+{"listCommands": 1}
+# 列出服务器上所有数据库
+. listDatabases
+{"listDatabases": 1}
+# 检查服务器连接是否正常
+. ping
+{"ping": 1}
+# 将集合a重命名为b, a,b必须是完整的名称空间命名
+. renameCollection
+{"renameCollection": a, "to": b}
+# 修复并压缩当前数据库, 这个操作非常耗时
+. repairDatabase
+{"repairDatabase": 1}
+# 返回这台服务器的管理统计信息
+. serverStatus
+{"serverStatus": 1}
 </code></pre></li>
-<li>4.1.2 限制</li>
-<li>4.2 查询条件</li>
-<li>4.2.1 查询条件
-&#8220;$lt&#8221;, &#8220;$lte&#8221;, &#8220;$gt&#8221;, &#8220;$gte&#8221;, &#8220;$ne&#8221; 分别对应&lt;, &lt;=, >, >=, !=
+<li>7.2 固定集合
 
-<pre><code>mongo&gt; db.users.find({"age": {"$gte": 18, "$lte": 30}})
-mongo&gt; db.users.find({"registered": {"$lt": "01/01/2007"}})
-mongo&gt; db.users.find({"username": {"$ne": "joe"}})
+<pre><code>固定集合像环形队列, 空间需要预先分配, 如果空间不足, 最早的文档就会自动删除.
+默认情况下固定集合没有索引
 </code></pre></li>
-<li>4.2.2 OR查询
-&#8220;$in&#8221;可以用来查询一个键的多个值, &#8220;$or&#8221;用来完成多个键值的任意给定值
+<li>7.2.1 属性及用法
 
-<pre><code>db.raffle.find({"ticket_no": {"$in": [725, 542, 390]}})
-db.raffle.find({"user_id": {"$in": [12345, "joe"]}})
-{ticket_no" {"$in": [725]}} == {ticket_no: 725}
-</code></pre>
-
-&#8220;$nin&#8221;返回与数组中所有条件都不匹配的文档
-
-<pre><code>db.raffle.find({"ticket_no": {"$nin": [725, 542, 390]}})
-db.raffle.find({"$or": [{"ticket_no": 725}, {"winner": true}]})
-db.raffle.find({"$or": [{"ticket_no": {"$in": [725, 542, 390]}}, {"winner": true}]})
+<pre><code>在做插入操作时, 无需额外分配空间. 所以固定集合进行插入速度极快.
+按照插入顺序输出的查询速度极快, 因为文档本身是按顺序存储的
+适合日志应用场景
 </code></pre></li>
-<li>4.2.3 $not
+<li>7.2.2 创建固定集合
 
-<pre><code>db.users.find({"id_num": {"$mod": [5, 1]}})
-db.users.find({"id_num": {"$not": {"$mod": [5, 1]}}})
+<pre><code># 创建一个固定集合my_collection, 大小是100000字节
+&gt; db.createCollection("my_collection", {capped: true, size: 100000});
+# 指定文档数量的上限
+&gt; db.createCollection("my_collection", {capped: true, size: 100000, max: 100});
+# 转换已经普通集合为固定集合
+&gt; db.runCommand({convertToCapped: "test", size: 10000});
 </code></pre></li>
-<li>4.2.4 条件语句的规则</li>
-<li>一个键可以有多个条件, 但一个键盘不能对应多个更新修改器
+<li>7.2.3 自然排序
 
-<pre><code>db.users.find({"age": {"$lt": 30, "$gt": 20}})
+<pre><code>自然排序就是文档在磁盘上的顺序
+# 可以使用自然排序按照反向插入的顺序排序
+&gt; db.my_collection.find().sort({"$natural": -1})
 </code></pre></li>
-<li>4.3 特定于类型的查询</li>
-<li>4.3.1 null</li>
-<li>null不仅仅匹配自身, 而且匹配&#8221;不存在的&#8221;. 返回缺少这个键的所有文档
+<li>7.2.4 尾部游标</li>
+<li>7.3 GridFS: 存储文件
 
-<pre><code>db.c.find({"z": null})
-db.c.find({"z": {"$in": [null], "$exists": true}})
+<pre><code>简化需求
+直接利用已建立的复制或分片机制
+不产生磁盘碎片, MongoDB以2GB分配文件空间
 </code></pre></li>
-<li>4.3.2 正则表达式</li>
-<li>MongoDB使用PCRE库匹配正则表达式
+<li>7.3.1 开始使用GridFS: mongofiles
 
-<pre><code># 忽略大小写
-db.users.find({"name": /joe/i})
-db.users.find({"name": /joe?/i})
+<pre><code># 上传文件
+$ mongofiles put foo.txt
+# 查看文件
+$ mongofiles list
+# 下载文件
+$ mongofiles get foo.txt
+# 查找文件
+$ mongofiles search foo.txt
+# 删除文件
+$ mongofiles delete foo.txt
 </code></pre></li>
-<li>4.3.3 查询数组
+<li>7.3.2 通过MongoDB驱动程序操作GirdFS
 
-<pre><code>db.food.insert({"fruit": ["apple", "banana", "peach"]})     
-db.food.find({"fruit": "banana"})
+<pre><code>from pymongo import Connection
+import gridfs
+db = Connection().test
+fs = gridfs.GridFS(db)
+file_id = fs.put("Hello, World", filename = "foo.txt")
+fs.list()
+fs.get(file_id).read()
 </code></pre></li>
-<li>1 $all</li>
-<li>通过多个元素匹配数组
+<li>7.3.3 内部原理
 
-<pre><code>db.food.insert({"_id": 1, "fruit": ["apple", "banana", "peach"]}) 
-db.food.insert({"_id": 2, "fruit": ["apple", "kumquat", "orange"]}) 
-db.food.insert({"_id": 3, "fruit": ["cherry", "banana", "apple"]}) 
-# 查找既有"apple"又有"banana"的文档
-db.food.find({"fruit": {"$all": ["apple", "banana"]}})
-db.food.find({"fruit": ["apple", "banana", "peach"]})
-# 查找数组指定位置的元素
-db.food.find({"fruit.2": "peach"})
+<pre><code>GridFS将大文件分成很多块, 每块作为一个单独的文档存储.
+# fs.files
+. _id
+文件的唯一id, 在块中作为"files_id"键的值存储
+. length
+文件内容总的字节数
+. chunkSize
+每块的大小, 以字节为单位. 默认是256K, 必要时可以调整
+. uploadDate
+文件存入GridFS的时间戳
+. md5
+文件内容的md5校验和, 由服务器端生成
+# distint获取GridFS中不重复的文件名列表
+&gt; db.fs.files.distinct("filename")
 </code></pre></li>
-<li>2 $size</li>
-<li>查询指定长度的数组
+<li>7.4 服务器端脚本</li>
+<li>7.4.1 db.eval
 
-<pre><code>db.food.find({"fruit": {"$size": 3}})
-# "$size"不能与其他查询子句组合(比如"$gt"), 但可以通过在文档中添加一个"size"键实现, 但不能与"$addToSet"同时使用
-db.food.update({"$push": {"fruit": "strawberry}})
-db.food.update({"$push": {"fruit": "strawberry}, "$inc": {"size": 1}})
-db.food.find({"size": {"$gt": 3}})
+<pre><code>利用db.eval可以在MongoDB服务器端执行任意的JavaScript脚本
+db.eval可以用来模拟多事物: db.eval锁住数据库, 然后执行JavaScript, 再解锁
+&gt; db.eval("function(u) { print('Hello, '+u+'!'); }", [username]) 
+&gt; db.eval("function(x,y,z) { return x+y+z;}", [num1,num2,num3])
 </code></pre></li>
-<li>3 $slice操作符</li>
-<li>返回数组的一个子集合
+<li>7.4.2 存储JavaScript
 
-<pre><code># 返回前10条评论
-db.blog.posts.find_one(criteria, {"comments": {"$slice": 10}])
-# 返回最后10条评论
-db.blog.posts.find_one(criteria, {"comments": {"$slice": -10}])
-# 返回第24-33条评论
-db.blog.posts.find_one(criteria, {"comments": {"$slice": 23,10}])
-</code></pre></li>
-<li>4.3.4 查询内嵌文档
-
-<pre><code>db.people.insert({"name": {"first": "Joe", "last": "Schmoe"}, "age": 45})
-# 查询名为Joe Schmoe的人
-db.people.find({"name": {"first": "Joe", "last": "Schmoe"}})
-# 使用点表示法查询更通用
-db.people.find({"name.first": "Joe", "name.last": "Schmoe"})
-# 正确的指定一组条件, 不用指定每个键, 要使用"$elemMatch"
-db.blog.find({"comments": {"$elemMatch": {"author": "joe", "score": {"$gte": 5}}}})
-</code></pre></li>
-<li>4.4 $where查询
-
-<pre><code># 如果文档中两个值相等, 则返回
-db.foo.insert({"apple": 1, "banana": 6, "peach": 3})
-db.foo.insert({"apple": 8, "spinach": 4, "watermelon": 4})
-db.foo.find({"$where": "this.x + this.y == 10"})
-# where查询比常规查询慢得多, 尽量避免使用.
-</code></pre></li>
-<li>4.5 游标</li>
-<li>4.5.1 limit, skip和sort
-
-<pre><code># limit指定是上限, 并非下限, 如果匹配结果不到3个, 则返回匹配数量的结果
-db.c.find().limit(3)
-# 略过前3个匹配的文档, 若匹配的文档少于3个, 则不会返回
-db.c.find().skip(3)
-# "username"升序, "age"降序
-db.c.find().sort({"username": 1, "age": -1})
-# 搜索mp3, 每页返回50个结果, 按价格降序
-db.stock.find({"desc": "mp3"}).limit(50).sort({"price": -1})
-# skip同样可以实现, 不过会导致性能问题, 应避免
-db.stock.find({"desc": "mp3"}).limit(50).skip({"price": -1})
+<pre><code>&gt; db.system.js.insert({"_id": "x", "value": 1}) 
+&gt; db.system.js.insert({"_id": "x", "value": 2}) 
+&gt; db.system.js.insert({"_id": "x", "value": 3}) 
+# 对其求和
+&gt; db.eval("return x+y+z;")
 </code></pre></li>
 </ul>
 
@@ -255,11 +267,23 @@ db.stock.find({"desc": "mp3"}).limit(50).skip({"price": -1})
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2012/02/28/084414-python/">PyMongo 查询[MongoDB权威指南 第三章]</a>
+        <a href="/blog/2012/03/01/154153-mongodb/">MongoDB权威指南 7</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2012/02/23/120934-python/">PyMongo 创建,更新删除文档[MongoDB权威指南 第三章]</a>
+        <a href="/blog/2012/03/01/142455-mongodb/">MongDB权威指南 6</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/01/104304-mongodb/">MongoDB权威指南 5</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/28/084414-python/">MongoDB权威指南 4</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/23/120934-python/">MongoDB权威指南 3]</a>
       </li>
     
       <li class="post">
@@ -282,24 +306,12 @@ db.stock.find({"desc": "mp3"}).limit(50).skip({"price": -1})
         <a href="/blog/2012/01/18/175036-python/">python hiredis模块</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/01/16/162542-python/">python lxml模块</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/15/155751-redis/">Redis的七种武器及其适合的应用场景</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/15/143703-python/">python 参考手册 第3章</a>
-      </li>
-    
   </ul>
 </section>
 
 <section>
 <h1>Categories</h1>
-<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 116.36363636363636%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 127.27272727272728%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 105.45454545454545%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 116.36363636363636%'>Mongodb(3)</a>  <a href='/blog/categories/monitor' style='font-size: 105.45454545454545%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 105.45454545454545%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(11)</a>  <a href='/blog/categories/read' style='font-size: 127.27272727272728%'>Read(5)</a>  <a href='/blog/categories/redis' style='font-size: 121.81818181818181%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 105.45454545454545%'>Scribe(1)</a> </span>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 118.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 106.0%'>Git(1)</a>  <a href='/blog/categories/mongdb' style='font-size: 106.0%'>Mongdb(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 130.0%'>Mongodb(5)</a>  <a href='/blog/categories/monitor' style='font-size: 106.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 106.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 154.0%'>Python(9)</a>  <a href='/blog/categories/read' style='font-size: 160.0%'>Read(10)</a>  <a href='/blog/categories/redis' style='font-size: 124.0%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 106.0%'>Scribe(1)</a> </span>
 </section>
 
 
