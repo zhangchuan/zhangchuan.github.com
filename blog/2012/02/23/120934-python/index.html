@@ -309,7 +309,30 @@ db.users.update({"birthday": "10/13/1978"}, {"$set": {"gift": "Happy Birtday!"}}
 db.count.update({x: 1}, {"$inc": {x: 1}}, False, multi=True)
 mongo&gt; db.runCommand({getLastError: 1})
 </code></pre></li>
-<li>3.3.5 返回已更新的文档</li>
+<li><p>3.3.5 返回已更新的文档</p>
+
+<pre><code># 在一个操作中返回结果,并更新
+mongo&gt; ps = db.runCommand({"findAndModify": "processes", "query": {"status": "READY"}, "sort": {"priority": -1},
+"update": {"$set": {"status": "RUNNING"}})
+ps = db.command({"findAndModify": "processes", "query": {"status": "READY"}, "sort": {"priority": -1},
+"update": {"$set": {"status": "RUNNING"}})
+ps = db.command({"findAndModify": "processes", "query": {"status": "READY"}, "sort": {"priority": -1},
+"remove": true).value
+# findAndModify
+字符集, 集合名
+. query
+查询文档, 用来检索文档的条件
+. sort
+排序结果的文件
+. update
+修改器文档, 对所找到的文档执行更新
+. remove
+布尔类型,表示是否删除文档
+. new
+布尔类型,表示返回的是更新前的文档还是更新后的文档. 默认是更新前的文档
+</code></pre></li>
+<li><p>3.4 瞬间完成</p></li>
+<li>不需要等待数据响应,发出后就不再操心的动作(离弦之箭)</li>
 </ul>
 
 </div>
@@ -358,6 +381,8 @@ mongo&gt; db.runCommand({getLastError: 1})
         <a class="basic-alignment left" href="/blog/2012/02/22/141006-mongodb/" title="Previous Post: monogodb 大杂烩">&laquo; monogodb 大杂烩</a>
       
       
+        <a class="basic-alignment right" href="/blog/2012/02/28/084414-python/" title="next Post: PyMongo 查询[MongoDB权威指南 第三章]">PyMongo 查询[MongoDB权威指南 第三章] &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -373,6 +398,10 @@ mongo&gt; db.runCommand({getLastError: 1})
 <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/02/28/084414-python/">PyMongo 查询[MongoDB权威指南 第三章]</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2012/02/23/120934-python/">PyMongo 创建,更新删除文档[MongoDB权威指南 第三章]</a>
@@ -410,16 +439,12 @@ mongo&gt; db.runCommand({getLastError: 1})
         <a href="/blog/2012/01/15/143703-python/">python 参考手册 第3章</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/01/15/093205-python/">python 参考手册 第2章</a>
-      </li>
-    
   </ul>
 </section>
 
 <section>
 <h1>Categories</h1>
-<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 118.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 106.0%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 112.0%'>Mongodb(2)</a>  <a href='/blog/categories/monitor' style='font-size: 106.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 106.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(10)</a>  <a href='/blog/categories/read' style='font-size: 130.0%'>Read(5)</a>  <a href='/blog/categories/redis' style='font-size: 124.0%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 106.0%'>Scribe(1)</a> </span>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 116.36363636363636%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 127.27272727272728%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 105.45454545454545%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 116.36363636363636%'>Mongodb(3)</a>  <a href='/blog/categories/monitor' style='font-size: 105.45454545454545%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 105.45454545454545%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(11)</a>  <a href='/blog/categories/read' style='font-size: 127.27272727272728%'>Read(5)</a>  <a href='/blog/categories/redis' style='font-size: 121.81818181818181%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 105.45454545454545%'>Scribe(1)</a> </span>
 </section>
 
 

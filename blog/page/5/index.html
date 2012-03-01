@@ -9,11 +9,8 @@
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="第21章 网络编程和套接字 21.1 网络编程基础
-21.2 asynchat模块 21.1 网络编程基础 python网络编程模块支持TCP和UDP两种Internet协议。
-TCP协议是面向连接的可靠协议。
-UDP是以数据包为基础的协议。
-套接字类似文件的对象，使程序能够接受传入连接， &hellip;">
+  <meta name="description" content="读取管道内容 print sys.stdin.read()
+">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -70,7 +67,7 @@ UDP是以数据包为基础的协议。
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/01/19/095304-python/">Python 参考手册 第21章</a></h1>
+      <h1 class="entry-title"><a href="/blog/2012/02/10/163323-python/">Python Tips</a></h1>
     
     
       <p class="meta">
@@ -86,154 +83,16 @@ UDP是以数据包为基础的协议。
   
 
 
-<time datetime="2012-01-19T09:53:00+08:00" pubdate data-updated="true">Jan 19<span>th</span>, 2012</time>
+<time datetime="2012-02-10T16:33:00+08:00" pubdate data-updated="true">Feb 10<span>th</span>, 2012</time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h1>第21章 网络编程和套接字</h1>
+  <div class="entry-content"><h1>读取管道内容</h1>
 
-<ul>
-<li><a href="#21.1">21.1 网络编程基础</a></li>
-<li><a href="#21.2">21.2 asynchat模块</a></li>
-</ul>
-
-
-<h1 id=21.1>21.1 网络编程基础</h1>
-
-
-<ul>
-<li>python网络编程模块支持TCP和UDP两种Internet协议。</li>
-<li>TCP协议是面向连接的可靠协议。</li>
-<li>UDP是以数据包为基础的协议。</li>
-<li>套接字类似文件的对象，使程序能够接受传入连接，进行传出连接，发送和接受数据。</li>
-<li>接受连接的机器(服务器)必须将套接字绑定到已知端口，提供服务。(0-1023是保留端口)</li>
-<li>使用socket模块编写TCP协议。
-
-<pre><code># 时间服务器程序
-from socket import *
-import time
-
-s = socket(AF_INET, SOCK_STREAM)  # 创建TCP套接字
-s.bind(('', 8888))                # 绑定到端口8888
-s.listen(5)                       # 监听，但只能挂起5个以下的连接
-
-While True:
-    client,addr = s.accept()      # 连接
-    print("Got a connection from %s" % str(addr))
-    timestr = time.ctime(time.time()) + "\r\n"
-    client.send(timestr.encode('ascii'))
-    client.close()
-
-# 客户端程序:
-from socket import *
-s = socket(AF_INET, SOCK_STREAM)  # 创建TCP套接字
-s.connect(('localhost', 8888)     # 连接到服务器
-tm = s.recv(1024)                 # 最多接收1024个字节
-s.close()
-print("The time is %s" % tm.decode('ascii'))
-</code></pre></li>
-<li>网络协议经常以文本方式传输数据，要进行编码，解码处理。python3 默认使用Unicode编码。</li>
-</ul>
-
-
-<h1 id=21.2>21.2 asynchat 模块</h1>
-
-
-<ul>
-<li>简化了异步网络应用程序的实现过程。包装了asyncore的低级I/O功能和一个高级编程接口。</li>
-<li>使用该模块，必须定义继承自async_chat的类。并定义两个方法：collect_incoming_data()和found_terminator()。</li>
-<li>asynchat模块总是和asyncore模块一起使用。
-
-<pre><code># 使用asynchat的异步HTTP服务器
-import asynchat, asyncore, socket
-import os
-import mimetypes
-try:
-    from http.client import responses     # python3
-except ImportError:
-    from httplib import responses         # python2
-# 该类插入到asyncore模块，仅处理接受的事件
-class async_http(asyncore.dispatcher):
-    def __init__(self, port):
-        asyncore.dispatcher.__init__(self)
-        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.bind(('', port))
-        self.listen(5)
-    def handle_accept(self):
-        client.addr = self.accept()
-        return async_http_handler(client)
-
-# 处理异步HTTP请求的类
-class async_http_handler(asynchat.async_chat):
-    def __init__(self, conn=None):
-        asynchat.asycn_chat_.__init__(self.conn)
-        self.data = []
-        self.got_header = False
-        self.set_terminator(b"\r\n\r\n")
-
-    # 获取传入数据并添加到数据缓冲区
-    def collect_incoming_data(self, data):
-        if not self.got_header:
-            self.data.append(data)
-
-    # 到达终止符(空白行)
-    def found_terminator(self):
-        self.got_header = True
-        header_data = b"".join(self.data)
-        # 将报头数据(二进制)解码为文本以便进一步处理
-        header_text = header_data.decode('latin-1')
-        header_lines = header_text.splitlines()
-        request = header_lines[0].split()
-        op = request[0]
-        url = request[1][1:]
-        self.process_request(op, url)
-
-    # 将文本加入到传出流，但首先要解码
-    def push_text(self, text):
-        self.push(text.encode('latin-1'))
-
-    # 处理请求
-    def process_request(self, op, url):
-        if op == "GET":
-            if not os.path.exists(url):
-                self.send_error(404, "File %s not found\r\n")
-            else:
-                type, encoding = mimetypes.guess_type(url)
-                size = os.path.getsize(url)
-                self.path_text("HTTP/1.0 200 OK\r\n")
-                self.push_text("Content-length: %s\r\n" % size) 
-                self.push_text("Content-type: %s\r\n" % type)
-                self.push_text("\r\n")
-                self.push_with_producer(file_producer(url))
-        else:
-            self.send_error(501, "%s method not implemented" % op)
-
-    # 错误处理  
-    def send_error(self, code, message):
-        self.push_text("HTTP/1.0 %s %s\r\n" % (code, responses[code]))
-        self.push_text("Content-type: text/plain\r\n")
-        self.push_text("\r\n")
-        self.push_text(message)
-
-class file_producer(object):
-    def __init__(self, filename, buffer_size=512):
-        self.f = open(filename, "rb")
-        self.buffer_size = buffer_size
-    def more(self):
-        data = self.f.read(self.buffer_size)
-        if not data:
-            self.f.close()
-        return data
-a = async_http(8080)
-asyncore.loop()
-# 要测试该实例，需要提供一个URL，并且该URL必须对应运行服务器那个目录中的文件。
-</code></pre></li>
-</ul>
-
+<h1>print sys.stdin.read()</h1>
 </div>
   
   
@@ -260,6 +119,10 @@ asyncore.loop()
 <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/02/28/084414-python/">PyMongo 查询[MongoDB权威指南 第三章]</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2012/02/23/120934-python/">PyMongo 创建,更新删除文档[MongoDB权威指南 第三章]</a>
@@ -297,16 +160,12 @@ asyncore.loop()
         <a href="/blog/2012/01/15/143703-python/">python 参考手册 第3章</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/01/15/093205-python/">python 参考手册 第2章</a>
-      </li>
-    
   </ul>
 </section>
 
 <section>
 <h1>Categories</h1>
-<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 118.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 106.0%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 112.0%'>Mongodb(2)</a>  <a href='/blog/categories/monitor' style='font-size: 106.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 106.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(10)</a>  <a href='/blog/categories/read' style='font-size: 130.0%'>Read(5)</a>  <a href='/blog/categories/redis' style='font-size: 124.0%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 106.0%'>Scribe(1)</a> </span>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 116.36363636363636%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 127.27272727272728%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 105.45454545454545%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 116.36363636363636%'>Mongodb(3)</a>  <a href='/blog/categories/monitor' style='font-size: 105.45454545454545%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 105.45454545454545%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(11)</a>  <a href='/blog/categories/read' style='font-size: 127.27272727272728%'>Read(5)</a>  <a href='/blog/categories/redis' style='font-size: 121.81818181818181%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 105.45454545454545%'>Scribe(1)</a> </span>
 </section>
 
 
