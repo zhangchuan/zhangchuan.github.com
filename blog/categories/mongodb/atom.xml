@@ -4,7 +4,7 @@
   <title><![CDATA[Category: MongoDB | 研究中心]]></title>
   <link href="http://zhangchuan.github.com/blog/categories/mongodb/atom.xml" rel="self"/>
   <link href="http://zhangchuan.github.com/"/>
-  <updated>2012-03-01T17:13:11+08:00</updated>
+  <updated>2012-03-01T17:13:43+08:00</updated>
   <id>http://zhangchuan.github.com/</id>
   <author>
     <name><![CDATA[Cloud.Zhang]]></name>
@@ -165,6 +165,108 @@ db.eval可以用来模拟多事物: db.eval锁住数据库, 然后执行JavaScri
 # 对其求和
 &gt; db.eval("return x+y+z;")
 </code></pre></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[MongDB权威指南 6]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/03/01/142455-mongodb/"/>
+    <updated>2012-03-01T14:24:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/03/01/142455-mongodb</id>
+    <content type="html"><![CDATA[<ul>
+<li>6.1 count
+
+<pre><code># count是最简单的聚合工具, 返回集合中的文档数量
+&gt; db.foo.count()
+&gt; db.foo.insert({"x": 1})
+&gt; db.foo.count()
+&gt; db.foo.count({"x": 1})
+</code></pre></li>
+<li>6.2 distinct
+
+<pre><code># distinct是用来找出给定键的所有不同值, 使用时必须指定集合和键
+&gt; db.runCommand({"distinct": "people", "key": "age"})
+</code></pre></li>
+<li>6.3 group
+
+<pre><code># group 先根据选定的键, 将集合依据选定键值的不同分成若干组, 然后通过聚合每一组的文档, 产生一个结果文档
+{"day": "2010/10/03", "time": "10/3/2010 03:57:01 GMT-400", "price": 4.23}
+{"day": "2010/10/04", "time": "10/4/2010 11:28:39 GMT-400", "price": 4.27}
+{"day": "2010/10/03", "time": "10/3/2010 05:00:23 GMT-400", "price": 4.10}
+{"day": "2010/10/06", "time": "10/6/2010 05:57:58 GMT-400", "price": 4.30}
+{"day": "2010/10/04", "time": "10/3/2010 08:34:50 GMT-400", "price": 4.01}
+# 获得近30天的收盘价
+{"day": "2010/10/03", "time": "10/3/2010 05:00:23 GMT-400", "price": 4.10}
+{"day": "2010/10/04", "time": "10/4/2010 11:28:39 GMT-400", "price": 4.27}
+{"day": "2010/10/06", "time": "10/6/2010 05:57:58 GMT-400", "price": 4.30}
+&gt; db.runCommand({"group": {
+"ns": "stocks",
+"key": "day",
+"initial": {"time": 0},
+"$reduce": function(doc, prev) {
+    if (doc.time &gt; prev.time) {
+        prev.price = doc.price;
+        prev.time = doc.time;
+    }},
+"condition": {"day": {"$gt": "2010/09/30"}}
+}})
+# "ns": "stocks"
+# 指定要进行分组的集合
+# "key": "day"
+# 指定文档分组依据的键. 所有"day"值相同的文档被划分到一组
+# "initial": {"time": 0}
+# 每一组reduce函数调用的初始时间
+# "$reduce": function(doc, prev) { ... }
+# 每个文档对应一次这个调用, 系统会传递两个参数: 当前文档和累加其文档. 
+# "condition": {"day": {"$gt": "2010/09/30"}}
+</code></pre></li>
+<li>6.3.1 使用完成器
+
+<pre><code># 博客系统, 每篇文章有多个标签, 现在要找出每天最热点的标签, 可以再一次按天分组, 为每一个标签计数
+&gt; db.posts.group({
+"key": {"tags": true},
+"initial": {"tags": {}},
+"$reduce": function(doc, prev) {
+    for (i in doc.tags) {
+        if (doc.tags[i] in prev.tags) {
+            prev.tags[doc.tags[i]]++;
+        } else {
+            prev.tags[doc.tags[i]] = 1;
+        }
+    }
+}})
+# "finalize"附带一个函数, 在每组结果传递到客户端之前被调用一次. 可处理结果的残枝败叶
+&gt; db.posts.group({
+"key": {"tags": true},
+"initial": {"tags": {}},
+"$reduce": function(doc, prev) {
+    for (i in doc.tags) {
+        if (doc.tags[i] in prev.tags) {
+            prev.tags[doc.tags[i]]++;
+        } else {
+            prev.tags[doc.tags[i]] = 1;
+        }
+    },
+"finalize": function(prev) {
+    var mostPopular = 0;
+    for (i in prev.tags) {
+        if (prev.tags[i] &gt; mostPopular) {
+            prev.tag = i;
+            mostPopular = prev.tags[i];
+        }
+    }
+    delete.prev.tags
+}})
+</code></pre></li>
+<li>6.3.2 将函数做为键使用
+
+<pre><code>&gt; db.posts.group({"ns": "posts",
+"$keyf": function(x) { return x.category.toLowerCase(); },
+"initializer": ... })
+</code></pre></li>
+<li>6.4 MapReduce</li>
 </ul>
 
 ]]></content>
@@ -680,239 +782,6 @@ ps = db.command({"findAndModify": "processes", "query": {"status": "READY"}, "so
 <li>不需要等待数据响应,发出后就不再操心的动作(离弦之箭)</li>
 </ul>
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[monogodb 大杂烩]]></title>
-    <link href="http://zhangchuan.github.com/blog/2012/02/22/141006-mongodb/"/>
-    <updated>2012-02-22T14:10:00+08:00</updated>
-    <id>http://zhangchuan.github.com/blog/2012/02/22/141006-mongodb</id>
-    <content type="html"><![CDATA[<h1>一, 安装</h1>
-
-<p><a href="http://www.mongodb.org/downloads">下载连接</a></p>
-
-<pre><code># mkdir -p /usr/local/mongo/{etc,bin,log}
-# mkdir -p /data
-
-# /usr/local/mongo/etc/mongodb.conf
-# 数据文件存放路径
-dbpath=/var/lib/mongodb
-
-# 错误日志文件
-logpath=/var/log/mongodb/mongodb.log
-
-# 错误日志文件采用追加模式,默认是覆盖模式
-logappend=true
-
-# 对外服务绑定IP. 根据业务需要, 尽量不要放公网.
-#bind_ip
-
-# 对外服务绑定端口,Web管理端口在这个port的基础上+1000 
-port = 27017
-# 开启简单的rest API, 提供Web管理界面操作支持
-rest = true
-
-# 定期显示CPU的CPU利用率和iowait
-#cpu = true
-
-# 关闭验证(默认)
-#noauth = true
-# 启用验证
-#auth = true
-
-# 详细输出
-#verbose = true
-# 安静输出
-#quiet = true
-
-# 在收到客户数据,检查数据的有效性
-#objcheck = true
-
-# 限制每个数据库的文件数，设置默认为8
-#quota = true
-# Set oplogging level where n is
-#   0=off (default)
-#   1=W
-#   2=R
-#   3=both
-#   7=W+some reads
-# 规定每个数据库允许的文件数
-#quotaFiles
-
-# diaglog选项 0=off 1=W 2=R 3=both 7=W+some reads
-# 提供的方式，是只读，只写，还是读写都行，还是主要写+部分的读模式
-#diaglog = 0
-
-# 调试诊断选项
-#nocursors = true
-# 忽略查询命中率
-#nohints = true
-# 关闭http接口访问
-#nohttpinterface = true
-# 禁用脚本引擎
-#noscripting = true
-# 不允许表扫描
-#notablescan = true
-# 禁用数据文件预分配(往往影响性能)
-#noprealloc = true
-# 设置信数据库.ns文件大小(MB) =16
-#nssize = &lt;size&gt;
-
-#修复所有数据库
-#repair
-#修复库生成的文件的目录,默认为目录名称dbpath
-#repairpath
-#数据写入磁盘的时间秒数(0=never,不推荐),默认60
-#syncdelay
-
-# Accout token for Mongo monitoring server.
-#mms-token = &lt;token&gt;
-# Server name for Mongo monitoring server.
-#mms-name = &lt;server-name&gt;
-# Ping interval for Mongo monitoring server.
-#mms-interval = &lt;seconds&gt;
-
-# 从一个dbpath里启用从库复制服务，该dbpath的数据库是主库的快照，可用于快速启用同步
-#fastsync
-# 如果从库与主库同步数据差得多，自动重新同步
-#autoresync
-# pair???
-#pairwith
-# 仲裁服务器，在主从和pair中用到
-#arbiter
-# 设置操作日志的大小(MB)
-#oplogSize
-# 设置存储操作日志的内存大小
-#opIdMem
-
-# 从库模式
-#slave = true
-# 当为从时，指定主的地址和端口
-#source = master.example.com
-# 设置从库同步主库的延迟时间
-#slavedelay
-# 指定单一的数据库复制
-#only = master.example.com
-# 主库模式
-#master = true
-#source = slave.example.com
-# 设置副本集名称
-# replSet = setname
-
-# 声明这是一个集群的config服务,默认端口27019，默认目录/data/configdb
-#configsvr
-# 声明这是一个集群的分片,默认端口27018
-#shardsvr
-# 关闭偏执为moveChunk数据保存
-#noMoveParanoia
-
-# tree /usr/local/mongo/bin
-|-- bsondump
-|-- mongo
-|-- mongod
-|-- mongodump
-|-- mongoexport
-|-- mongofiles
-|-- mongoimport
-|-- mongorestore
-|-- mongos
-|-- mongosniff
-|-- mongostat
-|-- mongotopmongosniff
-
-# mongostat --help
-Fields
-inserts      - # of inserts per second
-query        - # of queries per second
-update       - # of updates per second
-delete       - # of deletes per second
-getmore      - # of get mores (cursor batch) per second
-command      - # of commands per second
-flushes      - # of fsync flushes per second
-mapped       - amount of data mmaped (total data size) megabytes
-visze        - virtual size of process in megabytes
-res          - resident size of process in megabytes
-faults       - # of pages faults per sec (linux only)
-locked       - percent of time in global write lock
-idx miss     - percent of btree page misses (sampled)
-qr|qw        - queue lengths for clients waiting (read|write)
-ar|aw        - active clients (read|write)
-netIn        - network traffic in - bits
-netOut       - network traffic out - bits
-conn         - number of open connections
-
-# Python API
-#easy_install pymongo
-# -- python code --
-from pymongo import Connection
-
-# Making a Connection
-#connection = Connection() #default host and port
-connection = Connection('localhost', 27017)
-
-# Getting a Database
-#db = connection.test_database
-db = connection['test-database']
-
-# Getting a Collection
-#collection = db.test_collection
-collection = db['test-collection']
-
-# Documents
-import datetime
-
-post = {"author": "Mike",
-"text": "My first blog post!",
-"tags": ["mongodb", "python", "pymongo"],
-"date": datetime.datetime.utcnow()}
-
-# Inserting a Document
-posts = db.posts
-posts.insert(post)
-db.collection_names()
-
-# Getting a Single Document With find_one()
-print posts.find_one()
-print posts.find_one({"author": "Mike"})
-print posts.find_one({"author": "Eliot"})
-
-# Bulk Inserts
-new_posts = [{"author": "Mike",
-    "text": "Another post!",
-    "tags": ["bulk", "insert"],
-    "date": datetime.datetime(2009, 11, 12, 11, 14)},
-    {"author": "Eliot",
-    "title": "MongoDB is fun",
-    "text": "and pretty easy too!",
-    "date": datetime.datetime(2009, 11, 10, 10, 45)}]
-posts.insert(new_posts)
-
-# Querying for More Than One Document
-for post in posts.find():
-    print post
-
-for post in posts.find({"author": "Mike"}):
-    print post
-
-# Counting
-posts.count()
-posts.find({"author": "Mike"}).count()
-
-# Range Queries
-d = datetime.datetime(2009, 11, 12, 12)
-for post in posts.find({"date": {"$lt": d}}).sort("author"):
-    print post
-
-# Indexing
-posts.find({"date": {"$lt": d}}).sort("author").explain()["cursor"]
-posts.find({"date": {"$lt": d}}).sort("author").explain()["nscanned"]
-
-from pymongo import ASCENDING, DESCENDING
-posts.create_index([("date", DESCENDING), ("author", ASCENDING)])
-posts.find({"date": {"$lt": d}}).sort("author").explain()["cursor"]
-posts.find({"date": {"$lt": d}}).sort("author").explain()["nscanned"]
-</code></pre>
 ]]></content>
   </entry>
   
