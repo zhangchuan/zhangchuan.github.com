@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: RabbitMQ | 研究中心]]></title>
+  <link href="http://zhangchuan.github.com/blog/categories/rabbitmq/atom.xml" rel="self"/>
+  <link href="http://zhangchuan.github.com/"/>
+  <updated>2012-03-06T16:24:53+08:00</updated>
+  <id>http://zhangchuan.github.com/</id>
+  <author>
+    <name><![CDATA[Cloud.Zhang]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[RabbitMQ 消息队列应用]]></title>
+    <link href="http://zhangchuan.github.com/blog/2012/03/02/091722-rabbitmq/"/>
+    <updated>2012-03-02T09:17:00+08:00</updated>
+    <id>http://zhangchuan.github.com/blog/2012/03/02/091722-rabbitmq</id>
+    <content type="html"><![CDATA[<ul>
+<li><h1>兔子和兔子窝</h1></li>
+<li><p>AMQP概念</p></li>
+<li>虚拟主机(virtual host), 交换机(exchange), 队列(queue), 绑定(binding)</li>
+<li>一个虚拟主机持有一组交换机, 队列和绑定, 多个虚拟主机用于访问控制</li>
+<li>队列是装消息的容器, 直到客户端将其消息取走, 否则消息一直在队列中, 必须通过程序去建立, 然后等待放入消息</li>
+<li>交换机可以理解成具有路由表都路由程序, 每个消息有一个路由键的属性, 交换机中有一系列绑定, 即路由规则</li>
+<li>一个绑定就是一个基于路由键将交换机和队列连接起来的路由规则, 交换机是由绑定构成都路由表</li>
+<li>Fanout Exchange 不处理路由键</li>
+<li>Direct Exchange 完整匹配路由键</li>
+<li>Topic Exchange  将路由键盘和某模式进行匹配, #匹配一个或多个词, *匹配不多不少一个词</li>
+<li>消息都持久化</li>
+<li>1 将交换机设置成durable</li>
+<li>2 将队列设置成durable</li>
+<li><p>3 将消息的Delivery Mode设置成2</p></li>
+<li><p>兔子和蛇</p>
+
+<pre><code># easy_install amqplib
+from amqplib import client_0_8 as amqp
+conn = amqp.Connection(host="localhost:5672", userid="guest", 
+password="guest", virtual_host="/", insist=False)
+# 可以使用.channel(x)来指定channel标识, 不过不建议
+chan = conn.channel()
+
+# 消费者consumer
+# 创建一个po_box队列, exclusive私有队列
+chan.queue_declare(queue="po_box", durable=True, exclusive=False, 
+auto_delete=False)
+# 创建一个sorting_room交换机, type交换机的类型
+chan.exchange_declare(exchange="sorting_room", type="direct", 
+durable=True, auto_delete=False,)
+# 创建绑定, 让具有路由键"jason"的消息被路由到名为"po_box"的交换机
+chan.queue_bind(queue="po_box", exchange="sorting_room", 
+routing_key="jason")
+# 应用程序在消息到达的时候立刻得到通知, 需要用chan.basic_consume()注册
+# 一个新消息到达的回调
+def recv_callback(msg):
+    print 'Received: ' + msg.body + ' from channel #' + \
+    str(msg.channel.channel_id)
+chan.basic_consume(queue='po_box', no_ack=True, callback=recv_callback, 
+consumer_tag="testtag")
+while True:
+    chan.wait()
+chan.basic_cancel("testtag")
+chan.close()
+conn.close()
+</code></pre></li>
+<li><p><a href="http://simple-is-better.com/news/353">参考资料: 兔子和兔子窝</a></p></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+</feed>

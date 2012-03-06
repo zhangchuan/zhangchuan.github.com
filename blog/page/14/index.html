@@ -9,15 +9,7 @@
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="第2章 词汇和语法约定 2.1 行结构和缩进
-2.2 标识符和保留字
-2.3 数字字面变量
-2.4 字符串字面量
-2.5 容器
-2.6 运算符，分割符啊哈及特殊符号
-2.7 文档字符串
-2.8 装饰器
-2.9 源代码编码 2.1 行结构和缩进 每条语句以换行符结束。可用续航符()分行。 a = &hellip;">
+  <meta name="description" content="内置方法 [&#8216;CheckboxGroup&#8217;, &#8216;CheckboxValues&#8217;, &#8216;DictMixin&#8217;, &#8216;Element&#8217;, &#8216;FieldsDict&#8217;, &#8216; &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,7 +66,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/01/15/093205-python/">Python 参考手册 第2章</a></h1>
+      <h1 class="entry-title"><a href="/blog/2012/01/16/162542-python/">Python Lxml模块</a></h1>
     
     
       <p class="meta">
@@ -90,170 +82,122 @@
   
 
 
-<time datetime="2012-01-15T09:32:00+08:00" pubdate data-updated="true">Jan 15<span>th</span>, 2012</time>
+<time datetime="2012-01-16T16:25:00+08:00" pubdate data-updated="true">Jan 16<span>th</span>, 2012</time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h1>第2章 词汇和语法约定</h1>
+  <div class="entry-content"><p><strong>内置方法</strong></p>
+
+<p><strong>[&#8216;CheckboxGroup&#8217;, &#8216;CheckboxValues&#8217;, &#8216;DictMixin&#8217;, &#8216;Element&#8217;, &#8216;FieldsDict&#8217;, &#8216;FormElement&#8217;, &#8216;HTMLParser&#8217;, &#8216;HtmlComment&#8217;, &#8216;HtmlElement&#8217;, &#8216;HtmlElementClassLookup&#8217;, &#8216;HtmlEntity&#8217;, &#8216;HtmlMixin&#8217;, &#8216;HtmlProcessingInstruction&#8217;, &#8216;InputElement&#8217;, &#8216;InputGetter&#8217;, &#8216;InputMixin&#8217;, &#8216;LabelElement&#8217;, &#8216;MultipleSelectOptions&#8217;, &#8216;RadioGroup&#8217;, &#8216;SelectElement&#8217;, &#8216;SetMixin&#8217;, &#8216;TextareaElement&#8217;, &#8216;XHTMLParser&#8217;, &#8216;XHTML_NAMESPACE&#8217;, &#8217;<em>MethodFunc&#8217;, &#8217;<strong>all</strong>&#8217;, &#8217;<strong>builtins</strong>&#8217;, &#8217;<strong>bytes_replace_meta_content_type&#8217;, &#8217;</strong>doc<strong>&#8217;, &#8217;</strong>file<strong>&#8217;, &#8217;</strong>fix_docstring&#8217;, &#8217;<strong>name</strong>&#8217;, &#8217;<strong>package</strong>&#8217;, &#8217;<strong>path</strong>&#8217;, &#8216;__str_replace_meta_content_type&#8217;, &#8217;</em>archive_re&#8217;, &#8217;<em>class_xpath&#8217;, &#8217;</em>collect_string_content&#8217;, &#8217;<em>contains_block_level_tag&#8217;, &#8217;</em>css_import_re&#8217;, &#8217;<em>css_url_re&#8217;, &#8217;</em>element_name&#8217;, &#8217;<em>forms_xpath&#8217;, &#8217;</em>id_xpath&#8217;, &#8217;<em>label_xpath&#8217;, &#8217;</em>nons&#8217;, &#8217;<em>options_xpath&#8217;, &#8217;</em>rel_links_xpath&#8217;, &#8217;<em>setmixin&#8217;, &#8217;</em>transform_result&#8217;, &#8216;_unquote_match&#8217;, &#8216;basestring&#8217;, &#8216;bytes&#8217;, &#8216;copy&#8217;, &#8216;cssselect&#8217;,&#8217;defs&#8217;, &#8216;document_fromstring&#8217;, &#8216;etree&#8217;, &#8216;find_class&#8217;, &#8216;find_rel_links&#8217;, &#8216;fragment_fromstring&#8217;, &#8216;fragments_fromstring&#8217;, &#8216;fromstring&#8217;, &#8216;html_parser&#8217;, &#8216;html_to_xhtml&#8217;, &#8216;iterlinks&#8217;, &#8216;make_links_absolute&#8217;, &#8216;open_http_urllib&#8217;, &#8216;open_in_browser&#8217;, &#8216;parse&#8217;, &#8216;re&#8217;, &#8216;resolve_base_href&#8217;, &#8216;rewrite_links&#8217;, &#8216;submit_form&#8217;, &#8216;threading&#8217;, &#8216;tostring&#8217;, &#8216;unicode&#8217;, &#8216;urljoin&#8217;, &#8216;xhtml_parser&#8217;, &#8216;xhtml_to_html&#8217;]</strong></p>
 
 <ul>
-<li><a href="#2.1">2.1 行结构和缩进</a></li>
-<li><a href="#2.2">2.2 标识符和保留字</a></li>
-<li><a href="#2.3">2.3 数字字面变量</a></li>
-<li><a href="#2.4">2.4 字符串字面量</a></li>
-<li><a href="#2.5">2.5 容器</a></li>
-<li><a href="#2.6">2.6 运算符，分割符啊哈及特殊符号</a></li>
-<li><a href="#2.7">2.7 文档字符串</a></li>
-<li><a href="#2.8">2.8 装饰器</a></li>
-<li><a href="#2.9">2.9 源代码编码</a></li>
+<li><p><strong>实例应用</strong>:</p></li>
+<li><p>简单爬虫程序</p></li>
+<li>注意点：</li>
+<li>1. 从性能考虑应用xpath替换正则匹配。</li>
+<li>2. 多线程，双队列，其中一个队列负责发送页面链接。另一个队列负责解析链接。</li>
+<li>3. 线程应设置合理延迟，能降低被封的可能性。</li>
+<li>4. 存储池，</li>
+<li>5. 前端管理，Django</li>
 </ul>
 
 
-<h1 id=2.1>2.1 行结构和缩进</h1>
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">LxmlType</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;lxml&#39;</span>
+</span><span class='line'>    <span class="n">description</span> <span class="o">=</span> <span class="s">&#39;lxml.html&#39;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>        <span class="kn">from</span> <span class="nn">lxml.html</span> <span class="kn">import</span> <span class="n">parse</span><span class="p">,</span> <span class="n">tostring</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">parse</span> <span class="o">=</span> <span class="n">parse</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">tostring</span> <span class="o">=</span> <span class="n">tostring</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">parse_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <ul>
-<li>每条语句以换行符结束。可用续航符()分行。
+<li><strong>XPath语法摘记</strong></li>
+<li>路径表达式
 
-<pre><code>a = math.cos(3 * (x - n) + \
-  math.sin(3 * (y - n))
+<pre><code>nodename    选取此节点的所有子节点。
+/           从根节点选取。
+//          从匹配选择的当前节点选择文档中的节点，而不考虑它们的位置。
+.           选取当前节点。
+..          选取当前节点的父节点。
+@           选取属性。
+bookstore   选取 bookstore 元素的所有子节点。
+/bookstore        选取根元素 bookstore。
+                  注释：假如路径起始于正斜杠( / )，则此路径始终代表到某元素的绝对路径！
+bookstore/book    选取属于 bookstore 的子元素的所有 book 元素。
+//book            选取所有 book 子元素，而不管它们在文档中的位置。
+bookstore//book   选择属于 bookstore 元素的后代的所有 book 元素，而不管它们位于 bookstore 之下的什么位置。
+//@lang           选取名为lang 的所有属性。
+/bookstore/book[1]                    选取属于 bookstore 子元素的第一个 book 元素。
+/bookstore/book[last()]               选取属于 bookstore 子元素的最后一个 book 元素。
+/bookstore/book[last()-1]             选取属于 bookstore 子元素的倒数第二个 book 元素。
+/bookstore/book[position()&lt;3]         选取最前面的两个属于 bookstore 元素的子元素的 book 元素。
+//title[@lang]                        选取所有拥有名为 lang 的属性的 title 元素。
+//title[@lang='eng']                  选取所有 title 元素，且这些元素拥有值为 eng 的 lang 属性。
+/bookstore/book[price&gt;35.00]          选取 bookstore 元素的所有 book 元素，且其中的 price 元素的值须大于 35.00。
+/bookstore/book[price&gt;35.00]/title    选取 bookstore 元素中的 book 元素的所有 title 元素，且其中的 price 元素的值须                                             大于 35.00。
+*             匹配任何元素节点。
+@*            匹配任何属性节点。
+node()        匹配任何类型的节点。
+/bookstore/*  选取 bookstore 元素的所有子元素。
+//*           选取文档中的所有元素。
+//title[@*]   选取所有带有属性的 title 元素。
+//book/title | //book/price           选取 book 元素的所有 title 和 price 元素。
+//title | //price                     选取文档中的所有 title 和 price 元素。
+/bookstore/book/title | //price       选取属于 bookstore 元素的 book 元素的所有 title 元素，以及文档中所有的 price 元素。
 </code></pre></li>
-<li>包含在圆括号，方括号，大括号，三引号的程序部分可以跨多行。</li>
-<li>缩进用于表示不同的代码块，应用空格缩经，且整个代码的缩进必须保持一致。
+<li>XPath 轴
 
-<pre><code>if a:
-    statement1    # 缩进一致，正确
-    statement2
-else:
-    statement3
-      statement4  # 缩进不一致，错误
-</code></pre></li>
-<li>函数体，条件语句，循环或类较短，可放在一行。
-
-<pre><code>if a: statement1
-else: statement2
-</code></pre></li>
-<li>表示一个空的函数体或代码块。
-
-<pre><code>if a:
-    pass
-else:
-    statements
-</code></pre></li>
-<li>分号(;)可用于分割放在一行的多条语句。</li>
-<li>\#表示次行的内容是注释。</li>
-</ul>
-
-
-<h1 id=2.2>2.2 标识符和保留字</h1>
-
-
-<ul>
-<li>标识符可包含字母，数字，下划线，必须以非数字字符开始且区分大小写。</li>
-<li>保留字不能作为标识符。
-
-<pre><code>and         del        from     nonlocal    try
-as          elif       global   not         while
-assert      else       if       or          with
-class       exec       in       print
-continue    finally    is       raise
-def         for        lamba    return
-</code></pre></li>
-</ul>
-
-
-<h1 id=2.3>2.3 数字字面变量</h1>
-
-
-<ul>
-<li>布尔值：True和False，整数值对应1和0。</li>
-<li>整数：  分为十进制，八进制(0)，十六进制(0x)，二进制(0b)。</li>
-<li>浮点数：整数后跟小数位。</li>
-<li>复数：  整数/浮点数(实数)后加上j或J(虚数)。
-&lt;h1.id=2.4>2.4 字符串字面量</h1></li>
-<li>将文本放入单引号，双引号，三引号中构成字符串字面量。</li>
-<li>反斜杠()用于转义特殊字符。</li>
-<li>表2-1 标准的字符转义码</li>
-<li>在字符串面量前加上前缀&#8221;u&#8221;构成Unicode字符串字面量。
-
-<pre><code>s = u"Jalape\u00floo" #python3 不必加u前缀
-</code></pre></li>
-<li>在字符串面量前加上前缀&#8221;r&#8221;构成原始字符串。r必须在u之后。</li>
-</ul>
-
-
-<h1 id=2.5>2.5 容器</h1>
-
-
-<ul>
-<li>[列表] (元组) {字典}
-
-<pre><code>a = [ 1, 3.4, 'hello' ]   # 一个列表
-b = ( 10, 20, 30 )        # 一个元组
-c = { 'a':3, 'b':42 }     # 一个字典
-</code></pre></li>
-</ul>
-
-
-<h1 id=2.6>2.6 运算符，分隔符及特殊符号</h1>
-
-
-<pre><code>  +    -    *    **    /    //    %    &lt;&lt;    &gt;&gt;    &amp;    |
-  ^    ~    &lt;    &gt;     &lt;=   &gt;=    ==   !=    &lt;&gt;    +=
-  -=   *=   /=   //=   %=   **=   &amp;=   |=    ^=    &gt;&gt;=  &lt;==
-</code></pre>
-
-<h1 id=2.7>2.7 文档字符串</h1>
-
-
-<ul>
-<li>模块，类或函数的第一条语句是字符串。
-
-<pre><code>def fact(n):
-    "This function computes a factorial"
-    if (n &lt;=1): return 1
-    else: return n * fact(n-1)
-</code></pre></li>
-<li>通过对象<strong>doc</strong>属性访问文档字符串
-
-<pre><code>&gt;&gt;&gt; print fact.__doc__
+<pre><code>ancestor              选取当前节点的所有先辈（父、祖父等）。
+ancestor-or-self      选取当前节点的所有先辈（父、祖父等）以及当前节点本身。
+attribute             选取当前节点的所有属性。
+child                 选取当前节点的所有子元素。
+descendant            选取当前节点的所有后代元素（子、孙等）。
+descendant-or-self    选取当前节点的所有后代元素（子、孙等）以及当前节点本身。
+following             选取文档中当前节点的结束标签之后的所有节点。
+namespace             选取当前节点的所有命名空间节点。
+parent                选取当前节点的父节点。
+preceding             选取文档中当前节点的开始标签之前的所有节点。
+preceding-sibling     选取当前节点之前的所有同级节点。
+self                  选取当前节点。
 </code></pre></li>
 </ul>
 
 
-<h1 id=2.8>2.8 装饰器</h1>
-
-
-<ul>
-<li>装饰器用@表示，必须在单独的行并位于函数，方法类之前。
-
-<pre><code>@staticmethod
-def bar():
-    pass
-</code></pre></li>
-<li>使用多个装饰器
-
-<pre><code>@foo
-@bar
-def spam():
-    pass
-</code></pre></li>
-</ul>
-
-
-<h1 id=2.9>2.9 源代码编码</h1>
-
+<h1>参考资料:</h1>
 
 <ul>
-<li>python源程序使用7位ASCII码标准，在注释语句时，可使用Unicode编码，但其他元素只能使用ASCII字符。
-
-<pre><code>#!/usr/bin/env python
-# -*- coding: UTF-8 -*-
-s = "Jalapefio"
-</code></pre></li>
+<li><h3><a href="http://simple-is-better.com/news/406">Python HTML 解析器性能评测</a></h3></li>
+<li><h3><a href="http://www.w3school.com.cn/xpath/xpath_syntax.asp">XPath语法</a></h3></li>
+<li><h3><a href="http://lxml.de/FAQ.html">lxml FAQ</a></h3></li>
+<li><h3><a href="http://codespeak.net/pipermail/lxml-dev/2009-February/004386.html">LXML utf-8 problem</a></h3></li>
 </ul>
 
 </div>
@@ -284,6 +228,18 @@ s = "Jalapefio"
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2012/03/06/160015-redis/">redis 入门手册</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/06/150903-python/">Python 参考手册 第4章</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/02/091722-rabbitmq/">RabbitMQ 消息队列应用</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2012/03/01/154153-mongodb/">MongoDB权威指南 7</a>
       </li>
     
@@ -311,24 +267,12 @@ s = "Jalapefio"
         <a href="/blog/2012/02/15/143830-scribe/">scribe安装</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/02/10/163323-python/">Python Tips</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/19/095304-python/">python 参考手册 第21章</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/18/175036-python/">python hiredis模块</a>
-      </li>
-    
   </ul>
 </section>
 
 <section>
 <h1>Categories</h1>
-<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 118.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 106.0%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 136.0%'>Mongodb(6)</a>  <a href='/blog/categories/monitor' style='font-size: 106.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 106.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 154.0%'>Python(9)</a>  <a href='/blog/categories/read' style='font-size: 160.0%'>Read(10)</a>  <a href='/blog/categories/redis' style='font-size: 124.0%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 106.0%'>Scribe(1)</a> </span>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 116.36363636363636%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 132.72727272727272%'>Database(6)</a>  <a href='/blog/categories/git' style='font-size: 105.45454545454545%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 132.72727272727272%'>Mongodb(6)</a>  <a href='/blog/categories/monitor' style='font-size: 105.45454545454545%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 105.45454545454545%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(11)</a>  <a href='/blog/categories/rabbitmq' style='font-size: 105.45454545454545%'>Rabbitmq(1)</a>  <a href='/blog/categories/read' style='font-size: 160.0%'>Read(11)</a>  <a href='/blog/categories/redis' style='font-size: 127.27272727272728%'>Redis(5)</a>  <a href='/blog/categories/scribe' style='font-size: 105.45454545454545%'>Scribe(1)</a> </span>
 </section>
 
 

@@ -9,10 +9,11 @@
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="# from pymongo import Connection
-connection = Connection()
-db = connection['test']
-collection = db['col_test'] 3.1 插入并保存文档 mongo&gt; db.foo.insert &hellip;">
+  <meta name="description" content="6.1 count # count是最简单的聚合工具, 返回集合中的文档数量
+&gt; db.foo.count()
+&gt; db.foo.insert({"x": 1})
+&gt; db.foo.count()
+&gt; db.foo.count({"x": 1}) 6.2 distinct &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,7 +70,7 @@ collection = db['col_test'] 3.1 插入并保存文档 mongo&gt; db.foo.insert &h
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/02/23/120934-python/">MongoDB权威指南 3</a></h1>
+      <h1 class="entry-title"><a href="/blog/2012/03/01/142455-mongodb/">MongDB权威指南 6</a></h1>
     
     
       <p class="meta">
@@ -85,7 +86,7 @@ collection = db['col_test'] 3.1 插入并保存文档 mongo&gt; db.foo.insert &h
   
 
 
-<time datetime="2012-02-23T12:09:00+08:00" pubdate data-updated="true">Feb 23<span>rd</span>, 2012</time>
+<time datetime="2012-03-01T14:24:00+08:00" pubdate data-updated="true">Mar 1<span>st</span>, 2012</time>
         
       </p>
     
@@ -93,249 +94,97 @@ collection = db['col_test'] 3.1 插入并保存文档 mongo&gt; db.foo.insert &h
 
 
   <div class="entry-content"><ul>
-<li>#
+<li>6.1 count
 
-<pre><code>from pymongo import Connection
-connection = Connection()
-db = connection['test']
-collection = db['col_test']
+<pre><code># count是最简单的聚合工具, 返回集合中的文档数量
+&gt; db.foo.count()
+&gt; db.foo.insert({"x": 1})
+&gt; db.foo.count()
+&gt; db.foo.count({"x": 1})
 </code></pre></li>
-<li><p>3.1 插入并保存文档</p>
+<li>6.2 distinct
 
-<pre><code>mongo&gt; db.foo.insert({"bar": "baz"})
-#
-db.foo.insert[{"bar": "baz"}]
+<pre><code># distinct是用来找出给定键的所有不同值, 使用时必须指定集合和键
+&gt; db.runCommand({"distinct": "people", "key": "age"})
 </code></pre></li>
-<li><p>3.1.1 批量插入</p></li>
-<li>批量插入是单个TCP请求, 提高处理效率. 只适用将多个文档插入到一个集合.</li>
-<li><p>批量插入有消息长度为16M的限制.</p>
+<li>6.3 group
 
-<pre><code>mongo&gt; ???
-# 批量插入对象必须是序列对象 
-db.foo.insert([{"bar": "baz"}, {"baz": "bar"}])
+<pre><code># group 先根据选定的键, 将集合依据选定键值的不同分成若干组, 然后通过聚合每一组的文档, 产生一个结果文档
+{"day": "2010/10/03", "time": "10/3/2010 03:57:01 GMT-400", "price": 4.23}
+{"day": "2010/10/04", "time": "10/4/2010 11:28:39 GMT-400", "price": 4.27}
+{"day": "2010/10/03", "time": "10/3/2010 05:00:23 GMT-400", "price": 4.10}
+{"day": "2010/10/06", "time": "10/6/2010 05:57:58 GMT-400", "price": 4.30}
+{"day": "2010/10/04", "time": "10/3/2010 08:34:50 GMT-400", "price": 4.01}
+# 获得近30天的收盘价
+{"day": "2010/10/03", "time": "10/3/2010 05:00:23 GMT-400", "price": 4.10}
+{"day": "2010/10/04", "time": "10/4/2010 11:28:39 GMT-400", "price": 4.27}
+{"day": "2010/10/06", "time": "10/6/2010 05:57:58 GMT-400", "price": 4.30}
+&gt; db.runCommand({"group": {
+"ns": "stocks",
+"key": "day",
+"initial": {"time": 0},
+"$reduce": function(doc, prev) {
+    if (doc.time &gt; prev.time) {
+        prev.price = doc.price;
+        prev.time = doc.time;
+    }},
+"condition": {"day": {"$gt": "2010/09/30"}}
+}})
+# "ns": "stocks"
+# 指定要进行分组的集合
+# "key": "day"
+# 指定文档分组依据的键. 所有"day"值相同的文档被划分到一组
+# "initial": {"time": 0}
+# 每一组reduce函数调用的初始时间
+# "$reduce": function(doc, prev) { ... }
+# 每个文档对应一次这个调用, 系统会传递两个参数: 当前文档和累加其文档. 
+# "condition": {"day": {"$gt": "2010/09/30"}}
 </code></pre></li>
-<li><p>3.1.2 插入: 原理和作用</p></li>
-<li>在启动时打开&#8211;objecheck选项会检查输入的有效性, 但会影响效率</li>
-<li><p>文档不能超过4M</p></li>
-<li><p>3.2 删除文档</p>
+<li>6.3.1 使用完成器
 
-<pre><code># 删除集合中所有文档. 但不会删除集合本身及其索引.
-mongo&gt; db.foo.remove()
-# 也可按指定条件删除
-db.foo.remove()
-db.foo.remove({"bar": "baz"})
+<pre><code># 博客系统, 每篇文章有多个标签, 现在要找出每天最热点的标签, 可以再一次按天分组, 为每一个标签计数
+&gt; db.posts.group({
+"key": {"tags": true},
+"initial": {"tags": {}},
+"$reduce": function(doc, prev) {
+    for (i in doc.tags) {
+        if (doc.tags[i] in prev.tags) {
+            prev.tags[doc.tags[i]]++;
+        } else {
+            prev.tags[doc.tags[i]] = 1;
+        }
+    }
+}})
+# "finalize"附带一个函数, 在每组结果传递到客户端之前被调用一次. 可处理结果的残枝败叶
+&gt; db.posts.group({
+"key": {"tags": true},
+"initial": {"tags": {}},
+"$reduce": function(doc, prev) {
+    for (i in doc.tags) {
+        if (doc.tags[i] in prev.tags) {
+            prev.tags[doc.tags[i]]++;
+        } else {
+            prev.tags[doc.tags[i]] = 1;
+        }
+    },
+"finalize": function(prev) {
+    var mostPopular = 0;
+    for (i in prev.tags) {
+        if (prev.tags[i] &gt; mostPopular) {
+            prev.tag = i;
+            mostPopular = prev.tags[i];
+        }
+    }
+    delete.prev.tags
+}})
 </code></pre></li>
-<li><p>删除速度</p></li>
-<li>删除集合比删除文档速度更快.
+<li>6.3.2 将函数做为键使用
 
-<pre><code>import time
-from pymongo import Connection
-
-db = Connection().foo
-collection = db.bar
-# 插入测试记录
-for i in range(1000000):
-    collection.insert({"foo": "bar", "baz": i, "z": 10 - i})
-
-start = time.time()
-# 使用db.drop_collection("bar")代替下面两行, 速度提升会相当明显
-#db.drop_collection("bar")
-collection.remove()
-collection.find_one()
-
-total = time.time() - start
-print "%d seconds" % total
+<pre><code>&gt; db.posts.group({"ns": "posts",
+"$keyf": function(x) { return x.category.toLowerCase(); },
+"initializer": ... })
 </code></pre></li>
-<li>3.3 更新文档</li>
-<li>update有2个参数, 一个是查询文档, 一个是修改文档</li>
-<li>3.3.1 文档替换</li>
-<li>确保更新总是指向唯一文档
-
-<pre><code>from pymongo import Connection
-db = Connection().foo
-# 导入测试数据
-db.users.insert({"name": "joe", "friends": 32, "enemies": 2})
-# mongo shell 
-mongo&gt; var joe = db.users.findOne({"name": "joe"});
-mongo&gt; joe.relationships = {"friends": joe.friends, "enemies": joe.enemies};
-mongo&gt; joe.username = joe.name;
-mongo&gt; delete joe.friends;
-mongo&gt; delete joe.enemies;
-mongo&gt; delete joe.name;
-mongo&gt; db.users.update({"name": "joe"}, joe);
-# OK 转换为python代码
-joe = db.users.find_one({"name": "joe"})
-joe['relationships'] = {"friends": joe['friends'], "enemies": joe['enemies']}
-joe['username'] = joe['name']
-del joe['friends']
-del joe['enemies']
-del joe['name']
-# 不是子字典?
-db.users.update({"username": joe['username']}, joe)
-</code></pre></li>
-<li>3.3.2 使用修改器
-
-<pre><code># 每当有人访问页面的时候, 增加计数器
-from pymongo import Connection
-db = Connection().foo
-# 导入测试数据
-db.analytics.insert({"url":"www.example.com", "pageviews": 52})
-# 使用$inc修改器
-db.analytics.update({"url":"www.example.com"}, {"$inc": {"pageviews": 1}})
-# 执行db.analytics.find()会发现"pageviews"的值增加了1
-db.analytics.find().next()
-</code></pre></li>
-<li>1 &#8220;$set&#8221;修改器入门</li>
-<li>&#8220;$set&#8221;用来指定一个键的数值,如果不存在就创建它
-
-<pre><code># 导入测试数据
-db.users.insert({"name": "joe", "age": 30, "sex": "male", "location": "Wisconsin"})
-# 添加喜欢的书籍
-db.users.update({"name": "joe", "age": 30}, {"$set": {"favorite book": "war and peace"}})
-# 修改喜欢的书籍
-db.users.update({"name": "joe", "age": 30}, {"$set": {"favorite book": "green eggs and ham"}})
-# cool的是还可以修改键值的数据类型
-db.users.update({"name": "joe", "age": 30}, {"$set": {"favorite book": ["cat's cradle", "foundation trilogy", "ender's game"]}}) 
-# 不爱读书了, 可以试试"$unset"
-db.users.update({"name": "joe", "age": 30}, {"$unset": {"favorite book": 1}})
-
-# 也可用"$set"修改内嵌的文档
-# 导入测试数据 
-from pymongo import Connection
-db = Connection().blog
-db.posts.insert({"title": "A Blog Post", "content": "...", "author": {"name": "joe", "email": "joe@example.com"}})
-# OK, 开始更新
-db.posts.update({"author.name": "joe"}, {"$set": {"author.name": "joe schmoe"}})
-</code></pre></li>
-<li>2 增加和减少</li>
-<li>&#8220;$inc&#8221; 修改器用来增加已有的键值, 或在不存在的时候创建一个键, 操作对象必须是数字类型.
-
-<pre><code>from pymongo import Connection
-db = Connection().foo
-db.games.insert({"game": "pinball", "user": "joe"})
-# 分数并不存在, "$inc"创建这个键后, 设定初始值
-db.games.update({"game": "pinball", "user": "joe"}, {"$inc": {"score": 50}})
-# 如果小球落入加分区, 要加10000分
-db.games.update({"game": "pinball", "user": "joe"}, {"$inc": {"score": 10000}})
-</code></pre></li>
-<li>3 数组操作器</li>
-<li>&#8220;$push&#8221;向已有的数据末尾加入一个元素
-
-<pre><code>from pymongo import Connection
-db = Connection().blog
-# 导入测试数据
-db.posts.insert({"title": "A blog post", "content": "..."})
-# 下面两行有待调试
-db.posts.update({"title": "A blog post"}, {"$push": {"comments": {"name": "joe", "email": "joe@example.com", "content": "nice post."}}})
-db.posts.update({"title": "A blog post"}, {"$push": {"comments": {"name": "bob", "email": "bob@example.com", "content": "good post."}}})
-# "$ne", 如果一个值不在数据就把它加进去
-db.papers.update({"authors cited": {"$ne": "Richie"}}, {"$push": {"authors cited": "Richie"}})
-# 不过有时更适合用"$addToSet"
-# 导入测试数据
-db.users.insert({"username": "joe", "emails": ["joe@example.com", "joe@gmail.com", "joe@yahoo.com"]})
-# 用"$addToSet"可以避免重复
-db.users.update({"username": "joe"}, {"$addToSet": {"emails": "joe@gmail.com"}})
-db.users.update({"username": "joe"}, {"$addToSet": {"emails": "joe@gmail.com"}})
-# "$addToSet"和"$each"组合起来, 可以添加多个不同的值. "$ne"和"$push"就不能实现.
-db.users.update({"username": "joe"}, {"$addToSet": {"emails": {"$each": ["joe@php.net", "joe@example.com", "joe@python.org"]}}})
-# 从数组删除元素, 可以使用"$pop"修改器
-# 从数组末尾删除一个元素
-{$pop: {key: 1}}
-# 从数组头部删除
-{$pop: {key: -1}}
-# 基于特定条件删除元素, 可以用"$pull"
-db.lists.insert({"todo": ["dishes", "laundry", "dry cleaning"]})
-db.lists.update({}, {"$pull": {"todo": "laundry"}})
-</code></pre></li>
-<li>4 数组的定位修改器
-
-<pre><code># 若数组包含多个值, 针对某一特定值的修改需要使用定位操作符"$"定位操作,数组下标以0开始
-# 导入测试数据
-db.posts.insert({"content": "...", "comments": [{"comment": "good post", "author": "John", "votes":0},
-{"comment": "i thought it was too short", "author": "Claire", "votes":3},
-{"comment": "free watches", "author": "Alice", "votes":-1}]})
-# 增加第一个评论的投票数量
-db.posts.update({"content": "..."}, {"$inc": {"comments.0.votes": 1}})
-# 但是有时怎么会预先知道下标呢? 比如上面的comments.0.votes. 这时就要用到"$"去更新,如果有多个匹配,只会更新第一个匹配元素
-db.posts.update({"comments.author": "John"}, {"$set": {"comments.$.author": "Jim"}})
-</code></pre></li>
-<li>5 修改器的速度</li>
-<li><p>在不改变文档大小的前提下,更新会很快. &#8220;$inc&#8221;, &#8220;$set&#8221;相对更快.&#8221;$push&#8221;, &#8220;$pull&#8221;相对更慢</p>
-
-<pre><code>from pymongo import Connection
-import time
-
-db = Connection().performance_test
-db.drop_collection("updates")
-collection = db.updates
-
-collection.insert({"x": 1})
-# make sure the insert is complete before we start timing
-collection.find_one()
-
-start = time.time()
-
-for i in range(100000):
-    collection.update({}, {"$inc": {"x": 1}})
-    # 如果改用"$push"的话. 速度就很悲剧了
-    collection.update({}, {"$push": {"x": 1}})
-
-# make sure the updates are complete before we stop timing
-collection.find_one()
-
-print time.time() - start
-</code></pre></li>
-<li><p>3.3.3 upsert</p></li>
-<li><p>upsert是一种特殊的更新. 如果文档不符合更新条件, 则会以这个条件和更新文档为基础创建一个新文档</p>
-
-<pre><code># update 第3个参数表示这个是upsert. &lt;-true
-db.analytics.update({"url": "/blog"}, {"$inc": {"visits": 1}}, True)
-db.math.remove()
-db.math.update({"count": 25}, {"$inc": {"count": 3}}, true)
-db.math.find_one()
-# 下面会再新建一个文档. 为什么, 因为上面的count已经是28, 由于没有匹配
-db.math.update({"count": 25}, {"$inc": {"count": 3}}, true)
-</code></pre></li>
-<li><p>save是一个shell函数, 可以在文档不存在时插入(文档不含有_id), 存在时更新(含有_id), 调用upsert</p>
-
-<pre><code>x = db.math.find_one()
-x['count'] = 20
-db.math.save(x)
-</code></pre></li>
-<li>3.3.4 更新多个文档</li>
-<li>默认只更新第一个匹配的文档, 如要要让所有文档更新, 可以设置update的第4个参数为true
-
-<pre><code># 给所有在特定日期过生的用户发一份礼物.
-# help(db.users.update)
-db.users.update({"birthday": "10/13/1978"}, {"$set": {"gift": "Happy Birtday!"}}, False, multi=True)
-# 想要知道到底更新了多少条文档
-db.count.update({x: 1}, {"$inc": {x: 1}}, False, multi=True)
-mongo&gt; db.runCommand({getLastError: 1})
-</code></pre></li>
-<li><p>3.3.5 返回已更新的文档</p>
-
-<pre><code># 在一个操作中返回结果,并更新
-mongo&gt; ps = db.runCommand({"findAndModify": "processes", "query": {"status": "READY"}, "sort": {"priority": -1},
-"update": {"$set": {"status": "RUNNING"}})
-ps = db.command({"findAndModify": "processes", "query": {"status": "READY"}, "sort": {"priority": -1},
-"update": {"$set": {"status": "RUNNING"}})
-ps = db.command({"findAndModify": "processes", "query": {"status": "READY"}, "sort": {"priority": -1},
-"remove": true).value
-# findAndModify
-字符集, 集合名
-. query
-查询文档, 用来检索文档的条件
-. sort
-排序结果的文件
-. update
-修改器文档, 对所找到的文档执行更新
-. remove
-布尔类型,表示是否删除文档
-. new
-布尔类型,表示返回的是更新前的文档还是更新后的文档. 默认是更新前的文档
-</code></pre></li>
-<li><p>3.4 瞬间完成</p></li>
-<li>不需要等待数据响应,发出后就不再操心的动作(离弦之箭)</li>
+<li>6.4 MapReduce</li>
 </ul>
 
 </div>
@@ -366,6 +215,18 @@ ps = db.command({"findAndModify": "processes", "query": {"status": "READY"}, "so
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2012/03/06/160015-redis/">redis 入门手册</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/06/150903-python/">Python 参考手册 第4章</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/02/091722-rabbitmq/">RabbitMQ 消息队列应用</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2012/03/01/154153-mongodb/">MongoDB权威指南 7</a>
       </li>
     
@@ -393,24 +254,12 @@ ps = db.command({"findAndModify": "processes", "query": {"status": "READY"}, "so
         <a href="/blog/2012/02/15/143830-scribe/">scribe安装</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/02/10/163323-python/">Python Tips</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/19/095304-python/">python 参考手册 第21章</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/18/175036-python/">python hiredis模块</a>
-      </li>
-    
   </ul>
 </section>
 
 <section>
 <h1>Categories</h1>
-<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 118.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 106.0%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 136.0%'>Mongodb(6)</a>  <a href='/blog/categories/monitor' style='font-size: 106.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 106.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 154.0%'>Python(9)</a>  <a href='/blog/categories/read' style='font-size: 160.0%'>Read(10)</a>  <a href='/blog/categories/redis' style='font-size: 124.0%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 106.0%'>Scribe(1)</a> </span>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 116.36363636363636%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 132.72727272727272%'>Database(6)</a>  <a href='/blog/categories/git' style='font-size: 105.45454545454545%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 132.72727272727272%'>Mongodb(6)</a>  <a href='/blog/categories/monitor' style='font-size: 105.45454545454545%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 105.45454545454545%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(11)</a>  <a href='/blog/categories/rabbitmq' style='font-size: 105.45454545454545%'>Rabbitmq(1)</a>  <a href='/blog/categories/read' style='font-size: 160.0%'>Read(11)</a>  <a href='/blog/categories/redis' style='font-size: 127.27272727272728%'>Redis(5)</a>  <a href='/blog/categories/scribe' style='font-size: 105.45454545454545%'>Scribe(1)</a> </span>
 </section>
 
 

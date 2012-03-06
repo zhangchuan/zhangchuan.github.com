@@ -9,11 +9,15 @@
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="6.1 count # count是最简单的聚合工具, 返回集合中的文档数量
-&gt; db.foo.count()
-&gt; db.foo.insert({"x": 1})
-&gt; db.foo.count()
-&gt; db.foo.count({"x": 1}) 6.2 distinct &hellip;">
+  <meta name="description" content="第4章 运算符和表达式 3.1 术语
+3.2 对象的身份与类型
+3.3 引用计数与垃圾收集
+3.4 引用与复制
+3.5 第一类对象
+3.6 表示数据的内置类型
+3.7 表示程序结构的内置类型
+3.8 解释器内部使用的内置类型
+3.9 对象行为与特殊方法 4.1 数字操作 +(加), -(减),*( &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -70,7 +74,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/03/01/142455-mongodb/">MongDB权威指南 6</a></h1>
+      <h1 class="entry-title"><a href="/blog/2012/03/06/150903-python/">Python 参考手册 第4章</a></h1>
     
     
       <p class="meta">
@@ -86,105 +90,36 @@
   
 
 
-<time datetime="2012-03-01T14:24:00+08:00" pubdate data-updated="true">Mar 1<span>st</span>, 2012</time>
+<time datetime="2012-03-06T15:09:00+08:00" pubdate data-updated="true">Mar 6<span>th</span>, 2012</time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><ul>
-<li>6.1 count
+  <div class="entry-content"><h1>第4章 运算符和表达式</h1>
 
-<pre><code># count是最简单的聚合工具, 返回集合中的文档数量
-&gt; db.foo.count()
-&gt; db.foo.insert({"x": 1})
-&gt; db.foo.count()
-&gt; db.foo.count({"x": 1})
-</code></pre></li>
-<li>6.2 distinct
+<ul>
+<li><a href="#3.1">3.1 术语</a></li>
+<li><a href="#3.2">3.2 对象的身份与类型</a></li>
+<li><a href="#3.3">3.3 引用计数与垃圾收集</a></li>
+<li><a href="#3.4">3.4 引用与复制</a></li>
+<li><a href="#3.5">3.5 第一类对象</a></li>
+<li><a href="#3.6">3.6 表示数据的内置类型</a></li>
+<li><a href="#3.7">3.7 表示程序结构的内置类型</a></li>
+<li><a href="#3.8">3.8 解释器内部使用的内置类型</a></li>
+<li><a href="#3.9">3.9 对象行为与特殊方法</a></li>
+</ul>
 
-<pre><code># distinct是用来找出给定键的所有不同值, 使用时必须指定集合和键
-&gt; db.runCommand({"distinct": "people", "key": "age"})
-</code></pre></li>
-<li>6.3 group
 
-<pre><code># group 先根据选定的键, 将集合依据选定键值的不同分成若干组, 然后通过聚合每一组的文档, 产生一个结果文档
-{"day": "2010/10/03", "time": "10/3/2010 03:57:01 GMT-400", "price": 4.23}
-{"day": "2010/10/04", "time": "10/4/2010 11:28:39 GMT-400", "price": 4.27}
-{"day": "2010/10/03", "time": "10/3/2010 05:00:23 GMT-400", "price": 4.10}
-{"day": "2010/10/06", "time": "10/6/2010 05:57:58 GMT-400", "price": 4.30}
-{"day": "2010/10/04", "time": "10/3/2010 08:34:50 GMT-400", "price": 4.01}
-# 获得近30天的收盘价
-{"day": "2010/10/03", "time": "10/3/2010 05:00:23 GMT-400", "price": 4.10}
-{"day": "2010/10/04", "time": "10/4/2010 11:28:39 GMT-400", "price": 4.27}
-{"day": "2010/10/06", "time": "10/6/2010 05:57:58 GMT-400", "price": 4.30}
-&gt; db.runCommand({"group": {
-"ns": "stocks",
-"key": "day",
-"initial": {"time": 0},
-"$reduce": function(doc, prev) {
-    if (doc.time &gt; prev.time) {
-        prev.price = doc.price;
-        prev.time = doc.time;
-    }},
-"condition": {"day": {"$gt": "2010/09/30"}}
-}})
-# "ns": "stocks"
-# 指定要进行分组的集合
-# "key": "day"
-# 指定文档分组依据的键. 所有"day"值相同的文档被划分到一组
-# "initial": {"time": 0}
-# 每一组reduce函数调用的初始时间
-# "$reduce": function(doc, prev) { ... }
-# 每个文档对应一次这个调用, 系统会传递两个参数: 当前文档和累加其文档. 
-# "condition": {"day": {"$gt": "2010/09/30"}}
-</code></pre></li>
-<li>6.3.1 使用完成器
+<h1 id=4.1>4.1 数字操作</h1>
 
-<pre><code># 博客系统, 每篇文章有多个标签, 现在要找出每天最热点的标签, 可以再一次按天分组, 为每一个标签计数
-&gt; db.posts.group({
-"key": {"tags": true},
-"initial": {"tags": {}},
-"$reduce": function(doc, prev) {
-    for (i in doc.tags) {
-        if (doc.tags[i] in prev.tags) {
-            prev.tags[doc.tags[i]]++;
-        } else {
-            prev.tags[doc.tags[i]] = 1;
-        }
-    }
-}})
-# "finalize"附带一个函数, 在每组结果传递到客户端之前被调用一次. 可处理结果的残枝败叶
-&gt; db.posts.group({
-"key": {"tags": true},
-"initial": {"tags": {}},
-"$reduce": function(doc, prev) {
-    for (i in doc.tags) {
-        if (doc.tags[i] in prev.tags) {
-            prev.tags[doc.tags[i]]++;
-        } else {
-            prev.tags[doc.tags[i]] = 1;
-        }
-    },
-"finalize": function(prev) {
-    var mostPopular = 0;
-    for (i in prev.tags) {
-        if (prev.tags[i] &gt; mostPopular) {
-            prev.tag = i;
-            mostPopular = prev.tags[i];
-        }
-    }
-    delete.prev.tags
-}})
-</code></pre></li>
-<li>6.3.2 将函数做为键使用
 
-<pre><code>&gt; db.posts.group({"ns": "posts",
-"$keyf": function(x) { return x.category.toLowerCase(); },
-"initializer": ... })
-</code></pre></li>
-<li>6.4 MapReduce</li>
+<ul>
+<li>+(加), -(减),*(乘), /(除), //(地板除), **(乘方), %(去模), -(一元减法), +(一元加法)</li>
+<li>&lt;&lt;(左移), >>(右移), &amp;(位与), |(位或), ^(异或), ~(一元位反)</li>
+<li>&lt;(小于), >(大于), ==(等于), !=(不等于), >=(大于等于), &lt;=(小于等于)</li>
+<li>不同数字类型的转换规则: 复数->浮点->整数</li>
 </ul>
 
 </div>
@@ -215,6 +150,18 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2012/03/06/160015-redis/">redis 入门手册</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/06/150903-python/">Python 参考手册 第4章</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/02/091722-rabbitmq/">RabbitMQ 消息队列应用</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2012/03/01/154153-mongodb/">MongoDB权威指南 7</a>
       </li>
     
@@ -242,24 +189,12 @@
         <a href="/blog/2012/02/15/143830-scribe/">scribe安装</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/02/10/163323-python/">Python Tips</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/19/095304-python/">python 参考手册 第21章</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/18/175036-python/">python hiredis模块</a>
-      </li>
-    
   </ul>
 </section>
 
 <section>
 <h1>Categories</h1>
-<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 118.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 106.0%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 136.0%'>Mongodb(6)</a>  <a href='/blog/categories/monitor' style='font-size: 106.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 106.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 154.0%'>Python(9)</a>  <a href='/blog/categories/read' style='font-size: 160.0%'>Read(10)</a>  <a href='/blog/categories/redis' style='font-size: 124.0%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 106.0%'>Scribe(1)</a> </span>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 116.36363636363636%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 132.72727272727272%'>Database(6)</a>  <a href='/blog/categories/git' style='font-size: 105.45454545454545%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 132.72727272727272%'>Mongodb(6)</a>  <a href='/blog/categories/monitor' style='font-size: 105.45454545454545%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 105.45454545454545%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(11)</a>  <a href='/blog/categories/rabbitmq' style='font-size: 105.45454545454545%'>Rabbitmq(1)</a>  <a href='/blog/categories/read' style='font-size: 160.0%'>Read(11)</a>  <a href='/blog/categories/redis' style='font-size: 127.27272727272728%'>Redis(5)</a>  <a href='/blog/categories/scribe' style='font-size: 105.45454545454545%'>Scribe(1)</a> </span>
 </section>
 
 

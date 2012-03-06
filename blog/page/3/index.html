@@ -9,10 +9,11 @@
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="5.1 索引简介 &gt; db.people.find({"username": "mark"})
-# 对"username"建立索引
-&gt; db.people.ensureIndex({"username": 1})
-# 同样的索引只需创建一次, 已创建的索引会加速该键的查询, &hellip;">
+  <meta name="description" content="兔子和兔子窝
+AMQP概念
+虚拟主机(virtual host), 交换机(exchange), 队列(queue), 绑定(binding)
+一个虚拟主机持有一组交换机, 队列和绑定, 多个虚拟主机用于访问控制
+队列是装消息的容器, 直到客户端将其消息取走, 否则消息一直在队列中, &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,7 +70,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/03/01/104304-mongodb/">MongoDB权威指南 5</a></h1>
+      <h1 class="entry-title"><a href="/blog/2012/03/02/091722-rabbitmq/">RabbitMQ 消息队列应用</a></h1>
     
     
       <p class="meta">
@@ -85,7 +86,7 @@
   
 
 
-<time datetime="2012-03-01T10:43:00+08:00" pubdate data-updated="true">Mar 1<span>st</span>, 2012</time>
+<time datetime="2012-03-02T09:17:00+08:00" pubdate data-updated="true">Mar 2<span>nd</span>, 2012</time>
         
       </p>
     
@@ -93,111 +94,53 @@
 
 
   <div class="entry-content"><ul>
-<li>5.1 索引简介
+<li><h1>兔子和兔子窝</h1></li>
+<li><p>AMQP概念</p></li>
+<li>虚拟主机(virtual host), 交换机(exchange), 队列(queue), 绑定(binding)</li>
+<li>一个虚拟主机持有一组交换机, 队列和绑定, 多个虚拟主机用于访问控制</li>
+<li>队列是装消息的容器, 直到客户端将其消息取走, 否则消息一直在队列中, 必须通过程序去建立, 然后等待放入消息</li>
+<li>交换机可以理解成具有路由表都路由程序, 每个消息有一个路由键的属性, 交换机中有一系列绑定, 即路由规则</li>
+<li>一个绑定就是一个基于路由键将交换机和队列连接起来的路由规则, 交换机是由绑定构成都路由表</li>
+<li>Fanout Exchange 不处理路由键</li>
+<li>Direct Exchange 完整匹配路由键</li>
+<li>Topic Exchange  将路由键盘和某模式进行匹配, #匹配一个或多个词, *匹配不多不少一个词</li>
+<li>消息都持久化</li>
+<li>1 将交换机设置成durable</li>
+<li>2 将队列设置成durable</li>
+<li><p>3 将消息的Delivery Mode设置成2</p></li>
+<li><p>兔子和蛇</p>
 
-<pre><code>&gt; db.people.find({"username": "mark"})
-# 对"username"建立索引
-&gt; db.people.ensureIndex({"username": 1})
-# 同样的索引只需创建一次, 已创建的索引会加速该键的查询, 对其他查询并没有帮助, 如下
-# 同时尽量避免让服务器做表扫描, 在集合很大时会很慢
-&gt; db.people.find({"data": data1}).sort({"data": 1, "username": 1})
-# 针对上例创建的索引, 在多键索引时应考虑索引创建的方向(升序1,降序-1)
-&gt; db.ensureIndex({"data": 1, "username": 1})
-# 多键索引可以利用前部索引
-&gt; {"a":1, "b":1, "c":1, ..., "z":1}
-#实际上会有{"a":1},{"a":1, "b":1},{"a":1, "b":1, "c":1}等的索引
-# MongoDB的查询优化器会重排查询项的顺序, 但缺点是每次插入,更新和删除时会产生额外开销
-# 要是查询要返回集合一半以上的结果, 用表扫描要比索引更高校.
-</code></pre></li>
-<li>5.1.1 扩展索引
+<pre><code># easy_install amqplib
+from amqplib import client_0_8 as amqp
+conn = amqp.Connection(host="localhost:5672", userid="guest", 
+password="guest", virtual_host="/", insist=False)
+# 可以使用.channel(x)来指定channel标识, 不过不建议
+chan = conn.channel()
 
-<pre><code>&gt; db.status.ensureIndex({user: 1, data: -1})
-# 如果内存放不下所有索引, 会非常慢, 改变索引顺序, 将最后几天的索引保存在内存, 减少内存交换, 这样查询任何用户的状态都会快很多
-&gt; db.status.ensureIndex({data: -1, user: 1})
-# 创建索引应考虑
-1) 会做什么样的查询? 其中哪些键需要索引?
-2) 每个键的索引方向是怎样的?
-3) 如何应对扩展? 有没有种不同的键的排列可以使常用数据更多地保留在内存中?
+# 消费者consumer
+# 创建一个po_box队列, exclusive私有队列
+chan.queue_declare(queue="po_box", durable=True, exclusive=False, 
+auto_delete=False)
+# 创建一个sorting_room交换机, type交换机的类型
+chan.exchange_declare(exchange="sorting_room", type="direct", 
+durable=True, auto_delete=False,)
+# 创建绑定, 让具有路由键"jason"的消息被路由到名为"po_box"的交换机
+chan.queue_bind(queue="po_box", exchange="sorting_room", 
+routing_key="jason")
+# 应用程序在消息到达的时候立刻得到通知, 需要用chan.basic_consume()注册
+# 一个新消息到达的回调
+def recv_callback(msg):
+    print 'Received: ' + msg.body + ' from channel #' + \
+    str(msg.channel.channel_id)
+chan.basic_consume(queue='po_box', no_ack=True, callback=recv_callback, 
+consumer_tag="testtag")
+while True:
+    chan.wait()
+chan.basic_cancel("testtag")
+chan.close()
+conn.close()
 </code></pre></li>
-<li>5.1.2 索引内嵌文档中的键
-
-<pre><code># 对内嵌文档的额索引与普通键索引并无差异, 两者也可以联合组成复合索引
-&gt; db.blog.ensureIndex({"comments.date": 1})
-</code></pre></li>
-<li>5.1.3 为排序创建索引
-
-<pre><code># 需要针对查询中大量的排序做索引, 如果没有索引的键调用sort, MongoDB需要将所有的数据提取到内存来排序.
-</code></pre></li>
-<li>5.1.4 索引名称
-
-<pre><code># 集合中的每个索引都有一个字符串类型的名字, 来唯一标识索引. 可以通过ensureIndex选项制定自定义的名字
-&gt; db.foo.ensureIndex({"a":1, "b":1, "c":1, ..., "z":1}, {"name":"alphabet"})
-</code></pre></li>
-<li>5.2 唯一索引
-
-<pre><code># 唯一索引可以确保集合的每一个文档的指定键都有唯一值
-&gt; db.people.ensureIndex({"username": 1}, {"unique": true})
-</code></pre></li>
-<li>5.2.1 消除重复
-
-<pre><code># 创建索引时, 将所有所有包含重复值的文档都删掉
-&gt; db.people.ensureIndex({"username": 1}, {"unique": true, "dropDups": true})
-</code></pre></li>
-<li>5.2.2 复合唯一索引
-
-<pre><code># 单个键可以相同, 所有键盘组合起来不同
-&gt; {files_id: ObjectID("4b23c3ca7525f35f94b60a2d"), n: 1}
-&gt; {files_id: ObjectID("4b23c3ca7525f35f94b60a2d"), n: 2}
-&gt; {files_id: ObjectID("4b23c3ca7525f35f94b60a2d"), n: 3}
-&gt; {files_id: ObjectID("4b23c3ca7525f35f94b60a2d"), n: 4}
-</code></pre></li>
-<li>5.3 使用explain和hint
-
-<pre><code>&gt; db.foo.find().explain()
-# "cursor": 索引使用情况, "BasicCursor"未使用索引
-# "nscanned": 数据库查找了多少个文档
-# "n": 返回文档的数量
-# "millis": 0 这个毫秒表示数据库执行查询的时间
-</code></pre></li>
-<li>5.4 索引管理
-
-<pre><code># 索引的元信息保存在每个数据库的system.indexes集合中, 只能进行ensureIndex或dropIndexes操作
-# system.namespaces包含集合的索引名字
-# 集合名和索引名加起来不能超过127字节
-# 修改索引
-# background在后台建立索引
-&gt; db.people.ensureIndex({"username": 1}, {"background": true})
-# 删除索引
-# 通过system.indexes集合找出索引名,在通过dropIndexes
-# db.runCommand({"dropIndexes": "foo", "index": "*"})
-</code></pre></li>
-<li>5.5 地理空间索引
-
-<pre><code># 创建地址空间索引
-&gt; db.map.ensureIndex({"gps": "2d"})
-# "gps"键的值必须是某种形式的一对值, 一个包含两个元素的数组, 或者连个键的内嵌文档
-{"gps": [0,100]}
-{"gps": {"x": -30, "y": 30]}
-{"gps": {"Latitude": -180, "longitude": 180}}
-# 默认地理空间值的范围为-180~180, 也可以重新指定
-&gt; db.star.trek.ensureIndex({"light-years": "2d"}, {"min": -1000, "max": 1000})
-# 地址空间查询有两种方式
-&gt; db.map.find({"gps": {"$near": [40, -73]}})
-&gt; db.map.find({"gps": {"$near": [40, -73]}}).limit(10)
-&gt; db.runCommand({geoNear: "map", near: [40, -73], num: 10})
-# 查找指定形状内的文档
-# "$box" 第一个数组, 指定左下角下标, 第二个数组, 指定右下角下标
-&gt; db.map.find({"gps": {"$within": {"$box": [[10, 20], [15, 30]]}}})
-# "$center" 查找圆内部所有点, 参数表示圆心和半径
-&gt; db.map.find({"gps": {"$within": {"$center": [[12, 25], 5]}}})
-</code></pre></li>
-<li>5.5.1 复合地理空间索引
-
-<pre><code># 创建爱呢"location"和"desc"的复合地理空间索引
-&gt; db.ensureIndex({"location": "2d", "desc": 1})
-# 查找咖啡馆
-&gt; db.map.find({"location": {"$near": [-70, 30]}, "desc": "coffeeshop"}).limit(1)
-</code></pre></li>
+<li><p><a href="http://simple-is-better.com/news/353">参考资料: 兔子和兔子窝</a></p></li>
 </ul>
 
 </div>
@@ -228,6 +171,18 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2012/03/06/160015-redis/">redis 入门手册</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/06/150903-python/">Python 参考手册 第4章</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/02/091722-rabbitmq/">RabbitMQ 消息队列应用</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2012/03/01/154153-mongodb/">MongoDB权威指南 7</a>
       </li>
     
@@ -255,24 +210,12 @@
         <a href="/blog/2012/02/15/143830-scribe/">scribe安装</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/02/10/163323-python/">Python Tips</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/19/095304-python/">python 参考手册 第21章</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/01/18/175036-python/">python hiredis模块</a>
-      </li>
-    
   </ul>
 </section>
 
 <section>
 <h1>Categories</h1>
-<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 118.0%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 130.0%'>Database(5)</a>  <a href='/blog/categories/git' style='font-size: 106.0%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 136.0%'>Mongodb(6)</a>  <a href='/blog/categories/monitor' style='font-size: 106.0%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 106.0%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 154.0%'>Python(9)</a>  <a href='/blog/categories/read' style='font-size: 160.0%'>Read(10)</a>  <a href='/blog/categories/redis' style='font-size: 124.0%'>Redis(4)</a>  <a href='/blog/categories/scribe' style='font-size: 106.0%'>Scribe(1)</a> </span>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 116.36363636363636%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 132.72727272727272%'>Database(6)</a>  <a href='/blog/categories/git' style='font-size: 105.45454545454545%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 132.72727272727272%'>Mongodb(6)</a>  <a href='/blog/categories/monitor' style='font-size: 105.45454545454545%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 105.45454545454545%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(11)</a>  <a href='/blog/categories/rabbitmq' style='font-size: 105.45454545454545%'>Rabbitmq(1)</a>  <a href='/blog/categories/read' style='font-size: 160.0%'>Read(11)</a>  <a href='/blog/categories/redis' style='font-size: 127.27272727272728%'>Redis(5)</a>  <a href='/blog/categories/scribe' style='font-size: 105.45454545454545%'>Scribe(1)</a> </span>
 </section>
 
 

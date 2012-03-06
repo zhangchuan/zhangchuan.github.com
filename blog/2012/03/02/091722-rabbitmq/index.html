@@ -1,0 +1,293 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>RabbitMQ 消息队列应用 - 研究中心</title>
+  <meta name="author" content="Cloud.Zhang">
+
+  
+  <meta name="description" content="兔子和兔子窝
+AMQP概念
+虚拟主机(virtual host), 交换机(exchange), 队列(queue), 绑定(binding)
+一个虚拟主机持有一组交换机, 队列和绑定, 多个虚拟主机用于访问控制
+队列是装消息的容器, 直到客户端将其消息取走, 否则消息一直在队列中, &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://zhangchuan.github.com/blog/2012/03/02/091722-rabbitmq">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="研究中心" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:zhangchuan.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">RabbitMQ 消息队列应用</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-03-02T09:17:00+08:00" pubdate data-updated="true">Mar 2<span>nd</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><ul>
+<li><h1>兔子和兔子窝</h1></li>
+<li><p>AMQP概念</p></li>
+<li>虚拟主机(virtual host), 交换机(exchange), 队列(queue), 绑定(binding)</li>
+<li>一个虚拟主机持有一组交换机, 队列和绑定, 多个虚拟主机用于访问控制</li>
+<li>队列是装消息的容器, 直到客户端将其消息取走, 否则消息一直在队列中, 必须通过程序去建立, 然后等待放入消息</li>
+<li>交换机可以理解成具有路由表都路由程序, 每个消息有一个路由键的属性, 交换机中有一系列绑定, 即路由规则</li>
+<li>一个绑定就是一个基于路由键将交换机和队列连接起来的路由规则, 交换机是由绑定构成都路由表</li>
+<li>Fanout Exchange 不处理路由键</li>
+<li>Direct Exchange 完整匹配路由键</li>
+<li>Topic Exchange  将路由键盘和某模式进行匹配, #匹配一个或多个词, *匹配不多不少一个词</li>
+<li>消息都持久化</li>
+<li>1 将交换机设置成durable</li>
+<li>2 将队列设置成durable</li>
+<li><p>3 将消息的Delivery Mode设置成2</p></li>
+<li><p>兔子和蛇</p>
+
+<pre><code># easy_install amqplib
+from amqplib import client_0_8 as amqp
+conn = amqp.Connection(host="localhost:5672", userid="guest", 
+password="guest", virtual_host="/", insist=False)
+# 可以使用.channel(x)来指定channel标识, 不过不建议
+chan = conn.channel()
+
+# 消费者consumer
+# 创建一个po_box队列, exclusive私有队列
+chan.queue_declare(queue="po_box", durable=True, exclusive=False, 
+auto_delete=False)
+# 创建一个sorting_room交换机, type交换机的类型
+chan.exchange_declare(exchange="sorting_room", type="direct", 
+durable=True, auto_delete=False,)
+# 创建绑定, 让具有路由键"jason"的消息被路由到名为"po_box"的交换机
+chan.queue_bind(queue="po_box", exchange="sorting_room", 
+routing_key="jason")
+# 应用程序在消息到达的时候立刻得到通知, 需要用chan.basic_consume()注册
+# 一个新消息到达的回调
+def recv_callback(msg):
+    print 'Received: ' + msg.body + ' from channel #' + \
+    str(msg.channel.channel_id)
+chan.basic_consume(queue='po_box', no_ack=True, callback=recv_callback, 
+consumer_tag="testtag")
+while True:
+    chan.wait()
+chan.basic_cancel("testtag")
+chan.close()
+conn.close()
+</code></pre></li>
+<li><p><a href="http://simple-is-better.com/news/353">参考资料: 兔子和兔子窝</a></p></li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Cloud.Zhang</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-03-02T09:17:00+08:00" pubdate data-updated="true">Mar 2<span>nd</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/python/'>Python</a>, <a class='category' href='/blog/categories/rabbitmq/'>RabbitMQ</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/03/01/154153-mongodb/" title="Previous Post: MongoDB权威指南 7">&laquo; MongoDB权威指南 7</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/03/06/150903-python/" title="next Post: Python 参考手册 第4章">Python 参考手册 第4章 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1></h1>
+  <img src="/images/newton.gif">
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/03/06/160015-redis/">redis 入门手册</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/06/150903-python/">Python 参考手册 第4章</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/02/091722-rabbitmq/">RabbitMQ 消息队列应用</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/01/154153-mongodb/">MongoDB权威指南 7</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/01/142455-mongodb/">MongDB权威指南 6</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/03/01/104304-mongodb/">MongoDB权威指南 5</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/28/084414-python/">MongoDB权威指南 4</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/23/120934-python/">MongoDB权威指南 3</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/22/141006-mongodb/">monogodb 大杂烩</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/02/15/143830-scribe/">scribe安装</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<h1>Categories</h1>
+<span class='categories_tag'> <a href='/blog/categories/blog' style='font-size: 116.36363636363636%'>Blog(3)</a>  <a href='/blog/categories/database' style='font-size: 132.72727272727272%'>Database(6)</a>  <a href='/blog/categories/git' style='font-size: 105.45454545454545%'>Git(1)</a>  <a href='/blog/categories/mongodb' style='font-size: 132.72727272727272%'>Mongodb(6)</a>  <a href='/blog/categories/monitor' style='font-size: 105.45454545454545%'>Monitor(1)</a>  <a href='/blog/categories/munin' style='font-size: 105.45454545454545%'>Munin(1)</a>  <a href='/blog/categories/python' style='font-size: 160.0%'>Python(11)</a>  <a href='/blog/categories/rabbitmq' style='font-size: 105.45454545454545%'>Rabbitmq(1)</a>  <a href='/blog/categories/read' style='font-size: 160.0%'>Read(11)</a>  <a href='/blog/categories/redis' style='font-size: 127.27272727272728%'>Redis(5)</a>  <a href='/blog/categories/scribe' style='font-size: 105.45454545454545%'>Scribe(1)</a> </span>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p align="right" style="width: 75%">
+  Copyright &copy; 2012 - Cloud.Zhang
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
