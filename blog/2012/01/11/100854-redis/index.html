@@ -9,8 +9,8 @@
   <meta name="author" content="Cloud.Zhang">
 
   
-  <meta name="description" content="
-">
+  <meta name="description" content="daemonize &lt;yes|no&gt;：是否以后台daemon方式运行 # yes|no (default:no)
+pidfile &lt;*.pid&gt;：pid文件位置，daemonize为yes时才起作用 # *.pid路径 (ex:/var/run/redis.pid) &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -87,7 +87,37 @@
   </header>
 
 
-<div class="entry-content">
+<div class="entry-content"><pre><code>daemonize &lt;yes|no&gt;：是否以后台daemon方式运行 # yes|no (default:no)
+pidfile &lt;*.pid&gt;：pid文件位置，daemonize为yes时才起作用 # *.pid路径 (ex:/var/run/redis.pid)
+port &lt;port&gt;：监听的端口号 # (default:6379)
+timeout &lt;seconds&gt;：请求超时时间(单位：秒)
+loglevel &lt;debug|verbose|notice|warning&gt;：log信息级别 # debug|verbose|notice|warning
+logfile &lt;filename&gt;：log文件位置 # (default:stdout)
+databases &lt;number&gt;：开启数据库的数量
+save &lt;seconds&gt; &lt;changes&gt;：保存快照的频率，在一定时间内执行一定数量的写操作时，自动保存快照。可设置多个条件。
+slaveof &lt;master-ip&gt; &lt;master-port&gt;: 当本机为从服务时，设置主服务的IP及端口
+masterauth &lt;master-password&gt;: 当本机为从服务时，设置主服务的连接密码
+requirepass: 连接密码
+maxclients &lt;number&gt;: 最大客户端连接数，0为不限制 # (default:0)
+maxmemory &lt;bytes&gt;: 设置最大内存，达到最大内存设置后，Redis会先尝试清除已到期或即将到期的Key，当此方法处理后，任到达最大内存设置，将无法再进行写入操作。
+rdbcompression &lt;yes|no&gt;：是否使用压缩 # yes|no (default:yes)
+dbfilename &lt;*.rdb&gt;：数据快照文件名（只是文件名，不包括目录） # *.rdb
+dir &lt;directory&gt;：数据快照的保存目录（这个是目录）
+appendonly &lt;yes|no&gt;：是否开启appendonlylog，开启的话每次写操作会记一条log，这会提高数据抗风险能力，但影响效率。# yes|no
+appendfilename &lt;*.aof&gt; 更新日志文件名 # (default:appendonly.aof)
+appendfsync &lt;always|everysec|no&gt;：appendonlylog如何同步到磁盘（always:每次写都强制调用fsync; everysec:每秒启用一次fsync; no:不调用fsync等待系统自己同步）
+vm-enabled &lt;yes|no&gt;: 是否启用虚拟内存 # yes|no (default:no)
+vm-swap-file &lt;*.swap&gt;: 交换分区文件（启用虚拟内存时使用） # *.swap路径 (ex:/tmp/redis.swap)
+vm-max-memory &lt;number&gt;: 将所有大于vm-max-memory的数据存入虚拟内存,无论vm-max-memory设置多小,所有索引数据都是内存存储的(Redis的索引数据 就是keys),也就是说,当vm-max-memory设置为0的时候,其实是所有value都存在于磁盘。 # (default:0)
+vm-page-size &lt;bytes&gt;: swap文件页大小（根据存储的值大小设置，单位byte）# (default:32)
+vm-pages &lt;number&gt;: 交换分区文件中内存页的数量 # (default:134217728)
+vm-max-threads &lt;number&gt;: 对swap文件操作的最大线程数（最好为CPU个数）# (default:4)
+glueoutputbuf &lt;yes|no&gt;: # yes|no (default:yes)
+hash-max-zipmap-entries &lt;number&gt;: # (default:64)
+hash-max-zipmap-value &lt;number&gt;: # (default:512)
+activerehashing &lt;yes|no&gt;: # yes|no (default:yes)
+include &lt;*.conf&gt;: 引用另外一个配置文件 # *.conf路径 (ex:/path/to/other.conf)
+</code></pre>
 </div>
 
 
